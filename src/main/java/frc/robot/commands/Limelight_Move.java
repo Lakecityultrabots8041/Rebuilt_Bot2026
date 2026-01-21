@@ -30,6 +30,10 @@ public class Limelight_Move extends Command {
     
     // Timer for timeout
     private final Timer timer;
+
+    //TODO If this doesn't fix the jerky issue remove all instances of aligning
+    //Experimental to continue alignment loop below
+    private double aligning = 0; // 0=Not aligning, 1=Currently aligning
     
     // Track if we've been aligned consistently
     private int alignedCount = 0;
@@ -114,7 +118,7 @@ public class Limelight_Move extends Command {
         // Start timeout timer
         timer.restart();
     }
-    
+    //FIXME This is what seems to keep getting interrupted and making the robot alignment jerky
     @Override
     public void execute() {
         // Check if we can see the target
@@ -130,10 +134,15 @@ public class Limelight_Move extends Command {
         
         // Get current error values from Limelight
         double horizontalError = limelight.getHorizontalOffset(); // tx in degrees
+        //if (limelight.getDistanceInches_MegaTag2() >= 0) {
         double currentDistance = limelight.getDistanceInches_MegaTag2(
-            
-        );
         
+        );
+        //TODO find a way to hopefully keep track of the last time our bot saw a tag and use that(?)
+       // } else {
+            //double currentDistance = cachedDistanceMeters()
+        //};
+
         // Calculate horizontal offset in inches for strafe
         // Use simple trig: offset = distance * tan(tx)
         double horizontalOffsetInches = currentDistance * Math.tan(Math.toRadians(horizontalError));
@@ -154,9 +163,9 @@ public class Limelight_Move extends Command {
         strafeSpeed = clamp(strafeSpeed, -Constants.MAX_STRAFE_SPEED, Constants.MAX_STRAFE_SPEED);
         
         // Convert to actual velocities
-        double rotationVelocity = rotationSpeed * maxAngularRate;
+        double rotationVelocity = rotationSpeed * maxAngularRate; 
         double forwardVelocity = forwardSpeed * maxSpeed;
-        double strafeVelocity = strafeSpeed * maxSpeed;
+        double strafeVelocity = -strafeSpeed * maxSpeed;
         
         // Create chassis speeds (robot-relative)
         // X = forward/backward, Y = left/right strafe, Omega = rotation
@@ -180,11 +189,13 @@ public class Limelight_Move extends Command {
         if (rotationController.atSetpoint() && distanceController.atSetpoint() && strafeController.atSetpoint()) {
             alignedCount++;
             SmartDashboard.putNumber("Vision/Aligned Count", alignedCount);
+            aligning = 0;
         } else {
             alignedCount = 0;
+            aligning = 1;
         }
     }
-    
+    //FIXME This is what keeps interrupting the above alignment attempt, we need some way to stop the above code from being interrupted(maybe adding a target pose & bot's guessed pose?)
     @Override
     public void end(boolean interrupted) {
         // Stop the robot
