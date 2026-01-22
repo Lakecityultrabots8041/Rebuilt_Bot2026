@@ -39,7 +39,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private final NetworkTableEntry tid; // AprilTag ID
     
     // Cache MegaTag2 data for consistent reads within a loop
-    private double cachedDistanceMeters = 0;
+    public double cachedDistanceMeters = 0;
     private boolean megatag2Available = false;
     
     public LimelightSubsystem() {
@@ -129,7 +129,7 @@ public class LimelightSubsystem extends SubsystemBase {
     public boolean hasMegaTag2Data() {
         return megatag2Available;
     }
-    
+
     /**
      * Get the robot's estimated pose from MegaTag2
      * Useful for pose estimation fusion with odometry
