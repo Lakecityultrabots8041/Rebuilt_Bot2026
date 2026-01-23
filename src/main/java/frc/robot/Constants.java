@@ -17,6 +17,21 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
 
+   public static final double[] aprilTagDistance = new double[18];
+   static{
+    //default distance
+    for (int i = 0; i < aprilTagDistance.length; i++) {
+      aprilTagDistance[i] = 60; 
+    }
+
+    //Specify tag distances
+    aprilTagDistance[15] = 30;
+    aprilTagDistance[7] = 24; //48 Inches
+    aprilTagDistance[8] = 36; //72 Inches
+   }
+
+   //Default distance if unknown tag
+   public static final double defaultAprilTagDistance = 30;
       
     // ===== APRILTAG TARGETING =====
     /** The AprilTag ID we want to align with for scoring */
@@ -34,16 +49,28 @@ public final class Constants {
     
     // ===== ALIGNMENT GOALS =====
     /** Target distance from AprilTag in inches (how close we want to get) */
-    public static final double TARGET_DISTANCE_INCHES = 60.0; // 5 feet - safe for testing
+    public static final double TARGET_DISTANCE_INCHES = 30.0; // 5 feet - safe for testing
     
     /** How much horizontal offset (in degrees) is acceptable before we're "aligned" */
-    public static final double ALIGNMENT_TOLERANCE_DEGREES = 3.0;
+    public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;
     
     /** How much distance error (in inches) is acceptable before we're "at distance" */
-    public static final double DISTANCE_TOLERANCE_INCHES = 5.0;
+    public static final double DISTANCE_TOLERANCE_INCHES = 3.0;
 
+   // ====== Speed Scale Factors===================================
+   //Convert error to speed (pid replacement)
+   //Speed = error x gain
    
-    
+   public static final double rotationGain = 0.05;
+   public static final double forwardGain = 0.20;
+   public static final double strafeGain = 0.20;
+
+   //Speed limiters below_______
+
+   public static final double maxRotationSpeed = 0.35;
+   public static final double maxForwardSpeed = 0.30;
+   public static final double maxStrafeSpeed = 0.30;
+
     // ===== PID CONSTANTS FOR ROTATION (turning to face tag) =====
     public static final double ROTATION_KP = 0.02;
     public static final double ROTATION_KI = 0.0;
@@ -82,4 +109,14 @@ public final class Constants {
     
     /** Maximum time to run alignment command before giving up (seconds) */
     public static final double ALIGNMENT_TIMEOUT_SECONDS = 8.0;
+
+    public static final int alignedLoopsRequired = 25; // 1 is 0.05 seconds
+
+    public static double getAprilTagDistance(int tagID) {
+      //check if valid tag
+      if (tagID >= 0 && tagID < aprilTagDistance.length) {
+        return aprilTagDistance[tagID];
+      }
+      return defaultAprilTagDistance;
+    }
 }

@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,10 +24,13 @@ public class Limelight_Move extends Command {
     private final PIDController rotationController;
     private final PIDController distanceController;
     private final PIDController strafeController; // NEW: For left/right centering
+
     
     // Speeds from TunerConstants
     private final double maxSpeed;
     private final double maxAngularRate;
+    //private final double maxSpeedMetersPerSec;
+    //private final double maxRotationsPerSec;
     
     // Timer for timeout
     private final Timer timer;
@@ -38,6 +42,9 @@ public class Limelight_Move extends Command {
     // Track if we've been aligned consistently
     private int alignedCount = 0;
     private static final int REQUIRED_ALIGNED_LOOPS = 25; // Must be aligned for 25 loops (0.5 sec)
+
+    //How close we are trying to get with the current tag
+    private double targetDistance = Constants.defaultAprilTagDistance;
     
     /**
      * Creates a new alignment command for AprilTag 15
@@ -58,6 +65,7 @@ public class Limelight_Move extends Command {
         this.drivetrain = drivetrain;
         this.limelight = limelight;
         this.targetID = targetID;
+        
         
         // Create PID controllers
         rotationController = new PIDController(
@@ -117,6 +125,14 @@ public class Limelight_Move extends Command {
         
         // Start timeout timer
         timer.restart();
+
+        //How far the tag we see is
+        if (limelight.hasValidTarget()) {
+            int tagID = limelight.getAprilTagID();
+            targetDistance = Constants.getAprilTagDistance(tagID);
+            System.out.println("Aligning to tag" + tagID +
+                                "at" + Units.metersToInches(targetDistance) + "Inches");
+        }
     }
     //FIXME This is what seems to keep getting interrupted and making the robot alignment jerky
     @Override
@@ -129,9 +145,20 @@ public class Limelight_Move extends Command {
             alignedCount = 0;
             return;
         }
+
+        int tagID = limelight.getAprilTagID();
+        targetDistance = Constants.getAprilTagDistance(tagID);
         
-        SmartDashboard.putString("Vision/Status", "Target Acquired!");
+        SmartDashboard.putString("Vision/Status", "Tracking tag" + tagID);
         
+        //How far is the tag (Inches), and how far off center is it? hopefully replace PIDs
+        double degreesOffCenter = limelight.getHorizontalOffset();
+        double CurrentDistance = limelight.getDistanceInches_MegaTag2();
+        if(CurrentDistance < 0) {
+            //No distance data
+            drivetrain.driveRobotRelative(new ChassisSpeeds(0, 0, 0));
+            SmartDashboard.putString("Vision/Status", "No distance data found");
+        }
         // Get current error values from Limelight
         double horizontalError = limelight.getHorizontalOffset(); // tx in degrees
         //if (limelight.getDistanceInches_MegaTag2() >= 0) {
@@ -142,6 +169,11 @@ public class Limelight_Move extends Command {
        // } else {
             //double currentDistance = cachedDistanceMeters()
         //};
+        //How close/far are we?(Inch)
+        double distanceError = targetDistance - CurrentDistance;
+
+        //How far left/right are we?(Inch)
+        double InchesOffCenter = CurrentDistance * Math.tan(Math.toRadians(degreesOffCenter));
 
         // Calculate horizontal offset in inches for strafe
         // Use simple trig: offset = distance * tan(tx)
@@ -156,20 +188,27 @@ public class Limelight_Move extends Command {
         
         // Strafe: positive offset means we're to the LEFT of target, so strafe RIGHT (positive Y)
         double strafeSpeed = strafeController.calculate(horizontalOffsetInches);
+
+        //Figure out how fast we want to go Clockwise, Forward, and Around(right)
+        double RotationSpeed = degreesOffCenter * Constants.rotationGain;
+        double ForwardSpeed = distanceError * Constants.forwardGain;
+        double StrafeSpeed = InchesOffCenter * Constants.strafeGain;
+
+        //TODO This is where I start replacing things, if something breaks, revert all changes below this (generally just capitalizing)
         
         // Clamp speeds to maximum values
-        rotationSpeed = clamp(rotationSpeed, -Constants.MAX_ROTATION_SPEED, Constants.MAX_ROTATION_SPEED);
-        forwardSpeed = clamp(forwardSpeed, -Constants.MAX_DISTANCE_SPEED, Constants.MAX_DISTANCE_SPEED);
-        strafeSpeed = clamp(strafeSpeed, -Constants.MAX_STRAFE_SPEED, Constants.MAX_STRAFE_SPEED);
+        RotationSpeed = clamp(RotationSpeed, -Constants.MAX_ROTATION_SPEED, Constants.MAX_ROTATION_SPEED);
+        ForwardSpeed = clamp(ForwardSpeed, -Constants.MAX_DISTANCE_SPEED, Constants.MAX_DISTANCE_SPEED);
+        StrafeSpeed = clamp(StrafeSpeed, -Constants.MAX_STRAFE_SPEED, Constants.MAX_STRAFE_SPEED);
         
         // Convert to actual velocities
-        double rotationVelocity = rotationSpeed * maxAngularRate; 
-        double forwardVelocity = forwardSpeed * maxSpeed;
-        double strafeVelocity = -strafeSpeed * maxSpeed;
+        double RotationVelocity = -RotationSpeed * maxAngularRate; 
+        double ForwardVelocity = ForwardSpeed * 0;
+        double StrafeVelocity = StrafeSpeed * maxSpeed;
         
         // Create chassis speeds (robot-relative)
         // X = forward/backward, Y = left/right strafe, Omega = rotation
-        ChassisSpeeds speeds = new ChassisSpeeds(forwardVelocity, strafeVelocity, rotationVelocity);
+        ChassisSpeeds speeds = new ChassisSpeeds(ForwardVelocity, StrafeVelocity,  RotationVelocity);
         
         // Send speeds to drivetrain
         drivetrain.driveRobotRelative(speeds);
@@ -177,14 +216,14 @@ public class Limelight_Move extends Command {
         // Debug output to SmartDashboard
         SmartDashboard.putNumber("Vision/Horizontal Error", horizontalError);
         SmartDashboard.putNumber("Vision/Horizontal Offset (in)", horizontalOffsetInches);
-        SmartDashboard.putNumber("Vision/Distance", currentDistance);
-        SmartDashboard.putNumber("Vision/Rotation Speed", rotationSpeed);
-        SmartDashboard.putNumber("Vision/Forward Speed", forwardSpeed);
-        SmartDashboard.putNumber("Vision/Strafe Speed", strafeSpeed);
+        SmartDashboard.putNumber("Vision/Distance", CurrentDistance);
+        SmartDashboard.putNumber("Vision/Rotation Speed", RotationSpeed);
+        SmartDashboard.putNumber("Vision/Forward Speed", ForwardSpeed);
+        SmartDashboard.putNumber("Vision/Strafe Speed", StrafeSpeed);
         SmartDashboard.putBoolean("Vision/At Rotation", rotationController.atSetpoint());
         SmartDashboard.putBoolean("Vision/At Distance", distanceController.atSetpoint());
         SmartDashboard.putBoolean("Vision/At Strafe", strafeController.atSetpoint());
-        
+        /* 
         // Check if we're aligned on ALL axes
         if (rotationController.atSetpoint() && distanceController.atSetpoint() && strafeController.atSetpoint()) {
             alignedCount++;
@@ -194,6 +233,23 @@ public class Limelight_Move extends Command {
             alignedCount = 0;
             aligning = 1;
         }
+            */
+
+            //Close Enough?
+            boolean rotationGood = Math.abs(degreesOffCenter) < Constants.ALIGNMENT_TOLERANCE_DEGREES;
+            boolean distanceGood = Math.abs(distanceError) < Constants.DISTANCE_TOLERANCE_INCHES;
+
+            SmartDashboard.putBoolean("Vision/Rotation Aligned", rotationGood);
+            SmartDashboard.putBoolean("Vision/Distance Aligned", distanceGood);
+
+            //How many Loops have we been aligned for?
+            if (rotationGood && distanceGood) {
+                alignedCount++;
+                SmartDashboard.putNumber("Vision/Loops Aligned", alignedCount);
+            } else {
+                alignedCount = 0;
+            }
+            
     }
     //FIXME This is what keeps interrupting the above alignment attempt, we need some way to stop the above code from being interrupted(maybe adding a target pose & bot's guessed pose?)
     @Override
