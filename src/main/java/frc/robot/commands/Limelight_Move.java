@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,6 +32,8 @@ public class Limelight_Move extends Command {
     private final double maxAngularRate;
     //private final double maxSpeedMetersPerSec;
     //private final double maxRotationsPerSec;
+    private final double LimelightMaxSpeed;
+    private final double LimelightMaxAngle;
     
     // Timer for timeout
     private final Timer timer;
@@ -101,6 +104,8 @@ public class Limelight_Move extends Command {
         // Get max speeds from TunerConstants
         maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
         maxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+        LimelightMaxSpeed = maxSpeed + 1.5;
+        LimelightMaxAngle = maxAngularRate - 0.5;
         
         timer = new Timer();
         
@@ -170,14 +175,14 @@ public class Limelight_Move extends Command {
             //double currentDistance = cachedDistanceMeters()
         //};
         //How close/far are we?(Inch)
-        double distanceError = targetDistance - CurrentDistance;
+        double distanceError = CurrentDistance - targetDistance;
 
         //How far left/right are we?(Inch)
         double InchesOffCenter = CurrentDistance * Math.tan(Math.toRadians(degreesOffCenter));
 
         // Calculate horizontal offset in inches for strafe
         // Use simple trig: offset = distance * tan(tx)
-        double horizontalOffsetInches = currentDistance * Math.tan(Math.toRadians(horizontalError));
+        //double horizontalOffsetInches = currentDistance * Math.tan(Math.toRadians(horizontalError));
         
         // Calculate PID outputs
         // Rotation: positive tx means target is RIGHT, so we turn RIGHT (positive rotation)
@@ -187,12 +192,12 @@ public class Limelight_Move extends Command {
         double forwardSpeed = distanceController.calculate(currentDistance);
         
         // Strafe: positive offset means we're to the LEFT of target, so strafe RIGHT (positive Y)
-        double strafeSpeed = strafeController.calculate(horizontalOffsetInches);
+        //double strafeSpeed = strafeController.calculate(horizontalOffsetInches);
 
         //Figure out how fast we want to go Clockwise, Forward, and Around(right)
         double RotationSpeed = degreesOffCenter * Constants.rotationGain;
         double ForwardSpeed = distanceError * Constants.forwardGain;
-        double StrafeSpeed = InchesOffCenter * Constants.strafeGain;
+        double StrafeSpeed = degreesOffCenter * Constants.strafeGain;
 
         //TODO This is where I start replacing things, if something breaks, revert all changes below this (generally just capitalizing)
         
@@ -201,14 +206,13 @@ public class Limelight_Move extends Command {
         ForwardSpeed = clamp(ForwardSpeed, -Constants.MAX_DISTANCE_SPEED, Constants.MAX_DISTANCE_SPEED);
         StrafeSpeed = clamp(StrafeSpeed, -Constants.MAX_STRAFE_SPEED, Constants.MAX_STRAFE_SPEED);
 
-        if (distanceError >= distanceError - 1) {
-            System.out.println("distance error is" + distanceError);
-        }
+        
+        NetworkTableInstance.getDefault().getTable("limelight").getEntry("botpose_orb").getDoubleArray(new double[6]);
         
         // Convert to actual velocities
-        double RotationVelocity = -RotationSpeed * maxAngularRate; 
-        double ForwardVelocity = ForwardSpeed * maxSpeed;
-        double StrafeVelocity = StrafeSpeed * 0;
+        double RotationVelocity = -RotationSpeed * LimelightMaxAngle; 
+        double ForwardVelocity = ForwardSpeed * LimelightMaxSpeed;
+        double StrafeVelocity = -StrafeSpeed * 0;
         
         // Create chassis speeds (robot-relative)
         // X = forward/backward, Y = left/right strafe, Omega = rotation
@@ -219,7 +223,7 @@ public class Limelight_Move extends Command {
         
         // Debug output to SmartDashboard
         SmartDashboard.putNumber("Vision/Horizontal Error", horizontalError);
-        SmartDashboard.putNumber("Vision/Horizontal Offset (in)", horizontalOffsetInches);
+        //SmartDashboard.putNumber("Vision/Horizontal Offset (in)", horizontalOffsetInches);
         SmartDashboard.putNumber("Vision/Distance", CurrentDistance);
         SmartDashboard.putNumber("Vision/Rotation Speed", RotationSpeed);
         SmartDashboard.putNumber("Vision/Forward Speed", ForwardSpeed);
@@ -256,7 +260,7 @@ public class Limelight_Move extends Command {
             
     }
     //FIXME This is what keeps interrupting the above alignment attempt, we need some way to stop the above code from being interrupted(maybe adding a target pose & bot's guessed pose?)
-    @Override
+    //@Override
     public void end(boolean interrupted) {
         // Stop the robot
         drivetrain.driveRobotRelative(new ChassisSpeeds(0, 0, 0));
@@ -273,7 +277,7 @@ public class Limelight_Move extends Command {
         SmartDashboard.putString("Vision/Status", "Stopped");
     }
     
-    @Override
+    //@Override
     public boolean isFinished() {
         // Finish if we've been aligned consistently
         if (alignedCount >= REQUIRED_ALIGNED_LOOPS) {

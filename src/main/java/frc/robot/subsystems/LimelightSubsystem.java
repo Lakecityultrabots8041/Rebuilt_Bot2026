@@ -119,8 +119,8 @@ public class LimelightSubsystem extends SubsystemBase {
         if (!megatag2Available) {
             return -1;
         }
-        // Convert meters to inches
-        return Units.metersToInches(cachedDistanceMeters);
+        // Return Meters + 1
+        return (cachedDistanceMeters);
     }
     
     /**

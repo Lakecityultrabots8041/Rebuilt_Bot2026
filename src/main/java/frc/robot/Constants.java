@@ -25,13 +25,13 @@ public final class Constants {
     }
 
     //Specify tag distances
-    aprilTagDistance[15] = 1.0;
+    aprilTagDistance[15] = 2.0;
     aprilTagDistance[7] = 0.7; //48 Inches
     aprilTagDistance[8] = 1.3; //72 Inches
    }
 
    //Default distance if unknown tag
-   public static final double defaultAprilTagDistance = 1.0;
+   public static final double defaultAprilTagDistance = 2.0;
       
     // ===== APRILTAG TARGETING =====
     /** The AprilTag ID we want to align with for scoring */
@@ -62,7 +62,7 @@ public final class Constants {
    //Speed = error x gain
    
    public static final double rotationGain = 0.05;
-   public static final double forwardGain = 0.20;
+   public static final double forwardGain = 0.35;
    public static final double strafeGain = 0.20;
 
    //Speed limiters below_______
@@ -110,7 +110,7 @@ public final class Constants {
     /** Maximum time to run alignment command before giving up (seconds) */
     public static final double ALIGNMENT_TIMEOUT_SECONDS = 8.0;
 
-    public static final int alignedLoopsRequired = 25; // 1 is 0.05 seconds
+    public static final int alignedLoopsRequired = 250; // 1 is 0.05 seconds
 
     public static double getAprilTagDistance(int tagID) {
       //check if valid tag
