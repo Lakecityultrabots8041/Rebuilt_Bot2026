@@ -21,17 +21,17 @@ public final class Constants {
    static{
     //default distance
     for (int i = 0; i < aprilTagDistance.length; i++) {
-      aprilTagDistance[i] = 60; 
+      aprilTagDistance[i] = 2.0; 
     }
 
     //Specify tag distances
-    aprilTagDistance[15] = 30;
-    aprilTagDistance[7] = 24; //48 Inches
-    aprilTagDistance[8] = 36; //72 Inches
+    aprilTagDistance[15] = 1.0;
+    aprilTagDistance[7] = 0.7; //48 Inches
+    aprilTagDistance[8] = 1.3; //72 Inches
    }
 
    //Default distance if unknown tag
-   public static final double defaultAprilTagDistance = 30;
+   public static final double defaultAprilTagDistance = 1.0;
       
     // ===== APRILTAG TARGETING =====
     /** The AprilTag ID we want to align with for scoring */
@@ -39,7 +39,7 @@ public final class Constants {
     
     // ===== CAMERA MOUNTING =====
     /** Height of the Limelight lens from the floor in inches */
-    public static final double CAMERA_HEIGHT_INCHES = 16; // ADJUST THIS to your robot
+    public static final double CAMERA_HEIGHT_INCHES = 40.5; // ADJUST THIS to your robot
     
     /** Angle of the camera mounting in degrees (0 = horizontal, positive = angled up) */
     public static final double CAMERA_MOUNT_ANGLE_DEGREES = 0; // ADJUST THIS to your robot
@@ -49,7 +49,7 @@ public final class Constants {
     
     // ===== ALIGNMENT GOALS =====
     /** Target distance from AprilTag in inches (how close we want to get) */
-    public static final double TARGET_DISTANCE_INCHES = 30.0; // 5 feet - safe for testing
+    public static final double TARGET_DISTANCE_INCHES = 1.0; // 5 feet - safe for testing
     
     /** How much horizontal offset (in degrees) is acceptable before we're "aligned" */
     public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;

@@ -200,11 +200,15 @@ public class Limelight_Move extends Command {
         RotationSpeed = clamp(RotationSpeed, -Constants.MAX_ROTATION_SPEED, Constants.MAX_ROTATION_SPEED);
         ForwardSpeed = clamp(ForwardSpeed, -Constants.MAX_DISTANCE_SPEED, Constants.MAX_DISTANCE_SPEED);
         StrafeSpeed = clamp(StrafeSpeed, -Constants.MAX_STRAFE_SPEED, Constants.MAX_STRAFE_SPEED);
+
+        if (distanceError >= distanceError - 1) {
+            System.out.println("distance error is" + distanceError);
+        }
         
         // Convert to actual velocities
         double RotationVelocity = -RotationSpeed * maxAngularRate; 
-        double ForwardVelocity = ForwardSpeed * 0;
-        double StrafeVelocity = StrafeSpeed * maxSpeed;
+        double ForwardVelocity = ForwardSpeed * maxSpeed;
+        double StrafeVelocity = StrafeSpeed * 0;
         
         // Create chassis speeds (robot-relative)
         // X = forward/backward, Y = left/right strafe, Omega = rotation
