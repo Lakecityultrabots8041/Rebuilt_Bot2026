@@ -8,7 +8,11 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
@@ -24,6 +28,12 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
+
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
+
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -65,8 +75,29 @@ public class RobotContainer {
         return limelight;
     }
 
+    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
+    
+    /*private final AutoFactory autoFactory;
+    private final AutoRoutine autoRoutine;
+    private final AutoChooser autoChooser = new AutoChooser();*/
+
     public RobotContainer() {
+
+      autoChooser.setDefaultOption("Do Nothing", Commands.none());
+
+      SmartDashboard.putData("Auto Chooser", autoChooser);
+      
+      /*autoFactory = drivetrain.createAutoFactory();
+      autoRoutine = new AutoRoutine();
+      autoRoutine = new AutoRoutine(autoFactory);*/
+
       configureBindings();
+    }
+
+    public Command getAutonomousCommand(){
+      
+      return autoChooser.getSelected();
     }
 
     private void configureBindings() {
@@ -109,6 +140,7 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
+  
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -119,8 +151,7 @@ public class RobotContainer {
    * joysticks}.
    */
  
-  
-
+    
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
