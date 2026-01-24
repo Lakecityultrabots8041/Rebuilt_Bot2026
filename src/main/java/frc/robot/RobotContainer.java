@@ -24,12 +24,9 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
+
+
+
 public class RobotContainer {
 
 //Setup Command Xbox Controller
@@ -54,11 +51,11 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     
     // Vision alignment command - automatically aligns robot with AprilTag 15 for scoring
-    private final Limelight_Move alignToTag = new Limelight_Move(drivetrain, limelight);
-
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  //private final CommandXboxController m_driverController =
-      //new CommandXboxController(OperatorConstants.kDriverControllerPort);
+      private final Limelight_Move alignToTag = new Limelight_Move(
+        drivetrain, 
+        limelight,
+        () -> -controller.getLeftX()  // Driver strafe: negative because WPILib Y-left convention
+    );
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public LimelightSubsystem getLimelight() {
@@ -94,40 +91,11 @@ public class RobotContainer {
 
         //------------VISION ALIGNMENT------------------------------------------------------------------------------------------------------------------------
         
-        // OPTION 1: Hold START button to align with AprilTag 15
-        // NOTE: This disables the SysId quasistatic bindings below
+        //Hold START button to align with AprilTag 15
         controller.start().whileTrue(alignToTag);
         
-        // OPTION 2: Use BACK button instead (keeps SysId on START)
-        // controller.back().whileTrue(alignToTag);
-        
-        // OPTION 3: Require two buttons for extra safety during testing
-        // controller.leftBumper().and(controller.start()).whileTrue(alignToTag);
-
          // reset the field-centric heading on right bumper press
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
     }
-
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
- 
-  
-
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  //public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    //return Autos.exampleAuto(m_exampleSubsystem);
-  //}
 }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -11,98 +13,68 @@ package frc.robot;
  *
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
+ * 
+ * <p>ALL DISTANCES IN THIS FILE ARE IN METERS unless explicitly noted otherwise.
  */
 public final class Constants {
-  public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
-  }
-
-   public static final double[] aprilTagDistance = new double[18];
-   static{
-    //default distance
-    for (int i = 0; i < aprilTagDistance.length; i++) {
-      aprilTagDistance[i] = 2.0; 
+    public static class OperatorConstants {
+        public static final int kDriverControllerPort = 0;
     }
 
-    //Specify tag distances
-    aprilTagDistance[15] = 2.0;
-    aprilTagDistance[7] = 0.7; //48 Inches
-    aprilTagDistance[8] = 1.3; //72 Inches
-   }
+    // ===== APRILTAG TARGET DISTANCES (METERS) =====
+    // These define how far the robot should stop from each AprilTag
+    public static final double[] aprilTagDistance = new double[18];
+    static {
+        // Default distance for unknown tags
+        for (int i = 0; i < aprilTagDistance.length; i++) {
+            aprilTagDistance[i] = 2.0; // 2 meters default
+        }
 
-   //Default distance if unknown tag
-   public static final double defaultAprilTagDistance = 2.0;
-      
+        // Specific tag distances (ALL IN METERS)
+        aprilTagDistance[15] = Units.inchesToMeters(97);  // 97 inches = 2.46 meters (main scoring target)
+        aprilTagDistance[7] = Units.inchesToMeters(48);   // 48 inches = 1.22 meters
+        aprilTagDistance[8] = Units.inchesToMeters(72);   // 72 inches = 1.83 meters
+    }
+
+    // Default distance if unknown tag
+    public static final double defaultAprilTagDistance = 2.0; // meters
+
     // ===== APRILTAG TARGETING =====
     /** The AprilTag ID we want to align with for scoring */
     public static final int TARGET_APRILTAG_ID = 15;
-    
-    // ===== CAMERA MOUNTING =====
+
+    // ===== CAMERA MOUNTING (kept in inches for Limelight web UI reference) =====
     /** Height of the Limelight lens from the floor in inches */
-    public static final double CAMERA_HEIGHT_INCHES = 40.5; // ADJUST THIS to your robot
+    public static final double CAMERA_HEIGHT_INCHES = 40.5;
     
     /** Angle of the camera mounting in degrees (0 = horizontal, positive = angled up) */
-    public static final double CAMERA_MOUNT_ANGLE_DEGREES = 0; // ADJUST THIS to your robot
+    public static final double CAMERA_MOUNT_ANGLE_DEGREES = 0;
     
     /** Height of the AprilTag center from the floor in inches */
-    public static final double APRILTAG_HEIGHT_INCHES = 57.0; // Standard FRC field AprilTag height
-    
-    // ===== ALIGNMENT GOALS =====
-    /** Target distance from AprilTag in inches (how close we want to get) */
-    public static final double TARGET_DISTANCE_INCHES = 1.0; // 5 feet - safe for testing
-    
+    public static final double APRILTAG_HEIGHT_INCHES = 57.0;
+
+    // ===== ALIGNMENT TOLERANCES =====
     /** How much horizontal offset (in degrees) is acceptable before we're "aligned" */
     public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;
     
-    /** How much distance error (in inches) is acceptable before we're "at distance" */
-    public static final double DISTANCE_TOLERANCE_INCHES = 3.0;
+    /** How much distance error (in METERS) is acceptable before we're "at distance" */
+    public static final double DISTANCE_TOLERANCE_METERS = Units.inchesToMeters(3.0); // 3 inches = 0.076m
 
-   // ====== Speed Scale Factors===================================
-   //Convert error to speed (pid replacement)
-   //Speed = error x gain
-   
-   public static final double rotationGain = 0.05;
-   public static final double forwardGain = 0.35;
-   public static final double strafeGain = 0.20;
+    // ===== PROPORTIONAL GAINS =====
+    // Speed = error × gain
+    // These convert error directly to speed output (0.0 to 1.0 range)
+    
+    /** Rotation gain: degrees of error → rotation speed */
+    public static final double ROTATION_GAIN = 0.03;  // Slightly reduced for stability
+    
+    /** Forward gain: meters of error → forward speed */
+    public static final double FORWARD_GAIN = 0.8;    // Increased because error is now in meters (small numbers)
+    
+    // ===== SPEED LIMITS (as fraction of max speed, 0.0 to 1.0) =====
+    public static final double MAX_ROTATION_SPEED = 0.25;
+    public static final double MAX_FORWARD_SPEED = 0.30;
+    public static final double MAX_DRIVER_STRAFE_SCALE = 0.5;  // Driver strafe input scaled to 50% during alignment
 
-   //Speed limiters below_______
-
-   public static final double maxRotationSpeed = 0.35;
-   public static final double maxForwardSpeed = 0.30;
-   public static final double maxStrafeSpeed = 0.30;
-
-    // ===== PID CONSTANTS FOR ROTATION (turning to face tag) =====
-    public static final double ROTATION_KP = 0.02;
-    public static final double ROTATION_KI = 0.0;
-    public static final double ROTATION_KD = 0.005;
-    public static final double MAX_ROTATION_SPEED = 0.2; // 20% of max speed
-    
-    // ===== PID CONSTANTS FOR FORWARD/BACKWARD (distance control) =====
-    public static final double DISTANCE_KP = 0.01;
-    public static final double DISTANCE_KI = 0.0;
-    public static final double DISTANCE_KD = 0.003;
-    public static final double MAX_DISTANCE_SPEED = 0.15; // 15% of max speed
-    
-    // ===== PID CONSTANTS FOR STRAFE (left/right centering) =====
-    // *** THESE WERE MISSING - Added to fix compile errors ***
-    /** 
-     * Proportional gain for strafe - controls how aggressively robot slides left/right
-     * Higher = faster correction, but can overshoot
-     */
-    public static final double STRAFE_KP = 0.02;
-    
-    /** Integral gain for strafe - usually keep at 0 */
-    public static final double STRAFE_KI = 0.0;
-    
-    /** Derivative gain for strafe - helps prevent oscillation */
-    public static final double STRAFE_KD = 0.003;
-    
-    /** Maximum strafe speed as fraction of max speed (0.0 to 1.0) */
-    public static final double MAX_STRAFE_SPEED = 0.15; // 15% of max speed
-    
-    /** How much strafe offset (in inches) is acceptable before we're "centered" */
-    public static final double STRAFE_TOLERANCE_INCHES = 3.0;
-    
     // ===== SAFETY =====
     /** Minimum target area to consider valid (prevents false positives from far away) */
     public static final double MIN_TARGET_AREA = 0.1;
@@ -110,13 +82,18 @@ public final class Constants {
     /** Maximum time to run alignment command before giving up (seconds) */
     public static final double ALIGNMENT_TIMEOUT_SECONDS = 8.0;
 
-    public static final int alignedLoopsRequired = 250; // 1 is 0.05 seconds
+    /** Number of consecutive aligned loops required before command finishes (1 loop ≈ 20ms) */
+    public static final int ALIGNED_LOOPS_REQUIRED = 25; // ~0.5 seconds
 
+    /**
+     * Get the target distance for a specific AprilTag ID
+     * @param tagID the AprilTag ID
+     * @return distance in METERS
+     */
     public static double getAprilTagDistance(int tagID) {
-      //check if valid tag
-      if (tagID >= 0 && tagID < aprilTagDistance.length) {
-        return aprilTagDistance[tagID];
-      }
-      return defaultAprilTagDistance;
+        if (tagID >= 0 && tagID < aprilTagDistance.length) {
+            return aprilTagDistance[tagID];
+        }
+        return defaultAprilTagDistance;
     }
 }
