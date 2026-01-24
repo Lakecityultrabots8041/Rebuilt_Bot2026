@@ -65,11 +65,11 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     
     // Vision alignment command - automatically aligns robot with AprilTag 15 for scoring
-    private final Limelight_Move alignToTag = new Limelight_Move(drivetrain, limelight);
-
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  //private final CommandXboxController m_driverController =
-      //new CommandXboxController(OperatorConstants.kDriverControllerPort);
+      private final Limelight_Move alignToTag = new Limelight_Move(
+        drivetrain, 
+        limelight,
+        () -> -controller.getLeftX()  // Driver strafe: negative because WPILib Y-left convention
+    );
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   
@@ -121,15 +121,9 @@ public class RobotContainer {
 
         //------------VISION ALIGNMENT------------------------------------------------------------------------------------------------------------------------
         
-        // OPTION 1: Hold START button to align with AprilTag 15
+        //Hold START button to align with AprilTag 15
         controller.start().whileTrue(alignToTag);
         
-        // OPTION 2: Use BACK button instead (keeps SysId on START)
-        // controller.back().whileTrue(alignToTag);
-        
-        // OPTION 3: Require two buttons for extra safety during testing
-        // controller.leftBumper().and(controller.start()).whileTrue(alignToTag);
-
          // reset the field-centric heading on right bumper press
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
