@@ -8,7 +8,11 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
@@ -23,10 +27,20 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
+import frc.robot.commands.Auton;
 import frc.robot.generated.TunerConstants;
 
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
 
 
+/**
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * subsystems, commands, and trigger mappings) should be declared here.
+ */
 public class RobotContainer {
 
 //Setup Command Xbox Controller
@@ -58,15 +72,31 @@ public class RobotContainer {
     );
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  
+    private final AutoFactory autoFactory;
+    private final Auton auton;  // Changed from AutoRoutines
+    private final AutoChooser autoChooser = new AutoChooser();
   public LimelightSubsystem getLimelight() {
         return limelight;
     }
-
+   
     public RobotContainer() {
-      configureBindings();
-    }
-
-    private void configureBindings() {
+        
+        autoFactory = drivetrain.createAutoFactory();
+        auton = new Auton(autoFactory, drivetrain);  // Create Auton instance
+        
+        // Add your autonomous routines to the chooser
+        //autoChooser.addRoutine("Do Nothing", auton.doNothingAuto());
+        autoChooser.addRoutine("Simple Auto", auton::simpleAuto);
+        
+        // SmartDashboard.putData("Autonomous Routine", autoChooser);
+        configureBindings();
+       
+              }
+    
+        
+        
+            private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // ---- DRIVETRAIN BINDINGS -----------------------------------------------------------------------------------------------------------------------------
@@ -81,8 +111,8 @@ public class RobotContainer {
                  // ---- SYSID / FIELD-CENTRIC BINDINGS ----
         controller.back().and(controller.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        //controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        //controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
  
 
         // reset the field-centric heading on right bumper press
@@ -98,4 +128,30 @@ public class RobotContainer {
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
     }
+
+  
+  /**
+   * Use this method to define your trigger->command mappings. Triggers can be created via the
+   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+   * predicate, or via the named factories in {@link
+   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+   * joysticks}.
+   */
+ 
+   public Command getAutoCommand() {
+        return autoChooser.selectedCommand();  
+    } 
+
+
+  /**
+   * Use this to pass the autonomous command to the main {@link Robot} class.
+   *
+   * @return the command to run in autonomous
+   */
+  //public Command getAutonomousCommand() {
+    // An example command will be run in autonomous
+    //return Autos.exampleAuto(m_exampleSubsystem);
+  //}
 }
