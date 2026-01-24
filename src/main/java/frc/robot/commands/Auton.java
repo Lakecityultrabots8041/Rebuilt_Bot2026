@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+//import edu.wpi.first.wpilibj2.command.Command;
+//import edu.wpi.first.wpilibj2.command.Commands;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
@@ -25,10 +25,10 @@ private final AutoFactory autoFactory;
      * Simple autonomous routine that follows a single trajectory
      */
     public AutoRoutine simpleAuto() {
-        final AutoRoutine routine = autoFactory.newRoutine("SimpleAuto");
+        final AutoRoutine routine = autoFactory.newRoutine("SimplePath Auto");
         
         // Load the trajectory - make sure this matches your path name
-        final AutoTrajectory traj = routine.trajectory("SimpleAuto");
+        final AutoTrajectory traj = routine.trajectory("SimplePath");
 
         // When auto starts, reset odometry and follow the trajectory
         routine.active().onTrue(
@@ -42,11 +42,11 @@ private final AutoFactory autoFactory;
     /**
      * Do nothing autonomous - useful for testing or defense
      */
-    public Command doNothingAuto() {
+   /*  public Command doNothingAuto() {
         return Commands.runOnce(() -> 
             System.out.println("Autonomous: Do Nothing")
         );
-    }
+    }*/
 
 
 

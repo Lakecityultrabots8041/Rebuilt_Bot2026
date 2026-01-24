@@ -75,7 +75,7 @@ public class RobotContainer {
   
     private final AutoFactory autoFactory;
     private final Auton auton;  // Changed from AutoRoutines
-    private final AutoChooser autoChooser;
+    private final AutoChooser autoChooser = new AutoChooser();
   public LimelightSubsystem getLimelight() {
         return limelight;
     }
@@ -83,19 +83,16 @@ public class RobotContainer {
     public RobotContainer() {
         
         autoFactory = drivetrain.createAutoFactory();
-        autoChooser = new AutoChooser();
         auton = new Auton(autoFactory, drivetrain);  // Create Auton instance
         
         // Add your autonomous routines to the chooser
         //autoChooser.addRoutine("Do Nothing", auton.doNothingAuto());
         autoChooser.addRoutine("Simple Auto", auton::simpleAuto);
         
-        SmartDashboard.putData("Autonomous Routine", autoChooser);
+        // SmartDashboard.putData("Autonomous Routine", autoChooser);
         configureBindings();
        
               }
-        
-        
     
         
         
@@ -149,7 +146,11 @@ public class RobotContainer {
    * joysticks}.
    */
  
-    
+   public Command getAutoCommand() {
+        return autoChooser.selectedCommand();  
+    } 
+
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
