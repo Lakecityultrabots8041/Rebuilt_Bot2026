@@ -27,6 +27,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
+import frc.robot.commands.Auton;
 import frc.robot.generated.TunerConstants;
 
 import choreo.auto.AutoChooser;
@@ -71,36 +72,34 @@ public class RobotContainer {
       //new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  
+    private final AutoFactory autoFactory;
+    private final Auton auton;  // Changed from AutoRoutines
+    private final AutoChooser autoChooser;
   public LimelightSubsystem getLimelight() {
         return limelight;
     }
-
-    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-
-    
-    /*private final AutoFactory autoFactory;
-    private final AutoRoutine autoRoutine;
-    private final AutoChooser autoChooser = new AutoChooser();*/
-
+   
     public RobotContainer() {
-
-      autoChooser.setDefaultOption("Do Nothing", Commands.none());
-
-      SmartDashboard.putData("Auto Chooser", autoChooser);
-      
-      /*autoFactory = drivetrain.createAutoFactory();
-      autoRoutine = new AutoRoutine();
-      autoRoutine = new AutoRoutine(autoFactory);*/
-
-      configureBindings();
-    }
-
-    public Command getAutonomousCommand(){
-      
-      return autoChooser.getSelected();
-    }
-
-    private void configureBindings() {
+        
+        autoFactory = drivetrain.createAutoFactory();
+        autoChooser = new AutoChooser();
+        auton = new Auton(autoFactory, drivetrain);  // Create Auton instance
+        
+        // Add your autonomous routines to the chooser
+        //autoChooser.addRoutine("Do Nothing", auton.doNothingAuto());
+        autoChooser.addRoutine("Simple Auto", auton::simpleAuto);
+        
+        SmartDashboard.putData("Autonomous Routine", autoChooser);
+        configureBindings();
+       
+              }
+        
+        
+    
+        
+        
+            private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // ---- DRIVETRAIN BINDINGS -----------------------------------------------------------------------------------------------------------------------------
@@ -115,8 +114,8 @@ public class RobotContainer {
                  // ---- SYSID / FIELD-CENTRIC BINDINGS ----
         controller.back().and(controller.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        //controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        //controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
  
 
         // reset the field-centric heading on right bumper press
@@ -126,7 +125,6 @@ public class RobotContainer {
         //------------VISION ALIGNMENT------------------------------------------------------------------------------------------------------------------------
         
         // OPTION 1: Hold START button to align with AprilTag 15
-        // NOTE: This disables the SysId quasistatic bindings below
         controller.start().whileTrue(alignToTag);
         
         // OPTION 2: Use BACK button instead (keeps SysId on START)
