@@ -4,12 +4,10 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -27,13 +25,12 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
-import frc.robot.commands.Auton;
 import frc.robot.generated.TunerConstants;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
-import choreo.auto.AutoRoutine;
 
+@SuppressWarnings("unused")
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -74,8 +71,9 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   
     private final AutoFactory autoFactory;
-    private final Auton auton;  // Changed from AutoRoutines
+    private final AutoRoutines autoRoutines;
     private final AutoChooser autoChooser = new AutoChooser();
+
   public LimelightSubsystem getLimelight() {
         return limelight;
     }
@@ -83,11 +81,11 @@ public class RobotContainer {
     public RobotContainer() {
         
         autoFactory = drivetrain.createAutoFactory();
-        auton = new Auton(autoFactory, drivetrain);  // Create Auton instance
+        autoRoutines = new AutoRoutines(autoFactory);
         
-        // Add your autonomous routines to the chooser
-        //autoChooser.addRoutine("Do Nothing", auton.doNothingAuto());
-        autoChooser.addRoutine("Simple Auto", auton::simpleAuto);
+       autoChooser.addRoutine("SimplePath", autoRoutines::simplePathAuto);
+        // AutoChooser automatically publishes to NetworkTables at "AutoChooser"
+        // Elastic dashboard can read this directly without SmartDashboard
         
         // SmartDashboard.putData("Autonomous Routine", autoChooser);
         configureBindings();
@@ -140,9 +138,10 @@ public class RobotContainer {
    * joysticks}.
    */
  
-   public Command getAutoCommand() {
-        return autoChooser.selectedCommand();  
-    } 
+    public Command getAutonomousCommand() {
+        /* Run the routine selected from the auto chooser */
+        return autoChooser.selectedCommand();
+    }
 
 
   /**
