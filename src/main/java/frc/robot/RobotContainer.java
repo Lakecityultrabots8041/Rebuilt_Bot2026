@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -79,6 +81,15 @@ public class RobotContainer {
 
    
     public RobotContainer() {
+       LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
+       Limelight_Move limleightMove = new Limelight_Move(drivetrain, limelightSubsystem);
+       
+       PathPlannerAuto simplePathCommand = new PathPlannerAuto("SimplePathAuto");
+
+       simplePathCommand.event("Test").onTrue(Commands.print("passed example event marker"));
+       simplePathCommand.activePath("SimplePath").onTrue(Commands.print("started following SimplePath"));
+      
+      
         //NamedCommands.registerCommand("SpinUpFlywheel", 
         //Commands.print("Flywheel spinning up...").andThen(Commands.waitSeconds(1.0)));
     
@@ -91,7 +102,7 @@ public class RobotContainer {
         //NamedCommands.registerCommand("StopFlywheel", 
         //Commands.print("Flywheel stopped"));
     
-        autoChooser = AutoBuilder.buildAutoChooser("BlueBumpRightAuto");
+        autoChooser = AutoBuilder.buildAutoChooser("MidBackupAuto");
         SmartDashboard.putData("Auton Mode", autoChooser);
        
         configureBindings();

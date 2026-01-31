@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BlueBumpLeft"
     }
   ],
   "rotationTargets": [],
@@ -45,7 +45,7 @@
     "rotation": -35.754
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Blue Side Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

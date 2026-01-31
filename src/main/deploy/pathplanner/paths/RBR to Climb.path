@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.540642857142857,
-        "y": 2.4963392857142854
+        "x": 13.647214285714286,
+        "y": 4.844821428571429
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.070946428571428,
-        "y": 3.160392857142857
+        "x": 15.00951388888889,
+        "y": 4.286944444444445
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RedBumpRight"
     },
     {
       "anchor": {
-        "x": 3.022,
-        "y": 3.16
+        "x": 14.991517857142858,
+        "y": 4.26175
       },
       "prevControl": {
-        "x": 3.5726785714285714,
-        "y": 2.4959464285714286
+        "x": 13.686805555555555,
+        "y": 4.8538194444444445
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,14 +31,7 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "Shoot8Balls",
-      "waypointRelativePos": 1.0,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -49,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 33.179
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": "Blue Side Paths",
+  "folder": "Red Side Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -149.26451229807992
   },
   "useDefaultConstraints": true
 }

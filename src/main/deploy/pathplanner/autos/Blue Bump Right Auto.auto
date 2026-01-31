@@ -11,12 +11,6 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 8.0
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "BBR to Climb"
@@ -26,6 +20,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Blue Side Autons",
   "choreoAuto": false
 }

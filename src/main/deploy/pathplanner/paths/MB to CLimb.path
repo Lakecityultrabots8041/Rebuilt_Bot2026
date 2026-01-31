@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.540642857142857,
-        "y": 2.4963392857142854
+        "x": 3.022,
+        "y": 4.035
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.070946428571428,
-        "y": 3.160392857142857
+        "x": 1.6780535714285711,
+        "y": 3.3223571428571432
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "MBClimber"
     },
     {
       "anchor": {
-        "x": 3.022,
-        "y": 3.16
+        "x": 1.7104464285714283,
+        "y": 3.322
       },
       "prevControl": {
-        "x": 3.5726785714285714,
-        "y": 2.4959464285714286
+        "x": 3.0223571428571425,
+        "y": 4.035
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,14 +31,7 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "Shoot8Balls",
-      "waypointRelativePos": 1.0,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -49,12 +42,12 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 33.179
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": "Blue Side Paths",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 0.0,
     "rotation": 0.0
   },
   "useDefaultConstraints": true

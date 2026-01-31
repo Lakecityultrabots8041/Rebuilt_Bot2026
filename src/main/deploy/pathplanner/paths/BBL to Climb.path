@@ -12,7 +12,7 @@
         "y": 3.9702142857142864
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BlueBumpLeft"
     },
     {
       "anchor": {
@@ -45,7 +45,7 @@
     "rotation": 90.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Blue Side Paths",
   "idealStartingState": {
     "velocity": 0.0,
     "rotation": -35.754
