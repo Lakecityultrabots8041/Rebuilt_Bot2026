@@ -143,8 +143,11 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         //------------Climber Bindings--------------------------------------------------------------
-        controller.povUp().onTrue(Climber.UpClimber());
-        controller.povDown().onTrue(Climber.DownClimber());
+        controller.povUp().onTrue(
+          Commands.runOnce(() -> Climber.UpClimber(), climberSubsystem));
+        controller.povDown().onTrue(
+          Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
+          //(->) is lambda, tells the code where to get the stuff for the command
     }
 
   

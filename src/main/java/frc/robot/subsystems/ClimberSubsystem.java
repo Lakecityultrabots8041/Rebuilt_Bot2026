@@ -1,42 +1,49 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class ClimberSubsystem {
+public class ClimberSubsystem extends SubsystemBase {
+
+    private final Servo upServo = new Servo(Constants.UpServoPort);
+    private final Servo outServo = new Servo(Constants.UpServoPort);
 
     
     Servo UpServo = new Servo(Constants.UpServoPort);
     Servo OutServo = new Servo(Constants.OutServoPort);
-   
 
+
+
+   
+ 
     //=======================================================
     //Servo Commands Setup
     //=======================================================
-    public double UpServoLock() {
+    public void UpServoLock() {
         UpServo.setAngle(45);
         System.out.println("Did it Lock?");
 
-        return UpServoLock();
+        //return UpServoLock();
     }
 
-    public double UpServoRelease() {
+    public void UpServoRelease() {
         UpServo.setAngle(0);
         System.out.println("Did it unlock?");
 
-        return UpServoRelease();
+        //return UpServoRelease();
     }
 
-    public double OutServoLock() {
+    public void OutServoLock() {
         OutServo.setAngle(45);
 
-        return OutServoLock();
+        //return OutServoLock();
     }
     
-    public double OutServoRelease() {
+    public void OutServoRelease() {
         OutServo.setAngle(0);
 
-        return OutServoRelease();
+        //return OutServoRelease();
     }
     //rachet motor 
     
