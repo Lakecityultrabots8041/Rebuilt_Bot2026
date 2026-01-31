@@ -31,7 +31,7 @@ public final class Constants {
         }
 
         // Specific tag distances (ALL IN METERS)
-        aprilTagDistance[15] = Units.inchesToMeters(97);  // 97 inches = 2.46 meters (main scoring target)
+        aprilTagDistance[9] = Units.inchesToMeters(97);  // 97 inches = 2.46 meters (main scoring target)
         aprilTagDistance[7] = Units.inchesToMeters(48);   // 48 inches = 1.22 meters
         aprilTagDistance[8] = Units.inchesToMeters(72);   // 72 inches = 1.83 meters
     }
@@ -41,7 +41,7 @@ public final class Constants {
 
     // ===== APRILTAG TARGETING =====
     /** The AprilTag ID we want to align with for scoring */
-    public static final int TARGET_APRILTAG_ID = 15;
+    public static final int TARGET_APRILTAG_ID = 9;
 
     // ===== CAMERA MOUNTING (kept in inches for Limelight web UI reference) =====
     /** Height of the Limelight lens from the floor in inches */
