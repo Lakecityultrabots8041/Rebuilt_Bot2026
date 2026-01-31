@@ -4,16 +4,25 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
+
+
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
+  
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -27,6 +36,20 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
   }
+
+
+  @Override
+  public void robotInit() {
+      // Set up the logger for data recording
+      super.robotInit();
+      Logger.recordMetadata("ProjectName", "Elevator Simulation");
+      Logger.addDataReceiver(new WPILOGWriter("/U/logs"));  // Save logs to USB on the RoboRIO
+      Logger.addDataReceiver(new NT4Publisher());  // Stream data live to NetworkTables
+      Logger.start();
+
+      
+  }
+
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -42,6 +65,8 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    Logger.recordOutput("Robot/Status", "Running");
+
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -53,19 +78,17 @@ public class Robot extends TimedRobot {
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   
+  @Override
+  public void disabledExit() {}
   
-  
-
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutoCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
   }
-  
   
   /** This function is called periodically during autonomous. */
   @Override
@@ -87,7 +110,11 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+
+      //CommandScheduler.getInstance().run();
+
+  }
 
   @Override
   public void testInit() {
@@ -98,6 +125,10 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
+
+  @Override
+  public void testExit() {}
+
 
   /** This function is called once when the robot is first started up. */
   @Override
