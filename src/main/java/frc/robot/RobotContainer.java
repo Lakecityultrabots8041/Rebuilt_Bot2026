@@ -30,8 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
 
-import choreo.auto.AutoChooser;
-import choreo.auto.AutoFactory;
+
 
 @SuppressWarnings("unused")
 
@@ -82,11 +81,15 @@ public class RobotContainer {
 
    
     public RobotContainer() {
+       
+        NamedCommands.registerCommand("Test", 
+        Commands.print("Pasted Event Marker"));
+
         NamedCommands.registerCommand("SpinUpFlywheel", 
         Commands.print("Flywheel spinning up...").andThen(Commands.waitSeconds(1.0)));
     
-        NamedCommands.registerCommand("AlignToTag", 
-        alignToTag.withTimeout(2.0)); // uses 2 seconds timeout for tag alignment
+        //NamedCommands.registerCommand("AlignToTag", 
+        //alignToTag.withTimeout(2.0)); // uses 2 seconds timeout for tag alignment
     
         NamedCommands.registerCommand("Shoot8Balls", 
         Commands.print("Shooting 8 balls...").andThen(Commands.waitSeconds(3.0)));
@@ -94,7 +97,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("StopFlywheel", 
         Commands.print("Flywheel stopped"));
     
-        autoChooser = AutoBuilder.buildAutoChooser("FollowPathShoot");
+        autoChooser = AutoBuilder.buildAutoChooser("SimplePathAuto");
         SmartDashboard.putData("Auton Mode", autoChooser);
        
         configureBindings();
