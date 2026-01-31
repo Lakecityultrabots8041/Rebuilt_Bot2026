@@ -8,6 +8,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -70,27 +73,33 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   
-    private final AutoFactory autoFactory;
-    private final AutoRoutines autoRoutines;
-    private final AutoChooser autoChooser = new AutoChooser();
-
+   
   public LimelightSubsystem getLimelight() {
         return limelight;
     }
+
+  private final SendableChooser<Command> autoChooser; // Autonomous command chooser
+
    
     public RobotContainer() {
-        
-        autoFactory = drivetrain.createAutoFactory();
-        autoRoutines = new AutoRoutines(autoFactory);
-        
-       autoChooser.addRoutine("SimplePath", autoRoutines::simplePathAuto);
-        // AutoChooser automatically publishes to NetworkTables at "AutoChooser"
-        // Elastic dashboard can read this directly without SmartDashboard
-        
-        // SmartDashboard.putData("Autonomous Routine", autoChooser);
+        NamedCommands.registerCommand("SpinUpFlywheel", 
+        Commands.print("Flywheel spinning up...").andThen(Commands.waitSeconds(1.0)));
+    
+        NamedCommands.registerCommand("AlignToTag", 
+        alignToTag.withTimeout(2.0)); // uses 2 seconds timeout for tag alignment
+    
+        NamedCommands.registerCommand("Shoot8Balls", 
+        Commands.print("Shooting 8 balls...").andThen(Commands.waitSeconds(3.0)));
+    
+        NamedCommands.registerCommand("StopFlywheel", 
+        Commands.print("Flywheel stopped"));
+    
+        autoChooser = AutoBuilder.buildAutoChooser("FollowPathShoot");
+        SmartDashboard.putData("Auton Mode", autoChooser);
+       
         configureBindings();
        
-              }
+    }
     
         
         
@@ -138,11 +147,8 @@ public class RobotContainer {
    * joysticks}.
    */
  
-    public Command getAutonomousCommand() {
-        /* Run the routine selected from the auto chooser */
-        return autoChooser.selectedCommand();
-    }
-
+      public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -153,4 +159,5 @@ public class RobotContainer {
     // An example command will be run in autonomous
     //return Autos.exampleAuto(m_exampleSubsystem);
   //}
+}
 }

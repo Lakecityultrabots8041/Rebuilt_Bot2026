@@ -145,7 +145,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        //configureAutoBuilder();
+        configureAutoBuilder();
        
     }
 
@@ -171,7 +171,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        //configureAutoBuilder();
+        configureAutoBuilder();
 
     }
 
@@ -205,25 +205,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-       //configureAutoBuilder();
+       configureAutoBuilder();
     }
 
-    public AutoFactory createAutoFactory(){
-        return createAutoFactory((TrajectoryLogger<SwerveSample>) (trajectory, flipped) -> {});
-    }
-
-    public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
-        return new AutoFactory(
-            () -> getState().Pose,
-            this::resetPose,
-            samples -> run(() -> { }),
-            true,
-            this,
-            trajLogger
-        );
-    }
-
-    /*private void configureAutoBuilder() {
+ private void configureAutoBuilder() {
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
@@ -250,7 +235,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         } catch (Exception ex) {
             DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
         }
-    }*/
+    }
+
+private edu.wpi.first.math.geometry.Pose2d getPose() {
+    return getState().Pose;
+}
+
+private edu.wpi.first.math.kinematics.ChassisSpeeds getRobotRelativeSpeeds() {
+    return getState().Speeds;
+}
     
     /**
      * Returns a command that applies the specified control request to this swerve drivetrain.
