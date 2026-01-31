@@ -25,9 +25,11 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ClimberSubsystem;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
+import frc.robot.commands.Climber;
 import frc.robot.generated.TunerConstants;
 
 import choreo.auto.AutoChooser;
@@ -70,6 +72,13 @@ public class RobotContainer {
         limelight,
         () -> -controller.getLeftX()  
     );
+
+    //-------------------Climber Setup-------------------------
+    
+    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+    private final Climber Climber = new Climber(climberSubsystem, climberSubsystem);
+  
+    
 
    
   public LimelightSubsystem getLimelight() {
@@ -132,6 +141,10 @@ public class RobotContainer {
          // reset the field-centric heading on right bumper press
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        //------------Climber Bindings--------------------------------------------------------------
+        controller.povUp().onTrue(Climber.UpClimber());
+        controller.povDown().onTrue(Climber.DownClimber());
     }
 
   

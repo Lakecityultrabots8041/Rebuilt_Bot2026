@@ -21,6 +21,13 @@ public final class Constants {
         public static final int kDriverControllerPort = 0;
     }
 
+    //===============================================
+    // -------------Servo Constants------------------
+    //===============================================
+    //TODO Change Ports to PDH port number corresponding to the correct servo
+    public static final int UpServoPort = 0;
+    public static final int OutServoPort = 2;
+
     // ===== APRILTAG TARGET DISTANCES (METERS) =====
     // These define how far the robot should stop from each AprilTag
     public static final double[] aprilTagDistance = new double[18];
