@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;  
 
 /**
- * Subsystem for Limelight 3 camera with MegaTag2 support
+ * Subsystem for Limelight 4 camera with MegaTag2 support
  * 
  * ALL DISTANCE METHODS RETURN METERS unless explicitly named otherwise.
  * 
@@ -23,7 +23,7 @@ import frc.robot.LimelightHelpers;
 public class LimelightSubsystem extends SubsystemBase {
 
     // Limelight name (default is "limelight", change if you renamed yours)
-    private static final String LIMELIGHT_NAME = "limelight";
+    private static final String LIMELIGHT_NAME = "limelight-april";
     
     // NetworkTable for Limelight communication
     private final NetworkTable limelightTable;
