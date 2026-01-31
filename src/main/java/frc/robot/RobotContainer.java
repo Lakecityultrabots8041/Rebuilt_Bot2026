@@ -4,11 +4,13 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
 import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
@@ -24,6 +26,12 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
+
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+
+@SuppressWarnings("unused")
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -54,22 +62,39 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     
     // Vision alignment command - automatically aligns robot with AprilTag 15 for scoring
-    private final Limelight_Move alignToTag = new Limelight_Move(drivetrain, limelight);
-
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  //private final CommandXboxController m_driverController =
-      //new CommandXboxController(OperatorConstants.kDriverControllerPort);
+      private final Limelight_Move alignToTag = new Limelight_Move(
+        drivetrain, 
+        limelight,
+        () -> -controller.getLeftX()  // Driver strafe: negative because WPILib Y-left convention
+    );
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  
+    private final AutoFactory autoFactory;
+    private final AutoRoutines autoRoutines;
+    private final AutoChooser autoChooser = new AutoChooser();
+
   public LimelightSubsystem getLimelight() {
         return limelight;
     }
-
+   
     public RobotContainer() {
-      configureBindings();
-    }
-
-    private void configureBindings() {
+        
+        autoFactory = drivetrain.createAutoFactory();
+        autoRoutines = new AutoRoutines(autoFactory);
+        
+       autoChooser.addRoutine("SimplePath", autoRoutines::simplePathAuto);
+        // AutoChooser automatically publishes to NetworkTables at "AutoChooser"
+        // Elastic dashboard can read this directly without SmartDashboard
+        
+        // SmartDashboard.putData("Autonomous Routine", autoChooser);
+        configureBindings();
+       
+              }
+    
+        
+        
+            private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // ---- DRIVETRAIN BINDINGS -----------------------------------------------------------------------------------------------------------------------------
@@ -84,8 +109,8 @@ public class RobotContainer {
                  // ---- SYSID / FIELD-CENTRIC BINDINGS ----
         controller.back().and(controller.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        //controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        //controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
  
 
         // reset the field-centric heading on right bumper press
@@ -94,21 +119,15 @@ public class RobotContainer {
 
         //------------VISION ALIGNMENT------------------------------------------------------------------------------------------------------------------------
         
-        // OPTION 1: Hold START button to align with AprilTag 15
-        // NOTE: This disables the SysId quasistatic bindings below
+        //Hold START button to align with AprilTag 15
         controller.start().whileTrue(alignToTag);
         
-        // OPTION 2: Use BACK button instead (keeps SysId on START)
-        // controller.back().whileTrue(alignToTag);
-        
-        // OPTION 3: Require two buttons for extra safety during testing
-        // controller.leftBumper().and(controller.start()).whileTrue(alignToTag);
-
          // reset the field-centric heading on right bumper press
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
+  
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -119,7 +138,11 @@ public class RobotContainer {
    * joysticks}.
    */
  
-  
+    public Command getAutonomousCommand() {
+        /* Run the routine selected from the auto chooser */
+        return autoChooser.selectedCommand();
+    }
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

@@ -12,19 +12,16 @@ import frc.robot.LimelightHelpers;
 /**
  * Subsystem for Limelight 3 camera with MegaTag2 support
  * 
+ * ALL DISTANCE METHODS RETURN METERS unless explicitly named otherwise.
+ * 
  * TO USE MEGATAG2:
  * 1. Download LimelightHelpers.java from:
  *    https://github.com/LimelightVision/limelern-examples/blob/main/java-examples/LimelightHelpers.java
  * 2. Put it in your frc/robot/ folder
  * 3. In Limelight web interface, enable MegaTag2 in your AprilTag pipeline
- * 
- * MegaTag2 gives you accurate robot pose from AprilTags - much better than
- * using TY angle for distance estimation!
  */
 public class LimelightSubsystem extends SubsystemBase {
 
-    
-    
     // Limelight name (default is "limelight", change if you renamed yours)
     private static final String LIMELIGHT_NAME = "limelight";
     
@@ -56,17 +53,19 @@ public class LimelightSubsystem extends SubsystemBase {
     }
     
     // =========================================================================
-    // BASIC LIMELIGHT DATA (same as before)
+    // BASIC LIMELIGHT DATA
     // =========================================================================
     
     public boolean hasValidTarget() {
         return tv.getDouble(0) == 1;
     }
     
+    /** @return horizontal offset in DEGREES (positive = target is to the right) */
     public double getHorizontalOffset() {
         return tx.getDouble(0.0);
     }
     
+    /** @return vertical offset in DEGREES */
     public double getVerticalOffset() {
         return ty.getDouble(0.0);
     }
@@ -92,34 +91,28 @@ public class LimelightSubsystem extends SubsystemBase {
     }
     
     // =========================================================================
-    // DISTANCE ESTIMATION - Two methods available
+    // DISTANCE METHODS - ALL RETURN METERS
     // =========================================================================
     
     /**
-     * METHOD 1: TY-based distance estimation (LESS ACCURATE)
-     * Works okay but can be inaccurate at angles
+     * Get distance to target using MegaTag2 (camera-space Z)
+     * @return distance in METERS, or -1 if no valid measurement
      */
-    /*public double estimateDistanceInches(double targetHeightInches, double cameraHeightInches, double cameraMountAngleDegrees) {
-        double targetOffsetAngle_Vertical = getVerticalOffset();
-        double angleToGoalDegrees = cameraMountAngleDegrees + targetOffsetAngle_Vertical;
-        double angleToGoalRadians = angleToGoalDegrees * (Math.PI / 180.0);
-        
-        double distance = (targetHeightInches - cameraHeightInches) / Math.tan(angleToGoalRadians);
-        return distance;
-    }*/
-    
-    /**
-     * METHOD 2: MegaTag2 distance (MORE ACCURATE!)
-     * Uses 3D pose estimation from multiple AprilTags
-     * Returns distance in INCHES to match your existing code
-     * 
-     * @return distance to tag in inches, or -1 if no valid measurement
-     */
-    public double getDistanceInches_MegaTag2() {
+    public double getDistanceMeters() {
         if (!megatag2Available) {
             return -1;
         }
-        // Convert meters to inches
+        return cachedDistanceMeters;
+    }
+    
+    /**
+     * Get distance in INCHES (for SmartDashboard display only)
+     * @return distance in inches, or -1 if no valid measurement
+     */
+    public double getDistanceInchesForDisplay() {
+        if (!megatag2Available) {
+            return -1;
+        }
         return Units.metersToInches(cachedDistanceMeters);
     }
     
@@ -129,7 +122,7 @@ public class LimelightSubsystem extends SubsystemBase {
     public boolean hasMegaTag2Data() {
         return megatag2Available;
     }
-    
+
     /**
      * Get the robot's estimated pose from MegaTag2
      * Useful for pose estimation fusion with odometry
@@ -164,14 +157,16 @@ public class LimelightSubsystem extends SubsystemBase {
         
         // Post data to SmartDashboard for debugging
         SmartDashboard.putBoolean("Limelight/Has Target", hasValidTarget());
-        SmartDashboard.putNumber("Limelight/TX", getHorizontalOffset());
-        SmartDashboard.putNumber("Limelight/TY", getVerticalOffset());
+        SmartDashboard.putNumber("Limelight/TX (deg)", getHorizontalOffset());
+        SmartDashboard.putNumber("Limelight/TY (deg)", getVerticalOffset());
         SmartDashboard.putNumber("Limelight/Area", getTargetArea());
         SmartDashboard.putNumber("Limelight/AprilTag ID", getAprilTagID());
         SmartDashboard.putBoolean("Limelight/MegaTag2 Available", megatag2Available);
         
         if (megatag2Available) {
-            SmartDashboard.putNumber("Limelight/MT2 Distance (in)", getDistanceInches_MegaTag2());
+            // Display in INCHES for human readability
+            SmartDashboard.putNumber("Limelight/Distance (in)", getDistanceInchesForDisplay());
+            SmartDashboard.putNumber("Limelight/Distance (m)", cachedDistanceMeters);
         }
     }
     
@@ -179,16 +174,14 @@ public class LimelightSubsystem extends SubsystemBase {
      * Update MegaTag2 cache - called in periodic()
      * This ensures consistent data within a single loop iteration
      */
-    //TODO Figure out why LLF can't go in constants
-    //Used just below, couldn't get it to work from constants
-    private final double LLF = 3;
-
     private void updateMegaTag2Cache() {
         try {
             // Get target pose in camera space (gives us distance directly)
             double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(LIMELIGHT_NAME);
-            if (targetPose != null && targetPose.length >= LLF && hasValidTarget()) {
-                // targetPose[2] = Z distance (forward from camera) in meters
+            
+            // targetPose array: [x, y, z, roll, pitch, yaw]
+            // targetPose[2] = Z distance (forward from camera) in meters
+            if (targetPose != null && targetPose.length >= 3 && hasValidTarget()) {
                 cachedDistanceMeters = targetPose[2];
                 megatag2Available = true;
             } else {
