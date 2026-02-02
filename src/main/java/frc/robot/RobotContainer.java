@@ -86,23 +86,11 @@ public class RobotContainer {
        
        PathPlannerAuto simplePathCommand = new PathPlannerAuto("SimplePathAuto");
 
-       simplePathCommand.event("Test").onTrue(Commands.print("passed example event marker"));
-       simplePathCommand.activePath("SimplePath").onTrue(Commands.print("started following SimplePath"));
-      
-      
-        //NamedCommands.registerCommand("SpinUpFlywheel", 
-        //Commands.print("Flywheel spinning up...").andThen(Commands.waitSeconds(1.0)));
+        //NamedCommands.registerCommand("Test", Commands.print("Passed a test marker"));
+        
+        NamedCommands.registerCommand("Get Centered", alignToTag);
     
-        //NamedCommands.registerCommand("AlignToTag", 
-        //alignToTag.withTimeout(2.0)); // uses 2 seconds timeout for tag alignment
-    
-        NamedCommands.registerCommand("Shoot8Balls", 
-        Commands.print("Shooting 8 balls...").andThen(Commands.waitSeconds(3.0))); //Change the wait time when we get the bpm
-    
-        //NamedCommands.registerCommand("StopFlywheel", 
-        //Commands.print("Flywheel stopped"));
-    
-        autoChooser = AutoBuilder.buildAutoChooser("MidBackupAuto");
+        autoChooser = AutoBuilder.buildAutoChooser("SimplePathAuto");
         SmartDashboard.putData("Auton Mode", autoChooser);
        
         configureBindings();
