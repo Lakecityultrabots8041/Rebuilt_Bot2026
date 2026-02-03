@@ -7,53 +7,59 @@ import frc.robot.subsystems.ClimberSubsystem;
 
 public class Climber extends Command {
 
-    private final ClimberSubsystem UpServo; 
-    private final ClimberSubsystem OutServo;
+    private final ClimberSubsystem climberSubsystem;
+    private double CStep = 0;
 
    
 
-    public Climber(ClimberSubsystem UpServo, ClimberSubsystem OutServo) {
-        this.UpServo = UpServo;
-        this.OutServo = OutServo;
+    public Climber(ClimberSubsystem climberSubsystem) {
+        this.climberSubsystem = climberSubsystem;
+
+        addRequirements(climberSubsystem);
     }
+
+    @Override
 
     public void initialize() {
-        UpServo.UpServoLock();
-        OutServo.OutServoLock();
-        UpServo.UpServoRelease();
-        OutServo.OutServoRelease();
-
+        System.out.println("Climb sequence started");
     }
 
-    public Command UpClimber() {
-        //When we know what Motor is used for the up part of the climber, we need to put it here in between the other two
-        UpServo.UpServoRelease();
-        //Here "Motor" Up
-        //OutServo.OutServoRelease();
-        //Here is pivot motor
-        //OutServo.OutServoLock();
-        //Drive into bar
-        //Here "Motor" Down
-        //UpServo.UpServoLock();
-        return UpClimber();
-        
-    }
+    @Override
 
-    public Command DownClimber() {
-        //UpServo.UpServoRelease();
-        //Here "Motor" Up
-        //Drive away from bar
-        //OutServo.OutServoRelease();
-        //Here is pivot motor
-        //OutServo.OutServoLock();
-        //Here "Motor" Down
-        UpServo.UpServoLock();
-        return DownClimber();
-    }
+    public void execute() {
+        if (CStep == 0) {
+            System.out.println("Climb started");
+            climberSubsystem.liftServoRelease();
+            withTimeout(0.5);
+            CStep = 1;
+        }
+        if (CStep == 1) {
+            System.out.println("Erecting the climber");
+            climberSubsystem.runLiftMotor(0.5);
+        }
+        if (climberSubsystem.liftOver == true && CStep == 1) {
+            System.out.println("Up done");
+            climberSubsystem.liftServoLock();
+            CStep = 2;
+        }
+        if (CStep == 2) {
+            System.out.println("RELEASE THE BABY");
+            climberSubsystem.pivotServoRelease();
+            withTimeout(0.5);
+            CStep = 3;
+        }
+        if (CStep == 3) {
+            System.out.println("The baby is on the move");
+            climberSubsystem.runPivotMotor(0.5);
+        }
+        if (climberSubsystem.outOver == true && CStep == 3) {
+            System.out.println("Out done");
+            climberSubsystem.pivotServoLock();
+            CStep = 4;
+        }
+    }   
 
-    //Ways to set servo position
-    /* 
-    exampleServo.set(.5); // 0 to 1 range, can use decimals
-    exampleServo.setAngle(75); //sets servo using degrees specifically, 0 to 180
-*/
+   
+
+    
 }

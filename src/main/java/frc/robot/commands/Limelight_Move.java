@@ -51,7 +51,7 @@ public class Limelight_Move extends Command {
      * with no driver strafe input (pure auto-alignment)
      */
     public Limelight_Move(CommandSwerveDrivetrain drivetrain, LimelightSubsystem limelight) {
-        this(drivetrain, limelight, Constants.TARGET_APRILTAG_ID, () -> 0.0);
+        this(drivetrain, limelight, Constants.VisionConstants.TARGET_APRILTAG_ID, () -> 0.0);
     }
     
     /**
@@ -65,7 +65,7 @@ public class Limelight_Move extends Command {
 
     public Limelight_Move(CommandSwerveDrivetrain drivetrain, LimelightSubsystem limelight, 
                           DoubleSupplier driverStrafeSupplier) {
-        this(drivetrain, limelight, Constants.TARGET_APRILTAG_ID, driverStrafeSupplier);
+        this(drivetrain, limelight, Constants.VisionConstants.TARGET_APRILTAG_ID, driverStrafeSupplier);
     }
     
     /**
@@ -92,7 +92,7 @@ public class Limelight_Move extends Command {
         maxAngularRateRps = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
         
         timer = new Timer();
-        targetDistanceMeters = Constants.defaultAprilTagDistance;
+        targetDistanceMeters = Constants.VisionConstants.defaultAprilTagDistance;
         
         addRequirements(drivetrain);
     }
@@ -114,7 +114,7 @@ public class Limelight_Move extends Command {
         // Get target distance for the tag we're tracking
         if (limelight.hasValidTarget()) {
             int tagID = limelight.getAprilTagID();
-            targetDistanceMeters = Constants.getAprilTagDistance(tagID);
+            targetDistanceMeters = Constants.VisionConstants.getAprilTagDistance(tagID);
             System.out.println("Aligning to tag " + tagID + " at " + 
                                Units.metersToInches(targetDistanceMeters) + " inches");
         }
@@ -133,7 +133,7 @@ public class Limelight_Move extends Command {
 
         // Update target distance in case we switched tags
         int tagID = limelight.getAprilTagID();
-        targetDistanceMeters = Constants.getAprilTagDistance(tagID);
+        targetDistanceMeters = Constants.VisionConstants.getAprilTagDistance(tagID);
         
         SmartDashboard.putString("Vision/Status", "Tracking tag " + tagID);
         
@@ -159,16 +159,16 @@ public class Limelight_Move extends Command {
         // Positive TX means target is RIGHT, so we need NEGATIVE omega (clockwise)
         // to turn right and face the target
         // =====================================================================
-        double rotationOutput = -horizontalErrorDeg * Constants.ROTATION_GAIN;
-        rotationOutput = MathUtil.clamp(rotationOutput, -Constants.MAX_ROTATION_SPEED, Constants.MAX_ROTATION_SPEED);
+        double rotationOutput = -horizontalErrorDeg * Constants.VisionConstants.ROTATION_GAIN;
+        rotationOutput = MathUtil.clamp(rotationOutput, -Constants.VisionConstants.MAX_ROTATION_SPEED, Constants.VisionConstants.MAX_ROTATION_SPEED);
         double rotationVelocityRps = rotationOutput * maxAngularRateRps;
         
         // =====================================================================
         // FORWARD CONTROL (AUTO)
         // Positive error (too far) → positive velocity (drive forward)
         // =====================================================================
-        double forwardOutput = distanceErrorMeters * Constants.FORWARD_GAIN;
-        forwardOutput = MathUtil.clamp(forwardOutput, -Constants.MAX_FORWARD_SPEED, Constants.MAX_FORWARD_SPEED);
+        double forwardOutput = distanceErrorMeters * Constants.VisionConstants.FORWARD_GAIN;
+        forwardOutput = MathUtil.clamp(forwardOutput, -Constants.VisionConstants.MAX_FORWARD_SPEED, Constants.VisionConstants.MAX_FORWARD_SPEED);
         double forwardVelocityMps = forwardOutput * maxSpeedMps;
         
         // =====================================================================
@@ -180,7 +180,7 @@ public class Limelight_Move extends Command {
         // Apply deadband
         driverStrafe = Math.abs(driverStrafe) < 0.1 ? 0.0 : driverStrafe;
         // Scale for safety during alignment
-        double strafeVelocityMps = driverStrafe * maxSpeedMps * Constants.MAX_DRIVER_STRAFE_SCALE;
+        double strafeVelocityMps = driverStrafe * maxSpeedMps * Constants.VisionConstants.MAX_DRIVER_STRAFE_SCALE;
         
         // =====================================================================
         // SEND TO DRIVETRAIN
@@ -208,8 +208,8 @@ public class Limelight_Move extends Command {
         // =====================================================================
         // ALIGNMENT CHECK
         // =====================================================================
-        boolean rotationGood = Math.abs(horizontalErrorDeg) < Constants.ALIGNMENT_TOLERANCE_DEGREES;
-        boolean distanceGood = Math.abs(distanceErrorMeters) < Constants.DISTANCE_TOLERANCE_METERS;
+        boolean rotationGood = Math.abs(horizontalErrorDeg) < Constants.VisionConstants.ALIGNMENT_TOLERANCE_DEGREES;
+        boolean distanceGood = Math.abs(distanceErrorMeters) < Constants.VisionConstants.DISTANCE_TOLERANCE_METERS;
         
         SmartDashboard.putBoolean("Vision/Rotation Aligned", rotationGood);
         SmartDashboard.putBoolean("Vision/Distance Aligned", distanceGood);
@@ -243,13 +243,13 @@ public class Limelight_Move extends Command {
     @Override
     public boolean isFinished() {
         // Finish if we've been aligned consistently
-        if (alignedCount >= Constants.ALIGNED_LOOPS_REQUIRED) {
+        if (alignedCount >= Constants.VisionConstants.ALIGNED_LOOPS_REQUIRED) {
             System.out.println("Vision alignment achieved!");
             return true;
         }
         
         // Also finish if we timeout
-        if (timer.hasElapsed(Constants.ALIGNMENT_TIMEOUT_SECONDS)) {
+        if (timer.hasElapsed(Constants.VisionConstants.ALIGNMENT_TIMEOUT_SECONDS)) {
             System.out.println("Vision alignment timed out!");
             return true;
         }
