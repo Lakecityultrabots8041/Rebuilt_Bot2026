@@ -85,6 +85,14 @@ public final class Constants {
     /** Number of consecutive aligned loops required before command finishes (1 loop ≈ 20ms) */
     public static final int ALIGNED_LOOPS_REQUIRED = 25; // ~0.5 seconds
 
+// ===== SHOOTER =====
+ public static class ShooterCostants {
+    private ShooterCostants() {}
+   
+    public static final int SHOOTER_MOTOR = 1;
+}
+
+
     /**
      * Get the target distance for a specific AprilTag ID
      * @param tagID the AprilTag ID
