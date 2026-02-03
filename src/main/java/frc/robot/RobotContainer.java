@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -30,8 +32,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
 
-import choreo.auto.AutoChooser;
-import choreo.auto.AutoFactory;
+
 
 @SuppressWarnings("unused")
 
@@ -80,19 +81,16 @@ public class RobotContainer {
 
    
     public RobotContainer() {
-        //NamedCommands.registerCommand("SpinUpFlywheel", 
-        //Commands.print("Flywheel spinning up...").andThen(Commands.waitSeconds(1.0)));
+       LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
+       Limelight_Move limleightMove = new Limelight_Move(drivetrain, limelightSubsystem);
+       
+       PathPlannerAuto simplePathCommand = new PathPlannerAuto("SimplePathAuto");
+
+        //NamedCommands.registerCommand("Test", Commands.print("Passed a test marker"));
+        
+        NamedCommands.registerCommand("Get Centered", alignToTag);
     
-        //NamedCommands.registerCommand("AlignToTag", 
-        //alignToTag.withTimeout(2.0)); // uses 2 seconds timeout for tag alignment
-    
-        //NamedCommands.registerCommand("Shoot8Balls", 
-        //Commands.print("Shooting 8 balls...").andThen(Commands.waitSeconds(3.0)));
-    
-        //NamedCommands.registerCommand("StopFlywheel", 
-        //Commands.print("Flywheel stopped"));
-    
-        autoChooser = AutoBuilder.buildAutoChooser("FollowPathShoot");
+        autoChooser = AutoBuilder.buildAutoChooser("SimplePathAuto");
         SmartDashboard.putData("Auton Mode", autoChooser);
        
         configureBindings();
