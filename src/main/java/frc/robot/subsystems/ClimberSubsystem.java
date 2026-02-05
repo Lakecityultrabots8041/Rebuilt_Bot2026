@@ -17,16 +17,20 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private double liftMaxPos = Constants.ClimberConstants.liftMaxPos;
     private double pivotMaxPos = Constants.ClimberConstants.pivotMaxPos;
+    private double liftMinPos = Constants.ClimberConstants.liftMinPos;
+    private double pivotMinPos = Constants.ClimberConstants.pivotMinPos;
 
     private final TalonFX liftMotor;
     private final TalonFX pivotMotor;
     private final Servo Lift_Servo;
     private final Servo Pivot_Servo;
 
-    private boolean upLock = true;
-    private boolean outLock = true;
+    public boolean upLock = true;
+    public boolean outLock = true;
     public boolean liftOver = false;
     public boolean outOver = false;
+    public boolean liftUnder = false;
+    public boolean outUnder = false;
 
     private double liftPos;
     private double outPos;
@@ -98,10 +102,10 @@ public class ClimberSubsystem extends SubsystemBase {
             System.out.println("Can't run the lift motor, Lock is engaged");
             liftMotor.set(0);
             return;//stops the command so it won't continue down and move the motor anyway
-        } else if (liftOver = true){
-            System.out.println("Can't run lift motor, Climber too high");
-            liftMotor.set(0);
-            return;
+        //} else if (liftOver = true){
+            //System.out.println("Can't run lift motor, Climber too high");
+            //liftMotor.set(0);
+            //return;
         } else {
             liftMotor.set(speed);
         }
@@ -113,10 +117,10 @@ public class ClimberSubsystem extends SubsystemBase {
             System.out.println("Can't run Pivot Motor, Lock is engaged");
             pivotMotor.set(0);
             return;
-        } else if (outOver = true) {
-            System.out.println("Can't run pivot motor, pivoted to the max");
-            pivotMotor.set(0);
-            return;
+        //} else if (outOver = true) {
+          //  System.out.println("Can't run pivot motor, pivoted to the max");
+            //pivotMotor.set(0);
+            //return;
         } else {
             pivotMotor.set(speed);
         }
@@ -145,6 +149,18 @@ public class ClimberSubsystem extends SubsystemBase {
             outOver = true;
         } else {
             outOver = false;
+        }
+
+        if (liftPos >= liftMinPos) {
+            liftUnder = false;
+        } else {
+            liftUnder = true;
+        }
+
+        if (outPos >= pivotMinPos) {
+            outUnder = false;
+        } else {
+            outUnder = true;
         }
     }
     

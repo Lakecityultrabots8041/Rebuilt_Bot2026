@@ -66,7 +66,7 @@ public class RobotContainer {
     // Limelight subsystem for AprilTag detection
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     
-    // Vision alignment command - automatically aligns robot with AprilTag 15 for scoring
+    // Vision alignment command - automatically aligns robot with AprilTag 9 for scoring
       private final Limelight_Move alignToTag = new Limelight_Move(
         drivetrain, 
         limelight,
@@ -76,7 +76,7 @@ public class RobotContainer {
     //-------------------Climber Setup-------------------------
     
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-    private final Climber Climber = new Climber(climberSubsystem, climberSubsystem);
+    private final Climber Climb = new Climber(climberSubsystem);
   
     
 
@@ -143,10 +143,10 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         //------------Climber Bindings--------------------------------------------------------------
-        controller.povUp().onTrue(
-          Commands.runOnce(() -> Climber.UpClimber(), climberSubsystem));
-        controller.povDown().onTrue(
-          Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
+        controller.povUp().onTrue(Climb);
+          //Commands.runOnce(() -> Climber()));
+        //controller.povDown().onTrue(
+          //Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
           //(->) is lambda, tells the code where to get the stuff for the command
     }
 
