@@ -6,8 +6,11 @@ package frc.robot;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,6 +34,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
+
+import frc.robot.commands.ShooterCommands;
 
 
 
@@ -77,12 +82,25 @@ public class RobotContainer {
         return limelight;
     }
 
+
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  
+    private final ShooterCommands shooterCommands = new ShooterCommands();
+
+  public ShooterCommands getShooterCommands() {
+    return shooterCommands;
+  }
+
+
+
   private final SendableChooser<Command> autoChooser; // Autonomous command chooser
 
    
     public RobotContainer() {
        LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
        Limelight_Move limleightMove = new Limelight_Move(drivetrain, limelightSubsystem);
+
+       ShooterSubsystem shooter = new ShooterSubsystem();
        
        PathPlannerAuto simplePathCommand = new PathPlannerAuto("SimplePathAuto");
 
@@ -98,6 +116,7 @@ public class RobotContainer {
     }
     
         
+
         
             private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
@@ -130,6 +149,10 @@ public class RobotContainer {
          // reset the field-centric heading on right bumper press
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        // =====SHOOTER BINDINGS=====
+        controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem));
+
     }
 
   

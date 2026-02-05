@@ -59,30 +59,39 @@ public ShooterSubsystem(){
                 break;
 
             case REVUP:
-                shootMotor.setControl(torqueRequest.withVelocity(revVel));
+                shootMotor.setControl(torqueRequest.withVelocity(maxVel));
                 Commands.waitSeconds(1);
-                currentState = shooterState.READY;
                 break;
 
             case READY:
-                shootMotor.setControl(torqueRequest.withVelocity(revVel)); 
+                shootMotor.setControl(torqueRequest.withVelocity(maxVel)); 
                 break;
                 
             case EJECTING:
-                shootMotor.setControl(torqueRequest.withVelocity(revVel));
+                shootMotor.setControl(torqueRequest.withVelocity(maxVel));
                 break;
         }
     }
 
     //Command Factories
-    public Command shootCommand() {
+    public Command revCommand() {
         return runOnce(() -> currentState = shooterState.REVUP)
-                .withName("ShooterEject");
+                .withName("ShooterReving");
+    }
+
+    public Command shootCommand() {
+        return runOnce(() -> currentState = shooterState.READY)
+                .withName("ShooterReady");
     }
 
     public Command ejectCommand() {
         return runOnce(() -> currentState = shooterState.EJECTING)
                 .withName("ShooterEject");
+    }
+
+    public Command idleCommand() {
+        return runOnce(() -> currentState = shooterState.IDLE)
+                .withName("ShooterIdle");
     }
 
 
