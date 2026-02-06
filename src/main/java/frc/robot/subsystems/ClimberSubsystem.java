@@ -31,6 +31,7 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean outOver = false;
     public boolean liftUnder = false;
     public boolean outUnder = false;
+    public static boolean clumb = false;
 
     private double liftPos;
     private double outPos;
@@ -98,7 +99,7 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     public void runLiftMotor(double speed) {
-        if (upLock = true) {
+        if (upLock == true) {
             System.out.println("Can't run the lift motor, Lock is engaged");
             liftMotor.set(0);
             return;//stops the command so it won't continue down and move the motor anyway
@@ -113,7 +114,7 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     public void runPivotMotor(double speed) {
-        if (outLock = true) {
+        if (outLock == true) {
             System.out.println("Can't run Pivot Motor, Lock is engaged");
             pivotMotor.set(0);
             return;
@@ -130,8 +131,13 @@ public class ClimberSubsystem extends SubsystemBase {
         liftMotor.set(0);
         pivotMotor.set(0);
     }
+
+    public enum step{
+        ONE, TWO, THREE, FOUR, FIVE, ZERO
+    }
     
-    
+     public static step uppie = step.ZERO;
+
 
     @Override
 
@@ -161,6 +167,26 @@ public class ClimberSubsystem extends SubsystemBase {
             outUnder = false;
         } else {
             outUnder = true;
+        }
+
+        if (liftOver == true && uppie == step.ZERO) {
+            uppie = step.ONE;
+        }
+        if (upLock == true && uppie == step.ONE) {
+            uppie = step.TWO;
+        }
+        if (outOver == true && uppie == step.TWO) {
+            uppie = step.THREE;
+        }
+        if (outLock == true && uppie == step.THREE) {
+            uppie = step.FOUR;
+        }
+        //if(limelightSubsystem.onBar == true && uppie == step.FOUR) {
+        // uppie = step.FIVE;
+        //}
+        if (liftUnder == true && uppie == step.FIVE) {
+            uppie = step.ZERO;
+            clumb = true;
         }
     }
     

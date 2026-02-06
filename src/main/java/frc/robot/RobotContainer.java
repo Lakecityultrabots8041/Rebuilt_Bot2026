@@ -26,7 +26,7 @@ import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ClimberSubsystem;
-
+import frc.robot.subsystems.ClimberSubsystem.step;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.Climber;
@@ -44,6 +44,8 @@ import choreo.auto.AutoFactory;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
+  
 
 //Setup Command Xbox Controller
     private final CommandXboxController controller = new CommandXboxController(0);
@@ -76,7 +78,8 @@ public class RobotContainer {
     //-------------------Climber Setup-------------------------
     
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-    private final Climber Climb = new Climber(climberSubsystem);
+    private final ClimberSubsystem clumb = new ClimberSubsystem();
+    private final Climber climb = new Climber(climberSubsystem, clumb, ClimberSubsystem.uppie);
   
     
 
@@ -89,6 +92,7 @@ public class RobotContainer {
 
    
     public RobotContainer() {
+      
         //NamedCommands.registerCommand("SpinUpFlywheel", 
         //Commands.print("Flywheel spinning up...").andThen(Commands.waitSeconds(1.0)));
     
@@ -143,11 +147,12 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         //------------Climber Bindings--------------------------------------------------------------
-        controller.povUp().onTrue(Climb);
+        controller.povUp().onTrue(climb);
           //Commands.runOnce(() -> Climber()));
         //controller.povDown().onTrue(
           //Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
           //(->) is lambda, tells the code where to get the stuff for the command
+            
     }
 
   
