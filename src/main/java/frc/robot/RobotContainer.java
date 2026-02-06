@@ -10,6 +10,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -36,6 +37,7 @@ import frc.robot.commands.Limelight_Move;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.commands.ShooterCommands;
+
 
 
 
@@ -77,6 +79,7 @@ public class RobotContainer {
 
     //--------------------------------------SHOOTER SETUP-----------------------------------------
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+     
 
     //--------------------------------------AUTO SETUP--------------------------------------------
     private final SendableChooser<Command> autoChooser;
@@ -122,7 +125,7 @@ public class RobotContainer {
 
         // ---- SHOOTER BINDINGS ----
         // Simple version - just using the basic commands
-        controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem));
+        controller.rightTrigger().onTrue(ShooterCommands.shootSequence(shooterSubsystem));
         
         // Additional shooter controls (optional - comment out if you don't want them)
         // controller.leftTrigger().whileTrue(ShooterCommands.revUp(shooterSubsystem));

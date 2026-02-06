@@ -5,11 +5,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.ShooterSubsystem;
 
 
-public class ShooterCommands {
-    
-    // Private constructor to prevent instantiation
+public class ShooterCommands extends Command {
+
     private ShooterCommands() {
-        throw new UnsupportedOperationException("This is a utility class");
+
     }
     
     // ===== BASIC COMMANDS =====
@@ -48,14 +47,15 @@ public class ShooterCommands {
      * Complete shooting sequence: rev up, wait for ready, shoot, then idle
      */
     public static Command shootSequence(ShooterSubsystem shooter) {
-        return Commands.sequence(
-            Commands.runOnce(() -> System.out.println("Starting shoot sequence"), shooter),
-            shooter.revUp(),
-            shooter.waitUntilReady(),
-            Commands.waitSeconds(0.5),  // Hold shooting speed
-            shooter.idle()
-        ).withName("CompleteShootSequence");
-    }
+    return Commands.sequence(
+        Commands.runOnce(() -> System.out.println("Starting shoot sequence")),
+        shooter.revUp(),                    // Actually rev up!
+        shooter.waitUntilReady(),          // Wait for speed
+        Commands.waitSeconds(0.5),         // Hold shooting speed
+        shooter.idle()                     // Stop
+    ).withTimeout(3.0)
+     .withName("CompleteShootSequence");
+}
     
     /**
      * Quick shoot - assumes shooter is already revved
@@ -83,16 +83,15 @@ public class ShooterCommands {
      * Smart shoot - only revs if not already ready
      */
     public static Command smartShoot(ShooterSubsystem shooter) {
-        return Commands.either(
-            // If already ready, just shoot
-            quickShoot(shooter),
-            // Otherwise, do full sequence
-            shootSequence(shooter),
-            // Condition: is shooter already at target velocity?
-            shooter::atTargetVelocity
-        ).withName("SmartShoot");
-    }
-    
+    return Commands.either(
+        // If already ready, just shoot
+        quickShoot(shooter),
+        // Otherwise, do full sequence
+        shootSequence(shooter), 
+        // Condition: is shooter already at target velocity?
+        shooter::atTargetVelocity
+    ).withName("SmartShoot");
+}
     /**
      * Rev and hold - keeps shooter at ready state indefinitely
      */

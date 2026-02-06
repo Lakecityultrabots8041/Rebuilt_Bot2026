@@ -26,30 +26,36 @@ public class ShooterSubsystem extends SubsystemBase {
         READY,
         EJECTING
     }
+
+    public boolean isReady(){
+        return currentState == ShooterState.READY;
+    }
     
     public ShooterSubsystem() {
         shootMotor = new TalonFX(Constants.ShooterCostants.SHOOTER_MOTOR);
         velocityRequest = new VelocityTorqueCurrentFOC(0);
     }
     
-    @Override
-    public void periodic() {
-        // Apply motor control based on current state
-        switch (currentState) {
-            case IDLE:
-                setVelocity(IDLE_VELOCITY);
-                break;
-            case REVVING:
-                setVelocity(REV_VELOCITY);
-                break;
-            case READY:
-                setVelocity(MAX_VELOCITY);
-                break;
-            case EJECTING:
-                setVelocity(EJECT_VELOCITY);
-                break;
-        }
+   @Override
+public void periodic() {
+    // Apply motor control based on current state
+    switch (currentState) {
+        case IDLE:
+            setVelocity(IDLE_VELOCITY);
+            break;
+        case REVVING:
+            setVelocity(REV_VELOCITY);
+            System.out.println("REVVING at " + REV_VELOCITY + " RPS");  // Debug
+            break;
+        case READY:
+            setVelocity(MAX_VELOCITY);
+            System.out.println("READY at " + MAX_VELOCITY + " RPS");  // Debug
+            break;
+        case EJECTING:
+            setVelocity(EJECT_VELOCITY);
+            break;
     }
+}
     
     // ===== FACTORY METHODS USING LAMBDAS =====
     
@@ -57,11 +63,11 @@ public class ShooterSubsystem extends SubsystemBase {
      * Command factory: Spin up shooter to rev speed, then transition to ready
      */
     public Command revUp() {
-        return runOnce(() -> currentState = ShooterState.REVVING)
-                .andThen(Commands.waitSeconds(1.0))  // Wait for motors to spin up
-                .andThen(() -> currentState = ShooterState.READY)
-                .withName("RevUpShooter");
-    }
+    return runOnce(() -> currentState = ShooterState.REVVING)
+            .andThen(Commands.waitSeconds(1.0))
+            .andThen(runOnce(() -> currentState = ShooterState.READY))  // ← Wrap in runOnce!
+            .withName("RevUpShooter");
+}
     
     /**
      * Command factory: Set shooter to ready state at full speed
@@ -99,14 +105,14 @@ public class ShooterSubsystem extends SubsystemBase {
     /**
      * Command factory: Shoot sequence - rev up, wait for speed, then shoot
      */
-    public Command shootSequence() {
+    /*public Command shootSequence() {
         return runOnce(() -> currentState = ShooterState.REVVING)
                 .andThen(Commands.waitSeconds(1.0))
                 .andThen(() -> currentState = ShooterState.READY)
                 .andThen(Commands.waitSeconds(0.5))  // Hold shooting speed
                 .finallyDo(() -> currentState = ShooterState.IDLE)
                 .withName("ShootSequence");
-    }
+    }*/
     
     // ===== HELPER METHODS =====
     

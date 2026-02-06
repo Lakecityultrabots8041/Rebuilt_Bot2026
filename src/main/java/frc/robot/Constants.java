@@ -89,7 +89,7 @@ public final class Constants {
  public static class ShooterCostants {
     private ShooterCostants() {}
    
-    public static final int SHOOTER_MOTOR = 1;
+    public static final int SHOOTER_MOTOR = 2;
 }
 
 
