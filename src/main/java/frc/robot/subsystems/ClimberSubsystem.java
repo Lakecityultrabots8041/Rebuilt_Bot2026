@@ -31,7 +31,7 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean outOver = false;
     public boolean liftUnder = false;
     public boolean outUnder = false;
-    public static boolean clumb = false;
+    
 
     private double liftPos;
     private double outPos;
@@ -45,6 +45,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
         Lift_Servo = new Servo(Constants.ClimberConstants.LiftServoPort);
         Pivot_Servo = new Servo(Constants.ClimberConstants.PivotServoPort);
+
+        final boolean clumb = false;
 
         //Config motor limits
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -62,6 +64,9 @@ public class ClimberSubsystem extends SubsystemBase {
         //Safety(Start Locked)
         liftServoLock();
         pivotServoLock();
+
+
+        
     }
    
  
@@ -186,7 +191,11 @@ public class ClimberSubsystem extends SubsystemBase {
         //}
         if (liftUnder == true && uppie == step.FIVE) {
             uppie = step.ZERO;
+            if (clumb == false){
             clumb = true;
+            } else {
+                clumb = false;
+            }
         }
     }
     
