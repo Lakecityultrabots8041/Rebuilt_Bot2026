@@ -86,8 +86,8 @@ public final class Constants {
     public static final int ALIGNED_LOOPS_REQUIRED = 25; // ~0.5 seconds
 
 // ===== SHOOTER =====
- public static class ShooterCostants {
-    private ShooterCostants() {}
+ public static class ShooterConstants {
+    private ShooterConstants() {}
    
     public static final int SHOOTER_MOTOR = 2;
 }

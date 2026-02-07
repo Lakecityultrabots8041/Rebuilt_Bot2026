@@ -2,16 +2,19 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import frc.robot.Constants;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ShooterSubsystem extends SubsystemBase {
     
     // Speed presets (rotations per second)
-    private static final double MAX_VELOCITY = 100.0;  // TODO: Tune this value
-    private static final double REV_VELOCITY = 12.5;   // 1/8 of maxVel
+    private static final double MAX_VELOCITY = 60.0;  // TODO: Tune this value 3600 RPM currently, you had it set to 6000 RPM!
+    private static final double REV_VELOCITY = 30.0;   // 1/8 of maxVel
     private static final double EJECT_VELOCITY = -5.0; // Reverse for ejecting stuck balls
     private static final double IDLE_VELOCITY = 0.0;
     
@@ -32,10 +35,21 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     
     public ShooterSubsystem() {
-        shootMotor = new TalonFX(Constants.ShooterCostants.SHOOTER_MOTOR);
+        shootMotor = new TalonFX(Constants.ShooterConstants.SHOOTER_MOTOR);
         velocityRequest = new VelocityTorqueCurrentFOC(0);
+
+        // This setups the MOTOR and give it power. 
+        var configs = new TalonFXConfiguration();
+        // Set PID gains for velocity control
+        configs.Slot0.kP = 0.1;   // Start with this
+        configs.Slot0.kV = 0.12;  // Phoenix will help you tune this
+        configs.Slot0.kS = 0.0;   // Usually not needed
+        
+        // Apply the config to the motor
+        shootMotor.getConfigurator().apply(configs);
     }
     
+
    @Override
 public void periodic() {
     // Apply motor control based on current state
@@ -55,9 +69,18 @@ public void periodic() {
             setVelocity(EJECT_VELOCITY);
             break;
     }
+             // ===== Get Current Velocity! =====
+    double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
+
+    // ==== Put shooting metrics in the Elastic Dashboard =======
+    SmartDashboard.putNumber("Shooter/Velocity RPS", currentVelocity);
+    SmartDashboard.putNumber("Shooter/Velocity RPM", currentVelocity * 60);
+    SmartDashboard.putString("Shooter/State", currentState.toString());
+    SmartDashboard.putBoolean("Shooter/At Target", atTargetVelocity());
+    SmartDashboard.putNumber("Shooter/Motor Voltage", shootMotor.getMotorVoltage().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/Motor Current", shootMotor.getStatorCurrent().getValueAsDouble());
+   
 }
-    
-    // ===== FACTORY METHODS USING LAMBDAS =====
     
     /**
      * Command factory: Spin up shooter to rev speed, then transition to ready
@@ -65,7 +88,7 @@ public void periodic() {
     public Command revUp() {
     return runOnce(() -> currentState = ShooterState.REVVING)
             .andThen(Commands.waitSeconds(1.0))
-            .andThen(runOnce(() -> currentState = ShooterState.READY))  // ← Wrap in runOnce!
+            .andThen(runOnce(() -> currentState = ShooterState.READY)) 
             .withName("RevUpShooter");
 }
     
@@ -147,8 +170,8 @@ public void periodic() {
      * Command factory: Wait until shooter reaches target velocity
      */
     public Command waitUntilReady() {
-        return run(() -> {})
-                .until(this::atTargetVelocity)
-                .withName("WaitForShooterReady");
-    }
+    return Commands.waitUntil(this::atTargetVelocity)
+            .withTimeout(2.0)  // Safety timeout
+            .withName("WaitForShooterReady");
+}
 }
