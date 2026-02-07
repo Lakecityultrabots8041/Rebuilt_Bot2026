@@ -9,19 +9,18 @@ public class Climber extends Command {
 
     private final ClimberSubsystem climberSubsystem;
     private final ClimberSubsystem.step uppie;
-    public final ClimberSubsystem clumb;
     private ClimberSubsystem.step last = ClimberSubsystem.step.ZERO;
-    private double direction = 0.0;
+    private double direction = 0.5;
 
     private double runTime = 0.0;
 
 
    //================================Setup Done===================================================
 
-    public Climber(ClimberSubsystem climberSubsystem, ClimberSubsystem clumb, ClimberSubsystem.step uppie) {
+    public Climber(ClimberSubsystem climberSubsystem, ClimberSubsystem.step uppie) {
         this.climberSubsystem = climberSubsystem;
         this.uppie = uppie;
-        this.clumb = clumb;
+        
 
         addRequirements(climberSubsystem);
     }
@@ -39,20 +38,16 @@ public class Climber extends Command {
             last = uppie;
         }
         runTime += 0.02;
-        
-        if(ClimberSubsystem.clumb == false){
-            direction = 0.5;
-        } else {
-            direction = -0.5;
-        }
-        
+         
         switch(uppie) {
             case ZERO:
-            System.out.println("Climb started");
+            System.out.println("Testing Motor");
+            climberSubsystem.runLiftMotor(1);
+            /*System.out.println("Climb started");
             climberSubsystem.liftServoRelease();
-            if (runTime >= 0.5) {
+            //if (runTime >= 0.5) {
             System.out.println("Climber lift running");
-            climberSubsystem.runLiftMotor(direction);}
+            climberSubsystem.runLiftMotor(direction);//}*/
             break;
 
             case ONE:
@@ -91,6 +86,15 @@ public class Climber extends Command {
                     climberSubsystem.liftServoLock();
                     
                 }}
+            break;
+
+            case CLUMB:
+            if(direction == 0.5){
+                direction = -0.5;
+            } else {
+                direction = 0.5;
+            }
+
             break;
 
                 

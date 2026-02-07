@@ -27,14 +27,14 @@ public final class Constants {
     public static final class ClimberConstants {
     
     //TODO Change Ports to PWM port number corresponding to the correct servo
-    public static final int LiftServoPort = 0;
-    public static final int PivotServoPort = 2;
+    //public static final int LiftServoPort = 1;
+    //public static final int PivotServoPort = 2;
 
     public static final int Lift_Motor = 3;
     public static final int Pivot_Motor = 87;//TODO Fix port number when we get the motor
 
     //Servo Angles
-    public static final double LServo_Lock_Angle = 10.0;
+    public static final double LServo_Lock_Angle = 30.0;
     public static final double LServo_Release_Angle = 0.0;
     public static final double PServo_Lock_Angle = 10.0;
     public static final double PServo_Release_Angle = 0.0;
@@ -44,8 +44,8 @@ public final class Constants {
     public static final double Pivot_Motor_Max = 0.5; 
 
     //Safety Limits(amps)
-    //public static final double Stator_Current_Limit = 30.0;
-    //public static final double Supply_Current_Limit = 25.0;
+    public static final double Stator_Current_Limit = 30.0;
+    public static final double Supply_Current_Limit = 25.0;
 
     //Safety Limits(Pos/Rotations)
     public static final double liftMaxPos = 50.0;

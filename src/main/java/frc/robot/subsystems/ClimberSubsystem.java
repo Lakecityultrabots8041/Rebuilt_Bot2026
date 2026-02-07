@@ -25,8 +25,8 @@ public class ClimberSubsystem extends SubsystemBase {
     private final Servo Lift_Servo;
     private final Servo Pivot_Servo;
 
-    public boolean upLock = true;
-    public boolean outLock = true;
+    public boolean upLock = false;
+    public boolean outLock = false;
     public boolean liftOver = false;
     public boolean outOver = false;
     public boolean liftUnder = false;
@@ -43,16 +43,14 @@ public class ClimberSubsystem extends SubsystemBase {
         liftMotor = new TalonFX(Constants.ClimberConstants.Lift_Motor);
         pivotMotor = new TalonFX(Constants.ClimberConstants.Pivot_Motor);
 
-        Lift_Servo = new Servo(Constants.ClimberConstants.LiftServoPort);
-        Pivot_Servo = new Servo(Constants.ClimberConstants.PivotServoPort);
-
-        final boolean clumb = false;
+        Lift_Servo = new Servo(1);
+        Pivot_Servo = new Servo(2);
 
         //Config motor limits
         TalonFXConfiguration config = new TalonFXConfiguration();
-        config.CurrentLimits.StatorCurrentLimit = 30.0;
+        config.CurrentLimits.StatorCurrentLimit = 40.0;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
-        config.CurrentLimits.SupplyCurrentLimit = 25.0;
+        config.CurrentLimits.SupplyCurrentLimit = 35.0;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         //Brake when off
@@ -62,11 +60,8 @@ public class ClimberSubsystem extends SubsystemBase {
         pivotMotor.getConfigurator().apply(config);
 
         //Safety(Start Locked)
-        liftServoLock();
-        pivotServoLock();
-
-
-        
+        //liftServoLock();
+        //pivotServoLock();
     }
    
  
@@ -136,9 +131,10 @@ public class ClimberSubsystem extends SubsystemBase {
         liftMotor.set(0);
         pivotMotor.set(0);
     }
+    
 
     public enum step{
-        ONE, TWO, THREE, FOUR, FIVE, ZERO
+        ONE, TWO, THREE, FOUR, FIVE, ZERO, CLUMB
     }
     
      public static step uppie = step.ZERO;
@@ -190,12 +186,10 @@ public class ClimberSubsystem extends SubsystemBase {
         // uppie = step.FIVE;
         //}
         if (liftUnder == true && uppie == step.FIVE) {
+            uppie = step.CLUMB;
+        }
+        if (uppie == step.CLUMB) {
             uppie = step.ZERO;
-            if (clumb == false){
-            clumb = true;
-            } else {
-                clumb = false;
-            }
         }
     }
     

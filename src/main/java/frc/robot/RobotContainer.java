@@ -80,8 +80,7 @@ public class RobotContainer {
     //-------------------Climber Setup-------------------------
     
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-    private final ClimberSubsystem clumb = new ClimberSubsystem();
-    private final Climber climb = new Climber(climberSubsystem, clumb, ClimberSubsystem.uppie);
+    private final Climber climb = new Climber(climberSubsystem, ClimberSubsystem.uppie);
   
     
 
@@ -150,6 +149,7 @@ public class RobotContainer {
 
         //------------Climber Bindings--------------------------------------------------------------
         controller.povUp().onTrue(climb);
+        
           //Commands.runOnce(() -> Climber()));
         //controller.povDown().onTrue(
           //Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
