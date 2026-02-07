@@ -3,17 +3,13 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.commands.Climber;
 
 public class ClimberSubsystem extends SubsystemBase {
-
-    //private final Servo liftServo = new Servo(Constants.ClimberConstants.LiftServoPort);
-    //private final Servo pivotServo = new Servo(Constants.ClimberConstants.PivotServoPort);
 
     private double liftMaxPos = Constants.ClimberConstants.liftMaxPos;
     private double pivotMaxPos = Constants.ClimberConstants.pivotMaxPos;
@@ -32,12 +28,16 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean liftUnder = false;
     public boolean outUnder = false;
     
-
     private double liftPos;
     private double outPos;
+
+    public enum Step {
+        ZERO, ONE, TWO, THREE, FOUR, FIVE, CLUMB
+    }
     
-    //Servo Lift_Servo = new Servo(Constants.ClimberConstants.LiftServoPort);
-    //Servo Pivot_Servo = new Servo(Constants.ClimberConstants.PivotServoPort);
+    private Step currentStep = Step.ZERO;  // Instance variable, not static set like you had it
+    
+    public boolean climbingUp = true;  // Track direction
 
     public ClimberSubsystem() {
         liftMotor = new TalonFX(Constants.ClimberConstants.Lift_Motor);
@@ -46,7 +46,7 @@ public class ClimberSubsystem extends SubsystemBase {
         Lift_Servo = new Servo(1);
         Pivot_Servo = new Servo(2);
 
-        //Config motor limits
+        //Config motor limits for 16:1 gearbox
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.StatorCurrentLimit = 40.0;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -59,58 +59,46 @@ public class ClimberSubsystem extends SubsystemBase {
         liftMotor.getConfigurator().apply(config);
         pivotMotor.getConfigurator().apply(config);
 
-        //Safety(Start Locked)
+        //Safety(Start Locked) - commented out for testing
         //liftServoLock();
         //pivotServoLock();
     }
    
- 
     //=======================================================
-    //Servo Commands Setup
+    // Servo Commands Setup
     //=======================================================
     public void liftServoLock() {
         Lift_Servo.setAngle(Constants.ClimberConstants.LServo_Lock_Angle);
-        System.out.println("Did it Lock?");
-
+        System.out.println("Lift Locked");
         upLock = true;
-        //return LiftServoLock();
     }
 
     public void liftServoRelease() {
         Lift_Servo.setAngle(Constants.ClimberConstants.LServo_Release_Angle);
-        System.out.println("Did it unlock?");
-
+        System.out.println("Lift Unlocked");
         upLock = false;
-        //return LiftServoRelease();
     }
 
     public void pivotServoLock() {
         Pivot_Servo.setAngle(Constants.ClimberConstants.PServo_Lock_Angle);
-
-        outLock= true;
-        //return PivotServoLock();
+        System.out.println("Pivot Locked");
+        outLock = true;
     }
     
     public void pivotServoRelease() {
         Pivot_Servo.setAngle(Constants.ClimberConstants.PServo_Release_Angle);
-
+        System.out.println("Pivot Unlocked");
         outLock = false;
-        //return PivotServoRelease();
     }
 
     public void runLiftMotor(double speed) {
         if (upLock == true) {
             System.out.println("Can't run the lift motor, Lock is engaged");
             liftMotor.set(0);
-            return;//stops the command so it won't continue down and move the motor anyway
-        //} else if (liftOver = true){
-            //System.out.println("Can't run lift motor, Climber too high");
-            //liftMotor.set(0);
-            //return;
+            return;
         } else {
             liftMotor.set(speed);
         }
-
     }
 
     public void runPivotMotor(double speed) {
@@ -118,10 +106,6 @@ public class ClimberSubsystem extends SubsystemBase {
             System.out.println("Can't run Pivot Motor, Lock is engaged");
             pivotMotor.set(0);
             return;
-        //} else if (outOver = true) {
-          //  System.out.println("Can't run pivot motor, pivoted to the max");
-            //pivotMotor.set(0);
-            //return;
         } else {
             pivotMotor.set(speed);
         }
@@ -131,66 +115,57 @@ public class ClimberSubsystem extends SubsystemBase {
         liftMotor.set(0);
         pivotMotor.set(0);
     }
-    
 
-    public enum step{
-        ONE, TWO, THREE, FOUR, FIVE, ZERO, CLUMB
+    // Getter for current step
+    public Step getCurrentStep() {
+        return currentStep;
     }
-    
-     public static step uppie = step.ZERO;
-
 
     @Override
-
-    public void periodic(){
+    public void periodic() {
         liftPos = liftMotor.getPosition().getValueAsDouble();
         outPos = pivotMotor.getPosition().getValueAsDouble();
 
-        if (liftPos >= liftMaxPos) {
-            liftOver = true;
-        } else {
-            liftOver = false;
-        }
+        // SmartDashboard debugging
+        SmartDashboard.putNumber("Lift Position", liftPos);
+        SmartDashboard.putNumber("Pivot Position", outPos);
+        SmartDashboard.putString("Climb Step", currentStep.toString());
+        SmartDashboard.putBoolean("Climbing Up", climbingUp);
+        SmartDashboard.putNumber("Lift Motor %", liftMotor.get());
+        SmartDashboard.putBoolean("Lift Lock", upLock);
+        SmartDashboard.putBoolean("Pivot Lock", outLock);
 
-        if (outPos >= pivotMaxPos) {
-            outOver = true;
-        } else {
-            outOver = false;
-        }
+        // Update limit flags
+        liftOver = (liftPos >= liftMaxPos);
+        outOver = (outPos >= pivotMaxPos);
+        liftUnder = (liftPos < liftMinPos);
+        outUnder = (outPos < pivotMinPos);
 
-        if (liftPos >= liftMinPos) {
-            liftUnder = false;
-        } else {
-            liftUnder = true;
+        // State machine
+        if (currentStep == Step.ZERO && liftOver) {
+            currentStep = Step.ONE;
         }
-
-        if (outPos >= pivotMinPos) {
-            outUnder = false;
-        } else {
-            outUnder = true;
+        if (currentStep == Step.ONE && upLock) {
+            currentStep = Step.TWO;
         }
-
-        if (liftOver == true && uppie == step.ZERO) {
-            uppie = step.ONE;
+        if (currentStep == Step.TWO && outOver) {
+            currentStep = Step.THREE;
         }
-        if (upLock == true && uppie == step.ONE) {
-            uppie = step.TWO;
+        if (currentStep == Step.THREE && outLock) {
+            currentStep = Step.FOUR;
         }
-        if (outOver == true && uppie == step.TWO) {
-            uppie = step.THREE;
-        }
-        if (outLock == true && uppie == step.THREE) {
-            uppie = step.FOUR;
-        }
-        //if(limelightSubsystem.onBar == true && uppie == step.FOUR) {
-        // uppie = step.FIVE;
+        // Limelight step when ready
+        //if (currentStep == Step.FOUR && limelightSubsystem.onBar) {
+        //    currentStep = Step.FIVE;
         //}
-        if (liftUnder == true && uppie == step.FIVE) {
-            uppie = step.CLUMB;
+
+        
+        if (currentStep == Step.FIVE && liftUnder) {
+            currentStep = Step.CLUMB;
         }
-        if (uppie == step.CLUMB) {
-            uppie = step.ZERO;
+        if (currentStep == Step.CLUMB) {
+            climbingUp = !climbingUp;  // Toggle direction
+            currentStep = Step.ZERO;    // Reset to start
         }
     }
-    
 }

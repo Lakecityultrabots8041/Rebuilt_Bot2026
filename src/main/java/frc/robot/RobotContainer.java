@@ -28,7 +28,6 @@ import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.ClimberSubsystem.step;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.Climber;
@@ -80,7 +79,7 @@ public class RobotContainer {
     //-------------------Climber Setup-------------------------
     
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-    private final Climber climb = new Climber(climberSubsystem, ClimberSubsystem.uppie);
+    private final Climber climb = new Climber(climberSubsystem);
   
     
 
@@ -132,11 +131,6 @@ public class RobotContainer {
         controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         //controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         //controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
- 
-
-        // reset the field-centric heading on right bumper press
-        controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        drivetrain.registerTelemetry(logger::telemeterize);
 
         //------------VISION ALIGNMENT------------------------------------------------------------------------------------------------------------------------
         
@@ -149,6 +143,7 @@ public class RobotContainer {
 
         //------------Climber Bindings--------------------------------------------------------------
         controller.povUp().onTrue(climb);
+        
         
           //Commands.runOnce(() -> Climber()));
         //controller.povDown().onTrue(
