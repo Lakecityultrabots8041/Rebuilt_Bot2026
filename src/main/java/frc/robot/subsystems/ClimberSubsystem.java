@@ -12,9 +12,6 @@ import frc.robot.commands.Climber;
 
 public class ClimberSubsystem extends SubsystemBase {
 
-    //private final Servo liftServo = new Servo(Constants.ClimberConstants.LiftServoPort);
-    //private final Servo pivotServo = new Servo(Constants.ClimberConstants.PivotServoPort);
-
     private double liftMaxPos = Constants.ClimberConstants.liftMaxPos;
     private double pivotMaxPos = Constants.ClimberConstants.pivotMaxPos;
     private double liftMinPos = Constants.ClimberConstants.liftMinPos;
@@ -32,12 +29,21 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean liftUnder = false;
     public boolean outUnder = false;
     
-
     private double liftPos;
     private double outPos;
+
+    public enum Step {
+        ZERO, ONE, TWO, THREE, FOUR, FIVE
+    }
     
-    //Servo Lift_Servo = new Servo(Constants.ClimberConstants.LiftServoPort);
-    //Servo Pivot_Servo = new Servo(Constants.ClimberConstants.PivotServoPort);
+    public enum ClimbDirection {
+        UP,    // Climbing up to the chain
+        DOWN   // Retracting back down
+    }
+    
+    private Step currentStep = Step.ZERO;
+    private ClimbDirection climbDirection = ClimbDirection.UP;
+    public boolean clumb = false;  // Kept for compatibility
 
     public ClimberSubsystem() {
         liftMotor = new TalonFX(Constants.ClimberConstants.Lift_Motor);
@@ -45,8 +51,6 @@ public class ClimberSubsystem extends SubsystemBase {
 
         Lift_Servo = new Servo(Constants.ClimberConstants.LiftServoPort);
         Pivot_Servo = new Servo(Constants.ClimberConstants.PivotServoPort);
-
-        final boolean clumb = false;
 
         //Config motor limits
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -64,58 +68,41 @@ public class ClimberSubsystem extends SubsystemBase {
         //Safety(Start Locked)
         liftServoLock();
         pivotServoLock();
-
-
-        
     }
    
- 
     //=======================================================
     //Servo Commands Setup
     //=======================================================
     public void liftServoLock() {
         Lift_Servo.setAngle(Constants.ClimberConstants.LServo_Lock_Angle);
         System.out.println("Did it Lock?");
-
         upLock = true;
-        //return LiftServoLock();
     }
 
     public void liftServoRelease() {
         Lift_Servo.setAngle(Constants.ClimberConstants.LServo_Release_Angle);
         System.out.println("Did it unlock?");
-
         upLock = false;
-        //return LiftServoRelease();
     }
 
     public void pivotServoLock() {
         Pivot_Servo.setAngle(Constants.ClimberConstants.PServo_Lock_Angle);
-
-        outLock= true;
-        //return PivotServoLock();
+        outLock = true;
     }
     
     public void pivotServoRelease() {
         Pivot_Servo.setAngle(Constants.ClimberConstants.PServo_Release_Angle);
-
         outLock = false;
-        //return PivotServoRelease();
     }
 
     public void runLiftMotor(double speed) {
         if (upLock == true) {
             System.out.println("Can't run the lift motor, Lock is engaged");
             liftMotor.set(0);
-            return;//stops the command so it won't continue down and move the motor anyway
-        //} else if (liftOver = true){
-            //System.out.println("Can't run lift motor, Climber too high");
-            //liftMotor.set(0);
-            //return;
+            return;
         } else {
             liftMotor.set(speed);
         }
-
     }
 
     public void runPivotMotor(double speed) {
@@ -123,10 +110,6 @@ public class ClimberSubsystem extends SubsystemBase {
             System.out.println("Can't run Pivot Motor, Lock is engaged");
             pivotMotor.set(0);
             return;
-        //} else if (outOver = true) {
-          //  System.out.println("Can't run pivot motor, pivoted to the max");
-            //pivotMotor.set(0);
-            //return;
         } else {
             pivotMotor.set(speed);
         }
@@ -137,19 +120,25 @@ public class ClimberSubsystem extends SubsystemBase {
         pivotMotor.set(0);
     }
 
-    public enum step{
-        ONE, TWO, THREE, FOUR, FIVE, ZERO
+    // Getter/setter methods
+    public Step getCurrentStep() {
+        return currentStep;
     }
     
-     public static step uppie = step.ZERO;
-
+    public ClimbDirection getClimbDirection() {
+        return climbDirection;
+    }
+    
+    public void setClimbDirection(ClimbDirection direction) {
+        this.climbDirection = direction;
+    }
 
     @Override
-
-    public void periodic(){
+    public void periodic() {
         liftPos = liftMotor.getPosition().getValueAsDouble();
         outPos = pivotMotor.getPosition().getValueAsDouble();
 
+        // Update limit flags
         if (liftPos >= liftMaxPos) {
             liftOver = true;
         } else {
@@ -174,29 +163,49 @@ public class ClimberSubsystem extends SubsystemBase {
             outUnder = true;
         }
 
-        if (liftOver == true && uppie == step.ZERO) {
-            uppie = step.ONE;
+        // State machine for climbing UP
+        if (climbDirection == ClimbDirection.UP) {
+            if (liftOver == true && currentStep == Step.ZERO) {
+                currentStep = Step.ONE;
+            }
+            if (upLock == true && currentStep == Step.ONE) {
+                currentStep = Step.TWO;
+            }
+            if (outOver == true && currentStep == Step.TWO) {
+                currentStep = Step.THREE;
+            }
+            if (outLock == true && currentStep == Step.THREE) {
+                currentStep = Step.FOUR;
+            }
+            //if(limelightSubsystem.onBar == true && currentStep == Step.FOUR) {
+            //    currentStep = Step.FIVE;
+            //}
+            if (liftUnder == true && currentStep == Step.FIVE) {
+                currentStep = Step.ZERO;
+                clumb = !clumb;  // Toggle clumb when reaching bottom after climb
+            }
         }
-        if (upLock == true && uppie == step.ONE) {
-            uppie = step.TWO;
-        }
-        if (outOver == true && uppie == step.TWO) {
-            uppie = step.THREE;
-        }
-        if (outLock == true && uppie == step.THREE) {
-            uppie = step.FOUR;
-        }
-        //if(limelightSubsystem.onBar == true && uppie == step.FOUR) {
-        // uppie = step.FIVE;
-        //}
-        if (liftUnder == true && uppie == step.FIVE) {
-            uppie = step.ZERO;
-            if (clumb == false){
-            clumb = true;
-            } else {
-                clumb = false;
+        // State machine for climbing DOWN (reverse sequence)
+        else if (climbDirection == ClimbDirection.DOWN) {
+            if (liftOver && currentStep == Step.ZERO) {
+                currentStep = Step.FIVE;
+            }
+            if (outUnder && currentStep == Step.FIVE) {
+                currentStep = Step.FOUR;
+            }
+            if (liftUnder && currentStep == Step.FOUR) {
+                currentStep = Step.THREE;
+            }
+            if (!outOver && currentStep == Step.THREE) {
+                currentStep = Step.TWO;
+            }
+            if (!liftOver && currentStep == Step.TWO) {
+                currentStep = Step.ONE;
+            }
+            if (currentStep == Step.ONE) {
+                currentStep = Step.ZERO;
+                clumb = !clumb;  // Toggle clumb when reaching start after retract
             }
         }
     }
-    
 }

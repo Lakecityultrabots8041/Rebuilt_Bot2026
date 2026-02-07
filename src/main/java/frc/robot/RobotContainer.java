@@ -28,7 +28,7 @@ import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.ClimberSubsystem.step;
+import frc.robot.subsystems.ClimberSubsystem.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.Climber;
@@ -80,9 +80,8 @@ public class RobotContainer {
     //-------------------Climber Setup-------------------------
     
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-    private final ClimberSubsystem clumb = new ClimberSubsystem();
-    private final Climber climb = new Climber(climberSubsystem, clumb, ClimberSubsystem.uppie);
-  
+    private final Climber climb = new Climber(climberSubsystem);
+
     
 
    
@@ -149,12 +148,18 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         //------------Climber Bindings--------------------------------------------------------------
-        controller.povUp().onTrue(climb);
-          //Commands.runOnce(() -> Climber()));
-        //controller.povDown().onTrue(
-          //Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
-          //(->) is lambda, tells the code where to get the stuff for the command
-            
+         //------------Climber Bindings--------------------------------------------------------------
+        // D-Pad Up: Start climb UP sequence
+        controller.povUp().onTrue(
+            Commands.runOnce(() -> climberSubsystem.setClimbDirection(ClimberSubsystem.ClimbDirection.UP))
+                .andThen(climb)
+        );
+        
+        // D-Pad Down: Start climb DOWN sequence (retract)
+        controller.povDown().onTrue(
+            Commands.runOnce(() -> climberSubsystem.setClimbDirection(ClimberSubsystem.ClimbDirection.DOWN))
+                .andThen(climb)
+        );
     }
 
   
