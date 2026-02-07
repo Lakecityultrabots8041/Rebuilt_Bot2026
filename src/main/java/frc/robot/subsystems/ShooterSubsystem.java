@@ -12,8 +12,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class ShooterSubsystem extends SubsystemBase {
     
     // Speed presets (rotations per second)
-    private static final double MAX_VELOCITY = 20.0;  // TODO: Tune this value 3600 RPM currently, you had it set to 6000 RPM!
-    private static final double REV_VELOCITY = 30.0;   // 1/8 of maxVel
+    private static final double MAX_VELOCITY = 90.0; 
+    private static final double REV_VELOCITY = 65.0;  
     private static final double EJECT_VELOCITY = -5.0; // Reverse for ejecting stuck balls
     private static final double IDLE_VELOCITY = 0.0;
     
@@ -42,9 +42,9 @@ public class ShooterSubsystem extends SubsystemBase {
         // This setups the MOTOR and give it power. 
         var configs = new TalonFXConfiguration();
         // Set PID gains for velocity control
-        configs.Slot0.kP = 0.1;   // Start with this
-        configs.Slot0.kV = 0.12;  // Phoenix will help you tune this
-        configs.Slot0.kS = 0.0;   // Usually not needed
+        configs.Slot0.kP = 3.0;      // Start here, increase if needed (try up to 5-10)
+        configs.Slot0.kV = 0.15;     // This might be okay, but verify your units
+        configs.Slot0.kS = 0.25;     // Increase static friction compensation
         
         // Apply the config to the motor
         shootMotor.getConfigurator().apply(configs);
