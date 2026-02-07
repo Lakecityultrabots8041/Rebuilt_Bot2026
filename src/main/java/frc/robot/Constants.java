@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -87,10 +90,16 @@ public final class Constants {
 
 // ===== SHOOTER =====
  public static class ShooterConstants {
-    private ShooterConstants() {}
+    public ShooterConstants() {}
+
+    public static final CANBus Canivore = new CANBus("Jeffery");
    
-    public static final int SHOOTER_MOTOR = 2;
+    public static final int SHOOTER_MOTOR = (2);
+
+    
 }
+
+
 
 
     /**

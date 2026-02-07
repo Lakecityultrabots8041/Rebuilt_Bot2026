@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
@@ -91,6 +92,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
+        NamedCommands.registerCommand("AlignAndShoot", Commands.sequence(alignToTag.andThen(ShooterCommands.shootSequence(shooterSubsystem))));
     
         autoChooser = AutoBuilder.buildAutoChooser("SimplePathAuto");
         SmartDashboard.putData("Auton Mode", autoChooser);
@@ -125,14 +127,16 @@ public class RobotContainer {
 
         // ---- SHOOTER BINDINGS ----
         // Simple version - just using the basic commands
-        controller.rightTrigger().onTrue(ShooterCommands.shootSequence(shooterSubsystem));
+        controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
+        .onFalse(ShooterCommands.idle(shooterSubsystem));
+        controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
         
         // Additional shooter controls (optional - comment out if you don't want them)
         // controller.leftTrigger().whileTrue(ShooterCommands.revUp(shooterSubsystem));
         // controller.a().onTrue(ShooterCommands.idle(shooterSubsystem));
         // controller.b().onTrue(ShooterCommands.eject(shooterSubsystem));
     }
-
+  
     // ---- ACCESSOR METHODS ----
     public LimelightSubsystem getLimelight() {
         return limelight;

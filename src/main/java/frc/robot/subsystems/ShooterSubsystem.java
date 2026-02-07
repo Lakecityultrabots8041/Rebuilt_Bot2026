@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import frc.robot.Constants;
@@ -13,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class ShooterSubsystem extends SubsystemBase {
     
     // Speed presets (rotations per second)
-    private static final double MAX_VELOCITY = 60.0;  // TODO: Tune this value 3600 RPM currently, you had it set to 6000 RPM!
+    private static final double MAX_VELOCITY = 20.0;  // TODO: Tune this value 3600 RPM currently, you had it set to 6000 RPM!
     private static final double REV_VELOCITY = 30.0;   // 1/8 of maxVel
     private static final double EJECT_VELOCITY = -5.0; // Reverse for ejecting stuck balls
     private static final double IDLE_VELOCITY = 0.0;
@@ -35,7 +34,9 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     
     public ShooterSubsystem() {
-        shootMotor = new TalonFX(Constants.ShooterConstants.SHOOTER_MOTOR);
+        
+       shootMotor = new TalonFX(Constants.ShooterConstants.SHOOTER_MOTOR, "Jeffery");
+
         velocityRequest = new VelocityTorqueCurrentFOC(0);
 
         // This setups the MOTOR and give it power. 
@@ -140,8 +141,8 @@ public void periodic() {
     // ===== HELPER METHODS =====
     
     private void setVelocity(double velocityRPS) {
-        shootMotor.setControl(velocityRequest.withVelocity(velocityRPS));
-    }
+    shootMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+}
     
     /**
      * Get current shooter state
