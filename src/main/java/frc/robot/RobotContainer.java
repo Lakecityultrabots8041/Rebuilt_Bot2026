@@ -3,6 +3,8 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+//throw away servo testing
+import edu.wpi.first.wpilibj.Servo;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -27,9 +29,10 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import frc.robot.generated.TunerConstants;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-
+import frc.robot.subsystems.ClimberSubsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.Limelight_Move;
+import frc.robot.commands.Climber;
 import frc.robot.generated.TunerConstants;
 
 
@@ -43,6 +46,8 @@ import frc.robot.generated.TunerConstants;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
+  
 
 //Setup Command Xbox Controller
     private final CommandXboxController controller = new CommandXboxController(0);
@@ -65,12 +70,19 @@ public class RobotContainer {
     // Limelight subsystem for AprilTag detection
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     
-    // Vision alignment command - automatically aligns robot with AprilTag 15 for scoring
+    // Vision alignment command - automatically aligns robot with AprilTag 9 for scoring
       private final Limelight_Move alignToTag = new Limelight_Move(
         drivetrain, 
         limelight,
         () -> -controller.getLeftX()  
     );
+
+    //-------------------Climber Setup-------------------------
+    
+    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+    private final Climber climb = new Climber(climberSubsystem);
+  
+    
 
    
   public LimelightSubsystem getLimelight() {
@@ -116,11 +128,6 @@ public class RobotContainer {
         controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         //controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         //controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
- 
-
-        // reset the field-centric heading on right bumper press
-        controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        drivetrain.registerTelemetry(logger::telemeterize);
 
         //------------VISION ALIGNMENT------------------------------------------------------------------------------------------------------------------------
         
@@ -130,6 +137,16 @@ public class RobotContainer {
          // reset the field-centric heading on right bumper press
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        //------------Climber Bindings--------------------------------------------------------------
+        controller.povUp().onTrue(climb);
+        
+        
+          //Commands.runOnce(() -> Climber()));
+        //controller.povDown().onTrue(
+          //Commands.runOnce(() -> Climber.DownClimber(), climberSubsystem));
+          //(->) is lambda, tells the code where to get the stuff for the command
+            
     }
 
   
