@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
@@ -256,4 +257,5 @@ public class Limelight_Move extends Command {
         
         return false;
     }
+
 }

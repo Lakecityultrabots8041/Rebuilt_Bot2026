@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -117,6 +120,20 @@ public final class Constants {
 
     /** Number of consecutive aligned loops required before command finishes (1 loop ≈ 20ms) */
     public static final int ALIGNED_LOOPS_REQUIRED = 25; // ~0.5 seconds
+
+// ===== SHOOTER =====
+ public static class ShooterConstants {
+    public ShooterConstants() {}
+
+    public static final CANBus Canivore = new CANBus("Jeffery");
+   
+    public static final int SHOOTER_MOTOR = (2);
+
+    
+}
+
+
+
 
     /**
      * Get the target distance for a specific AprilTag ID
