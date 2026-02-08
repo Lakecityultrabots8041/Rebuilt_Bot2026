@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.climb;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -7,14 +7,14 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.subsystems.climb.ClimberConstants;
 
 public class ClimberSubsystem extends SubsystemBase {
 
-    private double liftMaxPos = Constants.ClimberConstants.liftMaxPos;
-    private double pivotMaxPos = Constants.ClimberConstants.pivotMaxPos;
-    private double liftMinPos = Constants.ClimberConstants.liftMinPos;
-    private double pivotMinPos = Constants.ClimberConstants.pivotMinPos;
+    private double liftMaxPos = ClimberConstants.LIFT_MAX_POS;
+    private double pivotMaxPos = ClimberConstants.PIVOT_MAX_POS;
+    private double liftMinPos = ClimberConstants.LIFT_MIN_POS;
+    private double pivotMinPos = ClimberConstants.PIVOT_MIN_POS;
 
     private final TalonFX liftMotor;
     private final TalonFX pivotMotor;
@@ -40,8 +40,8 @@ public class ClimberSubsystem extends SubsystemBase {
     public boolean climbingUp = true;  // Track direction
 
     public ClimberSubsystem() {
-        liftMotor = new TalonFX(Constants.ClimberConstants.Lift_Motor);
-        pivotMotor = new TalonFX(Constants.ClimberConstants.Pivot_Motor);
+        liftMotor = new TalonFX(ClimberConstants.LIFT_MOTOR);
+        pivotMotor = new TalonFX(ClimberConstants.PIVOT_MOTOR);
 
         Lift_Servo = new Servo(1);
         Pivot_Servo = new Servo(2);
@@ -68,25 +68,25 @@ public class ClimberSubsystem extends SubsystemBase {
     // Servo Commands Setup
     //=======================================================
     public void liftServoLock() {
-        Lift_Servo.setAngle(Constants.ClimberConstants.LServo_Lock_Angle);
+        Lift_Servo.setAngle(ClimberConstants.LSERVO_LOCK_ANGLE);
         System.out.println("Lift Locked");
         upLock = true;
     }
 
     public void liftServoRelease() {
-        Lift_Servo.setAngle(Constants.ClimberConstants.LServo_Release_Angle);
+        Lift_Servo.setAngle(ClimberConstants.LSERVO_RELEASE_ANGLE);
         System.out.println("Lift Unlocked");
         upLock = false;
     }
 
     public void pivotServoLock() {
-        Pivot_Servo.setAngle(Constants.ClimberConstants.PServo_Lock_Angle);
+        Pivot_Servo.setAngle(ClimberConstants.PSERVO_LOCK_ANGLE);
         System.out.println("Pivot Locked");
         outLock = true;
     }
     
     public void pivotServoRelease() {
-        Pivot_Servo.setAngle(Constants.ClimberConstants.PServo_Release_Angle);
+        Pivot_Servo.setAngle(ClimberConstants.PSERVO_RELEASE_ANGLE);
         System.out.println("Pivot Unlocked");
         outLock = false;
     }
