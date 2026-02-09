@@ -15,16 +15,12 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.LimelightHelpers;
 
 /**
  * Limelight 4 subsystem with MegaTag2 support and SIMULATION.
  * 
- * In sim mode, this subsystem fakes vision data by calculating what the camera
- * would see based on the robot's simulated pose and the official 2026 Rebuilt
- * AprilTag field layout. This lets you test Limelight_Move in the simulator.
  * 
- * ALL DISTANCE METHODS RETURN METERS unless explicitly named otherwise.
+ * 
  */
 public class LimelightSubsystem extends SubsystemBase {
 
@@ -184,10 +180,7 @@ public class LimelightSubsystem extends SubsystemBase {
         return 0;
     }
 
-    // =========================================================================
-    // PERIODIC
-    // =========================================================================
-
+   
     @Override
     public void periodic() {
         if (isSimulation) {
@@ -296,7 +289,7 @@ public class LimelightSubsystem extends SubsystemBase {
                 bestDistance = distance;
                 bestTagID = tag.ID;
                 // Negate because Limelight convention: positive TX = target right
-                // but our angleDiff is positive when tag is to the left in FRC coords
+                // but our angleDiff is positive when tag is to the left in FRC coords?
                 bestTx = -angleDiff;
             }
         }
@@ -306,9 +299,9 @@ public class LimelightSubsystem extends SubsystemBase {
             simTagID = bestTagID;
             simTx = bestTx;
             simDistanceMeters = bestDistance;
-            // Fake area — larger when closer (rough approximation)
+            // Fake area — larger when closer (rough approximation) ie a guess
             simArea = Math.max(0.1, 10.0 / (bestDistance * bestDistance));
-            // Fake TY — not critical for your alignment but approximate it
+            // Fake TY — not critical for your alignment but approximate it again
             simTy = 0; // Would need camera height math for accuracy
         } else {
             simHasTarget = false;
