@@ -49,7 +49,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     // Camera FOV limits (Limelight 4 specs)
     private static final double HORIZONTAL_FOV_DEG = 29.8;  // half-width
-    private static final double MAX_DETECTION_RANGE_METERS = 8.0;
+    private static final double MAX_DETECTION_RANGE_METERS = 8.0;   
 
     /**
      * Creates a LimelightSubsystem.

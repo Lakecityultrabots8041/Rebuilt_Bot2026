@@ -4,12 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.math.util.Units;
-
-
 public final class Constants {
     public static class OperatorConstants {
         public static final int kDriverControllerPort = 0;

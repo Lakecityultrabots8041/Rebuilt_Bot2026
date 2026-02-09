@@ -32,7 +32,7 @@ import static edu.wpi.first.units.Units.*;
  *   // Hardcoded to specific alliance:
  *   new Limelight_Move(drive, ll, () -> VisionConstants.BLUE_HUB_TAGS, strafeSupplier)
  * 
- * ALL INTERNAL CALCULATIONS USE METERS.
+ * 
  */
 public class Limelight_Move extends Command {
 

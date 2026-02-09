@@ -55,7 +55,7 @@ public class ShooterCommands extends Command {
         shooter.waitUntilReady(),          // Wait for speed
         Commands.waitSeconds(0.5),         // Hold shooting speed
         shooter.idle(), 
-        Commands.runOnce(() -> System.out.println("Commplete shoot sequence"))                    // Stop
+        Commands.runOnce(() -> System.out.println("Commplete shoot sequence")) // Stop
     ).withTimeout(3.0)
      .withName("CompleteShootSequence");
 }
