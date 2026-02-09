@@ -2,8 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.shoot.ShooterSubsystem;
+import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.commands.Limelight_Move;
 
 
@@ -55,7 +55,7 @@ public class ShooterCommands extends Command {
         shooter.waitUntilReady(),          // Wait for speed
         Commands.waitSeconds(0.5),         // Hold shooting speed
         shooter.idle(), 
-        Commands.runOnce(() -> System.out.println("Commplete shoot sequence"))                    // Stop
+        Commands.runOnce(() -> System.out.println("Commplete shoot sequence")) // Stop
     ).withTimeout(3.0)
      .withName("CompleteShootSequence");
 }
