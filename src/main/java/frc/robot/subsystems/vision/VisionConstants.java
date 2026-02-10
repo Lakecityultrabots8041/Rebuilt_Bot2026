@@ -236,6 +236,9 @@ public final class VisionConstants {
     /** How many meters of distance error is "at distance" */
     public static final double DISTANCE_TOLERANCE_METERS = Units.inchesToMeters(3.0); // 3in = 0.076m
 
+    /** How many meters of lateral offset is "centered" (for auto-strafe) */
+    public static final double STRAFE_TOLERANCE_METERS = Units.inchesToMeters(3.0); // 3in = 0.076m
+
     // =====================================================================
     // PROPORTIONAL GAINS
     // =====================================================================
@@ -245,12 +248,20 @@ public final class VisionConstants {
     /** Forward gain: meters of distance error → fraction of max forward speed */
     public static final double FORWARD_GAIN = 0.8;
 
+    /** Auto-strafe gain: meters of lateral offset → fraction of max strafe speed.
+     *  Used in autonomous to correct lateral drift (e.g., after a bump). */
+    public static final double AUTO_STRAFE_GAIN = 0.5;
+
     // =====================================================================
     // SPEED LIMITS (fraction of max speed, 0.0 to 1.0)
     // =====================================================================
     public static final double MAX_ROTATION_SPEED = 0.25;
     public static final double MAX_FORWARD_SPEED = 0.30;
     public static final double MAX_DRIVER_STRAFE_SCALE = 0.5;
+
+    /** Max auto-strafe speed in autonomous — conservative since strafe is
+     *  only needed for small corrections, not primary movement. */
+    public static final double MAX_AUTO_STRAFE_SPEED = 0.20;
 
     // =====================================================================
     // SAFETY

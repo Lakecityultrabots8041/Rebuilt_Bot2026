@@ -32,6 +32,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     // ===== CACHED DATA (used by both real and sim) =====
     private double cachedDistanceMeters = 0;
+    private double cachedLateralOffsetMeters = 0;
     private boolean megatag2Available = false;
 
     // ===== SIM SUPPORT =====
@@ -46,6 +47,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private double simArea = 0;
     private int simTagID = -1;
     private double simDistanceMeters = 0;
+    private double simLateralOffsetMeters = 0;
 
     // Camera FOV limits (Limelight 4 specs)
     private static final double HORIZONTAL_FOV_DEG = 29.8;  // half-width
@@ -149,6 +151,19 @@ public class LimelightSubsystem extends SubsystemBase {
         return cachedDistanceMeters;
     }
 
+    /**
+     * @return lateral (left-right) offset to target in METERS.
+     *         Positive = target is to the right of camera center.
+     *         Returns 0 if no valid data.
+     */
+    public double getLateralOffsetMeters() {
+        if (isSimulation) {
+            return simHasTarget ? simLateralOffsetMeters : 0;
+        }
+        if (!megatag2Available) return 0;
+        return cachedLateralOffsetMeters;
+    }
+
     public double getDistanceInchesForDisplay() {
         double dist = getDistanceMeters();
         if (dist < 0) return -1;
@@ -212,7 +227,8 @@ public class LimelightSubsystem extends SubsystemBase {
         try {
             double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(LIMELIGHT_NAME);
             if (targetPose != null && targetPose.length >= 3 && tv.getDouble(0) == 1) {
-                cachedDistanceMeters = targetPose[2];
+                cachedLateralOffsetMeters = targetPose[0]; // X = lateral offset (right-positive)
+                cachedDistanceMeters = targetPose[2];      // Z = forward distance
                 megatag2Available = true;
             } else {
                 megatag2Available = false;
@@ -299,6 +315,8 @@ public class LimelightSubsystem extends SubsystemBase {
             simTagID = bestTagID;
             simTx = bestTx;
             simDistanceMeters = bestDistance;
+            // Lateral offset: distance * sin(tx) gives meters to the right of center
+            simLateralOffsetMeters = bestDistance * Math.sin(Math.toRadians(bestTx));
             // Fake area — larger when closer (rough approximation) ie a guess
             simArea = Math.max(0.1, 10.0 / (bestDistance * bestDistance));
             // Fake TY — not critical for your alignment but approximate it again
@@ -310,6 +328,7 @@ public class LimelightSubsystem extends SubsystemBase {
             simTy = 0;
             simArea = 0;
             simDistanceMeters = 0;
+            simLateralOffsetMeters = 0;
         }
     }
 }

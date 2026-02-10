@@ -122,7 +122,9 @@ public class RobotContainer {
         // Shooter — right trigger to shoot, left trigger to eject
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
-        controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
+
+        controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));
     }
 
     // ===== This lets us allow other classes to access subsystems =====

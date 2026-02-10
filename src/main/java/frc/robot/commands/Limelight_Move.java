@@ -146,10 +146,24 @@ public class Limelight_Move extends Command {
             -VisionConstants.MAX_FORWARD_SPEED, VisionConstants.MAX_FORWARD_SPEED);
         double forwardVelocityMps = forwardOutput * maxSpeedMps;
 
-        // STRAFE (DRIVER) — allows arcing around target
+        // STRAFE — driver input in teleop, auto-correction in autonomous
         double driverStrafe = driverStrafeSupplier.getAsDouble();
         driverStrafe = Math.abs(driverStrafe) < 0.1 ? 0.0 : driverStrafe;
-        double strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE;
+
+        double strafeVelocityMps;
+        double lateralOffsetMeters = limelight.getLateralOffsetMeters();
+
+        if (Math.abs(driverStrafe) > 0.0) {
+            // TELEOP: driver strafe takes priority
+            strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE;
+        } else {
+            // AUTO: correct lateral offset from AprilTag using camera-space data
+            // Positive lateral offset = target right → strafe right (positive Y in robot frame)
+            double strafeOutput = lateralOffsetMeters * VisionConstants.AUTO_STRAFE_GAIN;
+            strafeOutput = MathUtil.clamp(strafeOutput,
+                -VisionConstants.MAX_AUTO_STRAFE_SPEED, VisionConstants.MAX_AUTO_STRAFE_SPEED);
+            strafeVelocityMps = strafeOutput * maxSpeedMps;
+        }
 
         // Send to drivetrain (robot-relative)
         drivetrain.driveRobotRelative(new ChassisSpeeds(
@@ -166,16 +180,20 @@ public class Limelight_Move extends Command {
         SmartDashboard.putNumber("Vision/Distance Error (in)", Units.metersToInches(distanceErrorMeters));
         SmartDashboard.putNumber("Vision/Rotation Output", rotationOutput);
         SmartDashboard.putNumber("Vision/Forward Output", forwardOutput);
+        SmartDashboard.putNumber("Vision/Lateral Offset (in)", Units.metersToInches(lateralOffsetMeters));
+        SmartDashboard.putNumber("Vision/Strafe Output", strafeVelocityMps / maxSpeedMps);
         SmartDashboard.putNumber("Vision/Driver Strafe", driverStrafe);
 
         // Alignment check
         boolean rotationGood = Math.abs(horizontalErrorDeg) < VisionConstants.ALIGNMENT_TOLERANCE_DEGREES;
         boolean distanceGood = Math.abs(distanceErrorMeters) < VisionConstants.DISTANCE_TOLERANCE_METERS;
+        boolean strafeGood = Math.abs(lateralOffsetMeters) < VisionConstants.STRAFE_TOLERANCE_METERS;
 
         SmartDashboard.putBoolean("Vision/Rotation Aligned", rotationGood);
         SmartDashboard.putBoolean("Vision/Distance Aligned", distanceGood);
+        SmartDashboard.putBoolean("Vision/Strafe Aligned", strafeGood);
 
-        if (rotationGood && distanceGood) {
+        if (rotationGood && distanceGood && strafeGood) {
             alignedCount++;
         } else {
             alignedCount = 0;
