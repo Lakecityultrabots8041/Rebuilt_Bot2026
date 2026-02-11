@@ -7,34 +7,31 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /**
- * Constants for the vision/Limelight subsystem.
- * 2026 REBUILT presented by Haas — ALL DATA FROM OFFICIAL GAME MANUAL.
- * 
- * ALL DISTANCES ARE IN METERS unless explicitly noted otherwise.
+ *
  * 
  * =====================================================================
- * 2026 REBUILT AprilTag Layout (32 tags, 36h11 family, IDs 1-32)
+ * 2026 REBUILT AprilTag Layout (32 tags, IDs 1-32)
  * =====================================================================
  * 
  * HUB TAGS (16 total, 2 per face × 4 faces per HUB):
- *   Blue HUB:  2, 3, 4, 5, 8, 9, 10, 11
- *   Red HUB:   18, 19, 20, 21, 24, 25, 26, 27
- *   Height: centers at 44.25in (1.124m) off floor
+ * Blue HUB:  2, 3, 4, 5, 8, 9, 10, 11
+ * Red HUB:   18, 19, 20, 21, 24, 25, 26, 27
+ * Height: centers at 44.25in (1.124m) off floor
  * 
  * TOWER WALL TAGS (4 total, 2 per tower):
- *   Blue Tower: 15, 16
- *   Red Tower:  31, 32
- *   Height: centers at 21.75in (0.5525m) off floor
+ * Blue Tower: 15, 16
+ * Red Tower:  31, 32
+ * Height: centers at 21.75in (0.5525m) off floor
  * 
  * OUTPOST TAGS (4 total, 2 per outpost):
- *   Blue Outpost: 13, 14
- *   Red Outpost:  29, 30
- *   Height: centers at 21.75in (0.5525m) off floor
+ * Blue Outpost: 13, 14
+ * Red Outpost:  29, 30
+ * Height: centers at 21.75in (0.5525m) off floor
  * 
  * TRENCH TAGS (8 total, 2 per trench, 1 facing alliance zone, 1 facing neutral zone):
- *   Blue Trenches: 1, 6, 7, 12
- *   Red Trenches:  17, 22, 23, 28
- *   Height: centers at 35in (0.889m) off floor
+ * Blue Trenches: 1, 6, 7, 12
+ * Red Trenches:  17, 22, 23, 28
+ * Height: centers at 35in (0.889m) off floor
  * 
  * =====================================================================
  * Key Field Dimensions (from manual)
@@ -58,7 +55,6 @@ public final class VisionConstants {
     // =====================================================================
     // APRILTAG TARGET DISTANCES (METERS)
     // How far the robot should stop from each tag when auto-aligning.
-    // These are YOUR robot's ideal distances — tune based on your mechanism!
     // =====================================================================
     public static final double[] APRILTAG_DISTANCES = new double[33]; // IDs 1-32, index 0 unused
     static {
@@ -69,7 +65,7 @@ public final class VisionConstants {
 
         // --- BLUE HUB TAGS (IDs 2, 3, 4, 5, 8, 9, 10, 11) ---
         // HUB opening is 72in (1.83m) off carpet. Robot needs to shoot up into it.
-        // TODO: Tune this distance based on your shooter's ideal range!
+        // TODO: We will need to tune distance when we get the hood in place
         double hubShootDistance = Units.inchesToMeters(97); // ~2.46m from tag face
         APRILTAG_DISTANCES[2]  = hubShootDistance;
         APRILTAG_DISTANCES[3]  = hubShootDistance;
@@ -207,7 +203,7 @@ public final class VisionConstants {
     }
 
     // =====================================================================
-    // TAG HEIGHT REFERENCE (for trig-based distance if needed)
+    // TAG HEIGHT REFERENCE VALUES (METERS)
     // =====================================================================
     /** HUB tag centers: 44.25in off floor */
     public static final double HUB_TAG_HEIGHT_METERS = Units.inchesToMeters(44.25);
@@ -219,7 +215,7 @@ public final class VisionConstants {
     public static final double TRENCH_TAG_HEIGHT_METERS = Units.inchesToMeters(35.0);
 
     // =====================================================================
-    // CAMERA MOUNTING (YOUR ROBOT — measure and update these!)
+    // CAMERA MOUNTING REFERENCE VALUES (METERS)
     // =====================================================================
     /** Height of the Limelight lens from the floor */
     public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(12); // TODO: measure!
