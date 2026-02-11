@@ -1,6 +1,7 @@
 package frc.robot.subsystems.vision;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -34,6 +35,9 @@ public class LimelightSubsystem extends SubsystemBase {
     private double cachedDistanceMeters = 0;
     private double cachedLateralOffsetMeters = 0;
     private boolean megatag2Available = false;
+
+    // ===== VISION FUSION =====
+    private BiConsumer<Pose2d, Double> visionMeasurementConsumer = null;
 
     // ===== SIM SUPPORT =====
     private final boolean isSimulation;
@@ -85,11 +89,21 @@ public class LimelightSubsystem extends SubsystemBase {
     /**
      * REQUIRED FOR SIM: Provide a supplier for the robot's current pose.
      * Call this from RobotContainer after creating the drivetrain.
-     * 
+     *
      * Example: limelight.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
      */
     public void setRobotPoseSupplier(Supplier<Pose2d> poseSupplier) {
         this.robotPoseSupplier = poseSupplier;
+    }
+
+    /**
+     * Sets the consumer that receives MegaTag2 vision poses for odometry fusion.
+     * Called every loop when a valid MegaTag2 estimate is available.
+     *
+     * @param consumer accepts (Pose2d pose, Double timestampSeconds)
+     */
+    public void setVisionMeasurementConsumer(BiConsumer<Pose2d, Double> consumer) {
+        this.visionMeasurementConsumer = consumer;
     }
 
     // =========================================================================
@@ -175,6 +189,18 @@ public class LimelightSubsystem extends SubsystemBase {
         return megatag2Available;
     }
 
+    /**
+     * Returns true if the Limelight is currently tracking an alliance hub tag
+     * within auto-aim range.
+     */
+    public boolean isTrackingHubTag() {
+        if (!hasValidTarget()) return false;
+        int tagId = getAprilTagID();
+        if (!VisionConstants.getHubTags().contains(tagId)) return false;
+        double distance = getDistanceMeters();
+        return distance > 0 && distance < VisionConstants.AUTO_AIM_MAX_RANGE_METERS;
+    }
+
     public Pose2d getRobotPose_MegaTag2() {
         if (isSimulation && robotPoseSupplier != null) {
             return robotPoseSupplier.get();
@@ -202,6 +228,7 @@ public class LimelightSubsystem extends SubsystemBase {
             updateSimVision();
         } else {
             updateMegaTag2Cache();
+            updateVisionFusion();
         }
 
         // Dashboard — same for both modes
@@ -222,6 +249,38 @@ public class LimelightSubsystem extends SubsystemBase {
     // =========================================================================
     // REAL HARDWARE - MegaTag2 Cache
     // =========================================================================
+
+    /**
+     * Feeds MegaTag2 pose estimates into the CTRE Kalman filter via the consumer.
+     * Must be called after updateMegaTag2Cache() so we know if a valid target exists.
+     */
+    private void updateVisionFusion() {
+        if (visionMeasurementConsumer == null) return;
+        if (!hasValidTarget()) return;
+        if (robotPoseSupplier == null) return;
+
+        // MegaTag2 requires the robot's current heading to be set first
+        Pose2d currentPose = robotPoseSupplier.get();
+        if (currentPose == null) return;
+
+        LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME,
+            currentPose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
+        LimelightHelpers.PoseEstimate result =
+            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+
+        // Filter: reject null, no tags, low area, off-field poses
+        if (result == null) return;
+        if (result.tagCount == 0) return;
+        if (result.avgTagArea < VisionConstants.MIN_TARGET_AREA) return;
+
+        // Reject poses clearly off the field (field is ~16.54m x ~8.07m)
+        double x = result.pose.getX();
+        double y = result.pose.getY();
+        if (x < 0 || x > 17.0 || y < 0 || y > 9.0) return;
+
+        visionMeasurementConsumer.accept(result.pose, result.timestampSeconds);
+    }
 
     private void updateMegaTag2Cache() {
         try {

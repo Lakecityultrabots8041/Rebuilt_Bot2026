@@ -276,6 +276,24 @@ public final class VisionConstants {
     public static final int ALIGNED_LOOPS_REQUIRED = 25;
 
     // =====================================================================
+    // AUTO-AIM CONSTANTS
+    // =====================================================================
+    /** Maximum range to track a hub tag for auto-aim (meters) */
+    public static final double AUTO_AIM_MAX_RANGE_METERS = 5.0;
+
+    /** Auto-aim PID proportional gain — gentle to avoid oscillation */
+    public static final double AUTO_AIM_KP = 4.0;
+    /** Auto-aim PID integral gain */
+    public static final double AUTO_AIM_KI = 0.0;
+    /** Auto-aim PID derivative gain — small D for damping */
+    public static final double AUTO_AIM_KD = 0.1;
+
+    /** Max rotation rate for auto-aim (rad/s) — prevents fast snapping */
+    public static final double AUTO_AIM_MAX_ROTATION_RATE = 1.5;
+    /** Slew rate limit for auto-aim rotation (rad/s²) — smooths acceleration */
+    public static final double AUTO_AIM_SLEW_RATE = 3.0;
+
+    // =====================================================================
     // HELPER
     // =====================================================================
     public static double getAprilTagDistance(int tagID) {

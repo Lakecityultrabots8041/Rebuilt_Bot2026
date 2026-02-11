@@ -14,13 +14,15 @@ public class ShooterSubsystem extends SubsystemBase {
     private final VelocityTorqueCurrentFOC velocityRequest;
 
     private ShooterState currentState = ShooterState.IDLE;
-    private ShooterState lastState = null; 
+    private ShooterState lastState = null;
+    private double targetVariableVelocity = 0;
 
     public enum ShooterState {
         IDLE,
         REVVING,
         READY,
-        EJECTING
+        EJECTING,
+        VARIABLE
     }
 
     public boolean isReady() {
@@ -41,16 +43,20 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Only send motor commands when state changes (not every loop)
-        if (currentState != lastState) {
+        // VARIABLE state sends velocity every loop (target changes continuously)
+        if (currentState == ShooterState.VARIABLE) {
+            setVelocity(targetVariableVelocity);
+        } else if (currentState != lastState) {
+            // Other states only send motor commands when state changes
             switch (currentState) {
                 case IDLE -> setVelocity(ShooterConstants.IDLE_VELOCITY);
                 case REVVING -> setVelocity(ShooterConstants.REV_VELOCITY);
                 case READY -> setVelocity(ShooterConstants.MAX_VELOCITY);
                 case EJECTING -> setVelocity(ShooterConstants.EJECT_VELOCITY);
+                default -> {}
             }
-            lastState = currentState;
         }
+        lastState = currentState;
 
         // Dashboard telemetry
         double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
@@ -60,6 +66,7 @@ public class ShooterSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("Shooter/At Target", atTargetVelocity());
         SmartDashboard.putNumber("Shooter/Motor Voltage", shootMotor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Shooter/Motor Current", shootMotor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Shooter/Target Variable RPS", targetVariableVelocity);
     }
 
     // ===== COMMAND FACTORIES =====
@@ -97,6 +104,15 @@ public class ShooterSubsystem extends SubsystemBase {
         shootMotor.setControl(velocityRequest.withVelocity(velocityRPS));
     }
 
+    /**
+     * Sets the shooter to VARIABLE state with a continuously-updating target velocity.
+     * Called directly (not a command) to avoid scheduling conflicts with auto-aim.
+     */
+    public void setVariableVelocity(double rps) {
+        targetVariableVelocity = rps;
+        currentState = ShooterState.VARIABLE;
+    }
+
     public ShooterState getState() {
         return currentState;
     }
@@ -107,6 +123,7 @@ public class ShooterSubsystem extends SubsystemBase {
             case REVVING -> ShooterConstants.REV_VELOCITY;
             case READY -> ShooterConstants.MAX_VELOCITY;
             case EJECTING -> ShooterConstants.EJECT_VELOCITY;
+            case VARIABLE -> targetVariableVelocity;
         };
 
         double currentVelocity = shootMotor.getVelocity().getValueAsDouble();

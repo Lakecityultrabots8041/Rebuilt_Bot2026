@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.subsystems.climb.ClimberSubsystem;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
+import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -15,6 +16,9 @@ import frc.robot.generated.TunerConstants;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,6 +52,12 @@ public class RobotContainer {
 
     // ===== SHOOTER =====
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+
+    // ===== AUTO-AIM =====
+    private boolean autoAimEnabled = false;
+    private final PIDController autoAimPID = new PIDController(
+        VisionConstants.AUTO_AIM_KP, VisionConstants.AUTO_AIM_KI, VisionConstants.AUTO_AIM_KD);
+    private final SlewRateLimiter autoAimSlew = new SlewRateLimiter(VisionConstants.AUTO_AIM_SLEW_RATE);
 
     // ===== AUTO =====
     private final SendableChooser<Command> autoChooser;
@@ -83,6 +93,13 @@ public class RobotContainer {
         // Wire up sim vision
         limelight.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
 
+        // Wire up vision fusion — feeds MegaTag2 poses into CTRE Kalman filter
+        limelight.setVisionMeasurementConsumer(
+            (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
+
+        // Configure auto-aim PID for continuous angle wrapping
+        autoAimPID.enableContinuousInput(-Math.PI, Math.PI);
+
         // Register named commands for PathPlanner (autonomous)
         NamedCommands.registerCommand("Align Hub", createAutoHubAlign());
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
@@ -98,22 +115,63 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        //Drivetrain default — field-centric drive
+        // Drivetrain default — field-centric drive with auto-aim integration
         drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-controller.getLeftY() * MaxSpeed)
-                     .withVelocityY(-controller.getLeftX() * MaxSpeed)
-                     .withRotationalRate(-controller.getRightX() * MaxAngularRate)
-            )
+            drivetrain.applyRequest(() -> {
+                double velocityX = -controller.getLeftY() * MaxSpeed;
+                double velocityY = -controller.getLeftX() * MaxSpeed;
+
+                if (autoAimEnabled && limelight.isTrackingHubTag()) {
+                    // Compute target heading from current heading and TX offset
+                    double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
+                    double targetHeading = currentHeading - Math.toRadians(limelight.getHorizontalOffset());
+
+                    double rawOutput = autoAimPID.calculate(currentHeading, targetHeading);
+                    double clampedOutput = MathUtil.clamp(rawOutput,
+                        -VisionConstants.AUTO_AIM_MAX_ROTATION_RATE,
+                         VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
+                    double smoothOutput = autoAimSlew.calculate(clampedOutput);
+
+                    // Update shooter RPM based on distance (Feature 3)
+                    double distance = limelight.getDistanceMeters();
+                    if (distance > 0) {
+                        shooterSubsystem.setVariableVelocity(
+                            ShooterConstants.getVelocityForDistance(distance));
+                    }
+
+                    return drive.withVelocityX(velocityX)
+                                .withVelocityY(velocityY)
+                                .withRotationalRate(smoothOutput);
+                } else {
+                    // Reset slew limiter and PID when not active to prevent stale state
+                    autoAimSlew.reset(0);
+                    autoAimPID.reset();
+
+                    // Idle shooter if it was in VARIABLE mode
+                    if (shooterSubsystem.getState() == ShooterSubsystem.ShooterState.VARIABLE) {
+                        shooterSubsystem.setVariableVelocity(0);
+                    }
+
+                    return drive.withVelocityX(velocityX)
+                                .withVelocityY(velocityY)
+                                .withRotationalRate(-controller.getRightX() * MaxAngularRate);
+                }
+            })
         );
 
-        //Reset field-centric heading
+        // Reset field-centric heading
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
 
+        // Left bumper — toggle auto-aim on/off
+        controller.leftBumper().onTrue(Commands.runOnce(() -> {
+            autoAimEnabled = !autoAimEnabled;
+            SmartDashboard.putBoolean("AutoAim/Enabled", autoAimEnabled);
+        }));
+
         // ---- VISION ALIGNMENT ----
-        // START  = align to HUB (scoring)
-        // Y      = align to TOWER (climbing)  
+        // START  = align to HUB (precision, scoring)
+        // Y      = align to TOWER (climbing)
         // X      = align to OUTPOST (human player)
         controller.start().whileTrue(createHubAlign());
         controller.y().whileTrue(createTowerAlign());
