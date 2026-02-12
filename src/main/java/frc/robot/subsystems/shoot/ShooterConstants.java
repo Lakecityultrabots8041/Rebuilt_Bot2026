@@ -28,9 +28,7 @@ public final class ShooterConstants {
     public static final double VELOCITY_TOLERANCE_RPS = 2.0;
     public static final double READY_TIMEOUT_SECONDS = 2.0;
 
-    // ===== Variable Distance Shooter RPM (linear interpolation) =====
-    // Parallel arrays: distance (meters) → shooter velocity (RPS)
-    // Values are starting estimates — must be tuned on real field with fixed hood
+    // ===== Variable Distance Shooter RPM  =====
     private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
     private static final double[] VELOCITY_TABLE_RPS    = {60,  70,  80,   85,  88,  90,  90 };
 

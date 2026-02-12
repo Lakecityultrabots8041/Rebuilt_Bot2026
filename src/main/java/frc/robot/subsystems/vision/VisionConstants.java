@@ -58,18 +58,19 @@ public final class VisionConstants {
     // =====================================================================
     // APRILTAG TARGET DISTANCES (METERS)
     // How far the robot should stop from each tag when auto-aligning.
-    // These are YOUR robot's ideal distances — tune based on your mechanism!
+    // We will need to tune these distances for final shooting accuracy and climbing engagement
     // =====================================================================
     public static final double[] APRILTAG_DISTANCES = new double[33]; // IDs 1-32, index 0 unused
     static {
         // Default for any unknown tag
         for (int i = 0; i < APRILTAG_DISTANCES.length; i++) {
-            APRILTAG_DISTANCES[i] = 2.0; // 2 meters default
+            APRILTAG_DISTANCES[i] = 2.0; // 2 meters default, 
         }
 
         // --- BLUE HUB TAGS (IDs 2, 3, 4, 5, 8, 9, 10, 11) ---
         // HUB opening is 72in (1.83m) off carpet. Robot needs to shoot up into it.
-        // TODO: Tune this distance based on your shooter's ideal range!
+
+        // TODO: Tune this distance based on our shooter's ideal range!
         double hubShootDistance = Units.inchesToMeters(97); // ~2.46m from tag face
         APRILTAG_DISTANCES[2]  = hubShootDistance;
         APRILTAG_DISTANCES[3]  = hubShootDistance;
@@ -207,7 +208,7 @@ public final class VisionConstants {
     }
 
     // =====================================================================
-    // TAG HEIGHT REFERENCE (for trig-based distance if needed)
+    // TAG HEIGHT REFERENCE DISTANCES (METERS)
     // =====================================================================
     /** HUB tag centers: 44.25in off floor */
     public static final double HUB_TAG_HEIGHT_METERS = Units.inchesToMeters(44.25);
@@ -219,7 +220,7 @@ public final class VisionConstants {
     public static final double TRENCH_TAG_HEIGHT_METERS = Units.inchesToMeters(35.0);
 
     // =====================================================================
-    // CAMERA MOUNTING (YOUR ROBOT — measure and update these!)
+    // CAMERA MOUNTING (METERS)
     // =====================================================================
     /** Height of the Limelight lens from the floor */
     public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(12); // TODO: measure!
@@ -249,7 +250,7 @@ public final class VisionConstants {
     public static final double FORWARD_GAIN = 0.8;
 
     /** Auto-strafe gain: meters of lateral offset → fraction of max strafe speed.
-     *  Used in autonomous to correct lateral drift (e.g., after a bump). */
+     *  Used in autonomous to correct lateral drift (example: after a bump). */
     public static final double AUTO_STRAFE_GAIN = 0.5;
 
     // =====================================================================
