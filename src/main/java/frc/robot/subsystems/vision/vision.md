@@ -1,6 +1,7 @@
 # Vision System — Team 8041
 
-Chris — Lake City Ultrabots, 2026 REBUILT season
+Chris Shaw — Lake City Ultrabots Programming Mentor | 
+| 2026 REBUILT season | 
 
 This is the full breakdown of how our Limelight vision system works. If you're touching any vision code, read this first.
 
