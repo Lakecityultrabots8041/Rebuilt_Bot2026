@@ -1,613 +1,398 @@
-# FRC Vision System Documentation
+# Vision System — Team 8041
 
-**Author:** Chris - Team 8041 Lake City Ultrabots  
-**Last Updated:** February 2026  
-**Target Audience:** FRC teams using Limelight 4 with Phoenix 6 swerve drivetrains
+Chris — Lake City Ultrabots, 2026 REBUILT season
 
-## System Overview
+This is the full breakdown of how our Limelight vision system works. If you're touching any vision code, read this first.
 
-This vision system provides autonomous alignment to AprilTags on the 2026 REBUILT field. The architecture supports:
+---
 
-- Multi-tag alignment (any tag in a group, not just one specific ID)
-- Alliance-aware tag selection (automatically picks red/blue tags based on DriverStation)
-- Teleop with driver strafe input
-- Full autonomous operation
-- Simulation support for testing without hardware
-- Vision-odometry fusion via MegaTag2
+## What the system does
 
-**Hardware Requirements:**
-- Limelight 4 (running latest firmware)
-- CTRE Phoenix 6 swerve drivetrain
-- RoboRIO 2.0
+We use a Limelight 4 to see AprilTags on the field. The robot uses those tags to:
 
-## Architecture
+- Align itself to scoring positions (hub), climbing positions (tower), and human player stations (outpost)
+- Lock heading onto a hub tag while the driver still drives around (auto-aim)
+- Feed pose data back into odometry so the drivetrain knows where it is more accurately
+- Work in simulation so we can test alignment logic without a real robot
 
-### Component Breakdown
+Hardware: Limelight 4, CTRE Phoenix 6 swerve, RoboRIO 2.0.
 
-**LimelightSubsystem.java** - Hardware interface and data processing
-- Reads NetworkTables data from Limelight
-- Calculates distances using MegaTag2 camera-space coordinates
-- Simulates vision in robot simulator using field layout
-- Feeds vision measurements to drivetrain odometry
+---
 
-**VisionConstants.java** - Configuration and field data
-- AprilTag groups (hub, tower, outpost, trench)
-- Target distances for each tag type
-- PID gains and speed limits
-- Alliance-aware helper methods
+## 2026 REBUILT Field — AprilTag Layout
 
-**Limelight_Move.java** - Alignment command
-- Three-axis control: rotation, forward/back, strafe
-- Works with tag groups instead of single tags
-- Supports both teleop and autonomous modes
+32 tags total, 36h11 family, IDs 1 through 32. Mirrored across alliances.
 
-**RobotContainer.java** - Command factories and button bindings
-- Creates command instances with alliance-aware tag suppliers
-- Wires up auto-aim for driver control
-- Registers PathPlanner named commands
+### Hub Tags (16 total — 2 per face, 4 faces per hub)
 
-## How Distance Calculation Works
+The hub is what we shoot fuel into. It's a 47in x 47in structure centered 158.6in from the alliance wall. The opening is 72in off the carpet.
 
-The key to this system is getting accurate distance to the AprilTag. We use MegaTag2's camera-space coordinates instead of calculating distance from pixel height.
+| Alliance | Tag IDs |
+|----------|---------|
+| Blue | 2, 3, 4, 5, 8, 9, 10, 11 |
+| Red | 18, 19, 20, 21, 24, 25, 26, 27 |
 
-### What is Camera-Space?
+Tag centers sit at **44.25in (1.124m)** off the floor.
 
-When Limelight sees an AprilTag, it provides the tag's position relative to the camera in three dimensions:
+### Tower Tags (4 total — 2 per tower)
 
-- **X axis:** Lateral offset (positive = tag is to the camera's right)
-- **Y axis:** Vertical offset (positive = tag is above camera center)
-- **Z axis:** Forward distance (positive = tag is in front of camera)
+Towers are for climbing. 49.25in wide, 45in deep, 78.25in tall. Three rungs:
+- Low rung: 27.0in (0.686m)
+- Mid rung: 45.0in (1.143m)
+- High rung: 63.0in (1.600m)
 
-This is in meters, already calculated by Limelight's pose estimation.
+| Alliance | Tag IDs |
+|----------|---------|
+| Blue | 15, 16 |
+| Red | 31, 32 |
 
-### Code Implementation
+Tag centers at **21.75in (0.5525m)** off the floor.
+
+### Outpost Tags (4 total — 2 per outpost)
+
+Outposts are where the human player hands off fuel. The opening is 31.8in wide x 7in tall, bottom at 28.1in off the floor.
+
+| Alliance | Tag IDs |
+|----------|---------|
+| Blue | 13, 14 |
+| Red | 29, 30 |
+
+Tag centers at **21.75in (0.5525m)** off the floor.
+
+### Trench Tags (8 total — 2 per trench)
+
+Each trench has one tag facing the alliance zone and one facing the neutral zone. The trench clearance is 50.34in wide x 22.25in tall — our robot has to fit under it.
+
+| Alliance | Tag IDs |
+|----------|---------|
+| Blue | 1, 6, 7, 12 |
+| Red | 17, 22, 23, 28 |
+
+Tag centers at **35in (0.889m)** off the floor.
+
+### Field Dimensions
+
+- Full field: 317.7in x 651.2in (~8.07m x 16.54m)
+- Bump: 6.513in tall, 15-degree ramps
+- Depot: 42in wide x 27in deep, walls ~1.125in tall
+
+---
+
+## File Breakdown
+
+**LimelightSubsystem.java** — talks to the Limelight hardware (or fakes it in sim). Reads NetworkTables, caches MegaTag2 distance/lateral data, feeds vision poses into drivetrain odometry.
+
+**VisionConstants.java** — all the numbers. Tag groups, target distances, PID gains, speed limits, tolerances. Alliance-aware getter methods live here too.
+
+**Limelight_Move.java** — the alignment command. Controls rotation, forward/back, and strafe simultaneously. Works with tag groups (not single IDs). Has two strafe modes: driver input for teleop, auto-correction for autonomous.
+
+**RobotContainer.java** — wires everything together. Creates command instances, sets up button bindings, configures auto-aim in the default drive command.
+
+---
+
+## How Distance Works
+
+We don't use the old trig method (measuring pixel height and doing math with camera angle). We use MegaTag2's camera-space coordinates, which give us the tag's 3D position relative to the camera directly in meters.
+
+The camera-space array from Limelight has three axes:
+- **Index 0 (X):** lateral offset — positive means the tag is to the right of center
+- **Index 1 (Y):** vertical offset — positive means above center
+- **Index 2 (Z):** forward distance — how far away the tag is
+
+In `LimelightSubsystem.updateMegaTag2Cache()`:
 
 ```java
-// From LimelightSubsystem.java - updateMegaTag2Cache()
 double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(LIMELIGHT_NAME);
-
 if (targetPose != null && targetPose.length >= 3 && tv.getDouble(0) == 1) {
-    cachedLateralOffsetMeters = targetPose[0]; // X = lateral offset
-    cachedDistanceMeters = targetPose[2];      // Z = forward distance
+    cachedLateralOffsetMeters = targetPose[0]; // X = lateral
+    cachedDistanceMeters = targetPose[2];      // Z = forward
     megatag2Available = true;
 }
 ```
 
-**Why this matters:** Traditional methods calculate distance from the pixel height of the tag using trigonometry. That requires knowing the exact tag height and camera mount angle. Camera-space data comes pre-calculated from Limelight's 3D pose solver, which uses the entire tag's pose in 3D space. It's more accurate and requires less tuning.
+This is better than trig because Limelight's 3D pose solver already accounts for camera angle, tag size, and perspective. Less tuning, more accurate.
 
-### Using the Distance Data
+All internal math is in **meters**. We only convert to inches for SmartDashboard display. Mixing units is a classic bug source — don't do it.
 
-```java
-// Get distance in meters (internal calculations)
-double distance = limelight.getDistanceMeters();
-
-// Get distance in inches (display only)
-double distanceInches = limelight.getDistanceInchesForDisplay();
-```
-
-**Important:** All internal calculations use meters. Only convert to inches for SmartDashboard display. This prevents unit conversion bugs.
+---
 
 ## Alliance-Aware Tag Selection
 
-The 2026 REBUILT field has symmetric AprilTags for red and blue alliance. Your robot needs to align to YOUR alliance's tags, not the opponent's.
+The field is mirrored, so red and blue have their own set of tags for each structure. We need to align to OUR tags, not theirs.
 
-### How It Works
-
-VisionConstants provides Supplier methods that read the alliance from DriverStation:
+`VisionConstants` has getter methods that check DriverStation for the current alliance:
 
 ```java
-// From VisionConstants.java
 public static Set<Integer> getHubTags() {
     return isRedAlliance() ? RED_HUB_TAGS : BLUE_HUB_TAGS;
 }
-
-public static boolean isRedAlliance() {
-    Optional<Alliance> alliance = DriverStation.getAlliance();
-    return alliance.isPresent() && alliance.get() == Alliance.Red;
-}
 ```
 
-This gets called when the command starts, not when you create the command object. This is critical for autonomous where you don't know your alliance until the match starts.
+The key thing: these get called when the command **starts**, not when the command object is created. This matters because in autonomous, you might not know your alliance color until the match begins.
 
-### Command Factory Pattern
+In RobotContainer, the command factories use method references:
 
 ```java
-// From RobotContainer.java
 private Limelight_Move createHubAlign() {
     return new Limelight_Move(drivetrain, limelight,
-        VisionConstants::getHubTags,  // Method reference - evaluated at command start
-        () -> -controller.getLeftX());
+        VisionConstants::getHubTags, () -> -controller.getLeftX());
 }
 ```
 
-**Why method references:** The `VisionConstants::getHubTags` syntax passes the METHOD itself, not the result. Each time the command starts, it calls the method and gets the current alliance's tags.
+`VisionConstants::getHubTags` passes the method itself as a Supplier. Every time `Limelight_Move.initialize()` runs, it calls `.get()` on that supplier and gets fresh alliance data.
 
-**Wrong way:**
+**Don't do this:**
 ```java
-// DON'T DO THIS - evaluates once at robot boot
-new Limelight_Move(drivetrain, limelight,
-    () -> VisionConstants.BLUE_HUB_TAGS, // Hardcoded - wrong!
-    strafeSupplier);
+// WRONG — evaluates once at robot boot, locks to whatever alliance was set at that moment
+new Limelight_Move(drivetrain, limelight, () -> VisionConstants.BLUE_HUB_TAGS, strafeSupplier);
 ```
 
-## Three-Axis Control System
+---
 
-Limelight_Move controls three axes simultaneously:
+## Three-Axis Alignment (Limelight_Move)
 
-### 1. Rotation (Omega)
+The command controls rotation, forward/back, and strafe all at once. Each axis uses proportional control with clamped output.
 
-Centers the robot on the tag horizontally using TX (horizontal offset in degrees).
+### Rotation
+
+Uses TX (horizontal offset in degrees from Limelight). Positive TX means the tag is to the right, so we apply negative rotation to turn toward it.
 
 ```java
-// Positive TX = target is to the right
-// We need to rotate left (negative omega) to center it
 double rotationOutput = -horizontalErrorDeg * VisionConstants.ROTATION_GAIN;
-rotationOutput = MathUtil.clamp(rotationOutput,
-    -VisionConstants.MAX_ROTATION_SPEED, VisionConstants.MAX_ROTATION_SPEED);
+rotationOutput = MathUtil.clamp(rotationOutput, -MAX_ROTATION_SPEED, MAX_ROTATION_SPEED);
 double rotationVelocityRps = rotationOutput * maxAngularRateRps;
 ```
 
-**Gain tuning:** Start with ROTATION_GAIN = 0.03. Increase if rotation is too slow. Decrease if it oscillates.
+ROTATION_GAIN is 0.03. If rotation feels sluggish, bump it up. If it oscillates (wobbles back and forth), bring it down.
 
-### 2. Forward/Backward (X velocity)
+### Forward/Back
 
-Drives to the target distance using camera-space Z coordinate.
+Uses the camera-space Z distance. Error = current distance minus target distance. Positive error means we're too far, so we drive forward.
 
 ```java
-// Positive error = too far away, drive forward
 double distanceErrorMeters = currentDistanceMeters - targetDistanceMeters;
 double forwardOutput = distanceErrorMeters * VisionConstants.FORWARD_GAIN;
-forwardOutput = MathUtil.clamp(forwardOutput,
-    -VisionConstants.MAX_FORWARD_SPEED, VisionConstants.MAX_FORWARD_SPEED);
-double forwardVelocityMps = forwardOutput * maxSpeedMps;
+forwardOutput = MathUtil.clamp(forwardOutput, -MAX_FORWARD_SPEED, MAX_FORWARD_SPEED);
 ```
 
-**Gain tuning:** Start with FORWARD_GAIN = 0.8. This is higher than rotation because distance errors are usually larger than angle errors.
+FORWARD_GAIN is 0.8 — higher than rotation because distance errors tend to be bigger in magnitude.
 
-### 3. Strafe (Y velocity)
+### Strafe
 
-Two modes depending on context:
+This one has two modes:
 
-**Teleop mode (driver input present):**
+**Teleop** — if the driver is pushing the stick left/right, that input takes priority. This lets the driver arc around while the system handles rotation and distance. Useful for dodging defense.
+
+**Autonomous** — if there's no driver input, the system auto-corrects lateral offset using camera-space X data. This centers the robot on the tag.
+
 ```java
 if (Math.abs(driverStrafe) > 0.0) {
-    // Driver controls strafe - allows arcing approaches
     strafeVelocityMps = driverStrafe * maxSpeedMps * MAX_DRIVER_STRAFE_SCALE;
-}
-```
-
-**Autonomous mode (no driver input):**
-```java
-else {
-    // Auto-correct lateral offset using camera-space X coordinate
-    double strafeOutput = lateralOffsetMeters * VisionConstants.AUTO_STRAFE_GAIN;
-    strafeOutput = MathUtil.clamp(strafeOutput,
-        -VisionConstants.MAX_AUTO_STRAFE_SPEED, VisionConstants.MAX_AUTO_STRAFE_SPEED);
+} else {
+    double strafeOutput = lateralOffsetMeters * AUTO_STRAFE_GAIN;
+    strafeOutput = MathUtil.clamp(strafeOutput, -MAX_AUTO_STRAFE_SPEED, MAX_AUTO_STRAFE_SPEED);
     strafeVelocityMps = strafeOutput * maxSpeedMps;
 }
 ```
 
-This dual behavior lets drivers manually strafe during alignment (useful for avoiding defense) while still getting perfect centering in autonomous.
+### When is it "aligned"?
 
-## Auto-Aim System
+The command checks three conditions every loop:
+- Rotation error < ALIGNMENT_TOLERANCE_DEGREES (2.0 deg)
+- Distance error < DISTANCE_TOLERANCE_METERS (3 inches)
+- Lateral error < STRAFE_TOLERANCE_METERS (3 inches)
 
-The auto-aim feature locks the robot's heading onto a hub tag while the driver maintains full translational control.
+All three must be satisfied for ALIGNED_LOOPS_REQUIRED consecutive loops (25 loops = ~0.5 seconds at 50Hz). This prevents the command from ending on a single good reading — it has to hold steady.
 
-### How It Works
+If it can't align within ALIGNMENT_TIMEOUT_SECONDS (8s), it gives up.
 
-Instead of a separate command, auto-aim modifies the drivetrain's default command. When enabled:
+---
 
-1. Driver controls X/Y velocity normally
-2. System overrides rotation with PID control
-3. Shooter RPM adjusts based on distance
+## Auto-Aim
 
-### Implementation
+Auto-aim is different from Limelight_Move. Instead of a separate command that takes over the drivetrain, auto-aim lives inside the drivetrain's default command. The driver keeps full translational control (left stick), but rotation gets overridden by a PID that locks heading onto the hub tag.
 
-```java
-// From RobotContainer.java - drivetrain default command
-if (autoAimEnabled && limelight.isTrackingHubTag()) {
-    // Calculate target heading from TX offset
-    double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
-    double targetHeading = currentHeading - Math.toRadians(limelight.getHorizontalOffset());
+When auto-aim is active and a hub tag is visible:
 
-    // PID to target heading
-    double rawOutput = autoAimPID.calculate(currentHeading, targetHeading);
-    double clampedOutput = MathUtil.clamp(rawOutput,
-        -VisionConstants.AUTO_AIM_MAX_ROTATION_RATE,
-         VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
-    double smoothOutput = autoAimSlew.calculate(clampedOutput);
-
-    // Update shooter based on distance
-    double distance = limelight.getDistanceMeters();
-    if (distance > 0) {
-        shooterSubsystem.setVariableVelocity(
-            ShooterConstants.getVelocityForDistance(distance));
-    }
-
-    return drive.withVelocityX(velocityX)
-                .withVelocityY(velocityY)
-                .withRotationalRate(smoothOutput);
-}
-```
-
-### PID Configuration
-
-The auto-aim PID uses continuous input since heading wraps around at ±180 degrees:
+1. Get the current robot heading and TX offset
+2. Compute the target heading (current heading minus TX in radians)
+3. PID calculates rotation output
+4. Clamp it to AUTO_AIM_MAX_ROTATION_RATE (1.5 rad/s)
+5. Run it through a slew rate limiter (3.0 rad/s²) to smooth acceleration
+6. Update shooter RPM based on distance
 
 ```java
-autoAimPID.enableContinuousInput(-Math.PI, Math.PI);
+double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
+double targetHeading = currentHeading - Math.toRadians(limelight.getHorizontalOffset());
+double rawOutput = autoAimPID.calculate(currentHeading, targetHeading);
+double clampedOutput = MathUtil.clamp(rawOutput, -AUTO_AIM_MAX_ROTATION_RATE, AUTO_AIM_MAX_ROTATION_RATE);
+double smoothOutput = autoAimSlew.calculate(clampedOutput);
 ```
 
-This prevents the PID from trying to rotate 359 degrees when it only needs to rotate 1 degree in the opposite direction.
+The PID uses continuous input (`enableContinuousInput(-PI, PI)`) because heading wraps around. Without this, the PID would try to rotate 359 degrees instead of 1 degree the other way.
 
-**Slew rate limiter** smooths acceleration to prevent jerky movements:
+When auto-aim deactivates (no hub tag visible, or toggled off), we reset the slew limiter and PID so they don't carry stale state into the next activation. If the shooter was in VARIABLE mode, we zero it out.
 
-```java
-private final SlewRateLimiter autoAimSlew = 
-    new SlewRateLimiter(VisionConstants.AUTO_AIM_SLEW_RATE);
-```
-
-### Range Limiting
-
-Auto-aim only activates when:
+Auto-aim only fires when:
+- It's toggled on (left bumper)
 - A hub tag is visible
-- Distance is positive (valid MegaTag2 data)
-- Distance is under AUTO_AIM_MAX_RANGE_METERS (5.0m default)
+- Distance is positive and under 5.0m
 
-This prevents the system from trying to shoot from across the field.
-
-### State Management
-
-When auto-aim deactivates, the system resets to prevent stale state:
-
-```java
-else {
-    autoAimSlew.reset(0);      // Reset slew limiter
-    autoAimPID.reset();        // Reset PID accumulators
-    
-    // Return shooter to idle if it was in variable mode
-    if (shooterSubsystem.getState() == ShooterSubsystem.ShooterState.VARIABLE) {
-        shooterSubsystem.setVariableVelocity(0);
-    }
-}
-```
-
-## Simulation Support
-
-The system includes full simulation support for testing without hardware.
-
-### How Simulation Works
-
-When `RobotBase.isSimulation()` is true, LimelightSubsystem switches to simulation mode:
-
-1. Gets the robot's simulated pose from the drivetrain
-2. Loads the official 2026 field AprilTag layout
-3. Calculates which tags would be visible based on:
-   - Camera FOV (29.8 degrees horizontal)
-   - Maximum detection range (8.0 meters)
-   - Robot heading and tag positions
-4. Generates fake TX, distance, and area values
-5. Returns the closest visible tag
-
-### Enabling Simulation
-
-You must provide the robot pose supplier after creating the subsystem:
-
-```java
-// From RobotContainer.java
-limelight.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
-```
-
-This gives the vision system access to the simulated robot position.
-
-### Simulation Calculations
-
-```java
-// From LimelightSubsystem.java - updateSimVision()
-for (var tag : fieldLayout.getTags()) {
-    // Get tag position from field layout
-    Pose3d tagPose3d = fieldLayout.getTagPose(tag.ID).get();
-    Translation2d tagPos = tagPose3d.toPose2d().getTranslation();
-    
-    // Calculate distance
-    double distance = robotPos.getDistance(tagPos);
-    if (distance > MAX_DETECTION_RANGE_METERS) continue;
-    
-    // Calculate angle from robot heading to tag
-    double angleToTag = Math.atan2(
-        tagPos.getY() - robotPos.getY(),
-        tagPos.getX() - robotPos.getX()
-    );
-    double robotHeading = robotPose.getRotation().getRadians();
-    
-    // TX = angle difference (how far off-center)
-    double angleDiff = Math.toDegrees(angleToTag - robotHeading);
-    
-    // Normalize to -180 to 180
-    while (angleDiff > 180) angleDiff -= 360;
-    while (angleDiff < -180) angleDiff += 360;
-    
-    // Check FOV
-    if (Math.abs(angleDiff) > HORIZONTAL_FOV_DEG) continue;
-    
-    // This tag is visible - track if it's the closest
-    if (distance < bestDistance) {
-        bestDistance = distance;
-        bestTagID = tag.ID;
-        bestTx = -angleDiff; // Negate for Limelight convention
-    }
-}
-```
-
-The simulation is not pixel-perfect but accurate enough to test alignment logic without a robot.
+---
 
 ## Vision-Odometry Fusion
 
-MegaTag2 provides robot pose estimates that can improve odometry accuracy. This is separate from alignment.
+Separate from alignment — this is about making odometry more accurate over time.
 
-### Setup
+Every loop, if MegaTag2 data is good, we feed the pose estimate into the CTRE swerve drivetrain's Kalman filter. The filter blends vision with wheel odometry.
 
-Wire the consumer in RobotContainer:
-
+Setup in RobotContainer:
 ```java
 limelight.setVisionMeasurementConsumer(
     (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
 ```
 
-### How It Works
+Before feeding a pose, we filter it hard:
+- Must have at least 1 tag visible
+- Tag area must be above MIN_TARGET_AREA (0.1) — rejects tiny far-away detections
+- Pose X/Y must be on the actual field (0–17m x 0–9m) — rejects garbage estimates
 
-Every loop, if MegaTag2 data is available:
+We also set the robot's current heading via `SetRobotOrientation()` before pulling MegaTag2 data, because MegaTag2 needs to know the robot's orientation to give a good blue-origin pose.
 
-```java
-// From LimelightSubsystem.java - updateVisionFusion()
-// Set robot orientation for MegaTag2
-LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME,
-    currentPose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+Bad vision data will corrupt your odometry. Always filter.
 
-// Get pose estimate
-LimelightHelpers.PoseEstimate result =
-    LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+---
 
-// Filter bad estimates
-if (result == null) return;
-if (result.tagCount == 0) return;
-if (result.avgTagArea < VisionConstants.MIN_TARGET_AREA) return;
+## Simulation
 
-// Reject poses off the field
-double x = result.pose.getX();
-double y = result.pose.getY();
-if (x < 0 || x > 17.0 || y < 0 || y > 9.0) return;
+When `RobotBase.isSimulation()` is true, LimelightSubsystem skips NetworkTables entirely and fakes the data using the robot's simulated pose and the official 2026 field layout.
 
-// Feed to drivetrain Kalman filter
-visionMeasurementConsumer.accept(result.pose, result.timestampSeconds);
-```
+It loops through every tag on the field and checks:
+1. Is the tag within 8.0m?
+2. Is the tag within the camera's horizontal FOV (29.8 degrees half-width)?
+3. If multiple tags pass, pick the closest one
 
-The CTRE swerve drivetrain has a built-in Kalman filter that fuses vision measurements with wheel odometry. This improves position accuracy over time.
+Then it generates fake TX, distance, area, and lateral offset values. The area is approximated as `10 / distance²` — not precise but good enough. TY is left at 0.
 
-**Filtering is critical.** Vision measurements with low tag area or impossible positions will corrupt odometry. Always filter before feeding to the drivetrain.
+You need to call `limelight.setRobotPoseSupplier(() -> drivetrain.getState().Pose)` in RobotContainer for sim to work. Without a pose supplier, sim mode has nothing to calculate from.
 
-## Tuning Guide
+The sim isn't pixel-perfect but it lets you test alignment logic, alliance selection, and command flow without a robot.
 
-### Initial Setup
+---
 
-1. **Mount the Limelight** - Get it as high as practical, angled up 30-45 degrees
-2. **Measure camera height** - Update `CAMERA_HEIGHT_METERS` in VisionConstants
-3. **Measure mount angle** - Update `CAMERA_MOUNT_ANGLE_DEGREES`
-4. **Set pipeline 0** for AprilTags in Limelight web interface
+## Target Distances
 
-### Distance Tuning
+Each tag type has a target stop distance in VisionConstants (the `APRILTAG_DISTANCES` array, indexed by tag ID):
 
-Test with a real AprilTag at a known distance:
+| Structure | Distance | Why |
+|-----------|----------|-----|
+| Hub | 97in (~2.46m) | Shooting range — tune for your shooter |
+| Tower | 36in (~0.91m) | Close enough to engage climbing rungs |
+| Outpost | 30in (~0.76m) | Close for human player handoff |
+| Trench | 48in (~1.22m) | Center under the trench arm |
 
-```java
-double measuredDistance = limelight.getDistanceMeters();
-double actualDistance = // measure with tape measure
-double error = measuredDistance - actualDistance;
-```
+These are starting points. Tune them on the real field based on shooter performance and mechanism reach.
 
-If MegaTag2 distances are consistently off, check:
-- Camera height measurement
-- Limelight firmware version (update to latest)
-- Tag printing quality (must be precise)
+---
 
-### Target Distances
+## Tuning
 
-Set the stopping distance for each tag type in VisionConstants:
+### Gains
 
-```java
-// Hub shooting distance - start with manufacturer spec
-double hubShootDistance = Units.inchesToMeters(97); // 97 inches
-
-// Tower climbing distance - get close to engage hooks
-double towerApproachDistance = Units.inchesToMeters(36); // 36 inches
-```
-
-Test these in practice and adjust based on your shooter performance and climber reach.
-
-### Control Gains
-
-Start with default values and adjust:
-
-**ROTATION_GAIN (0.03):**
-- Too low: Slow, lazy rotation
-- Too high: Oscillates back and forth
-- Just right: Quick convergence, slight overshoot, settles
-
-**FORWARD_GAIN (0.8):**
-- Too low: Takes forever to reach target distance
-- Too high: Overshoots and bounces
-- Just right: Approaches smoothly, settles within tolerance
-
-**AUTO_STRAFE_GAIN (0.5):**
-- Only active in autonomous
-- Usually less critical than rotation/forward
-- Start low to prevent sideways oscillation
+| Constant | Default | Too low | Too high |
+|----------|---------|---------|----------|
+| ROTATION_GAIN | 0.03 | Slow, lazy turning | Oscillates side to side |
+| FORWARD_GAIN | 0.8 | Takes forever to reach distance | Overshoots and bounces |
+| AUTO_STRAFE_GAIN | 0.5 | Doesn't correct lateral drift | Sideways oscillation |
 
 ### Speed Limits
 
-Reduce MAX speeds if the robot is too aggressive:
+All values are fractions of max drivetrain speed (0.0 to 1.0):
+- MAX_ROTATION_SPEED: 0.25
+- MAX_FORWARD_SPEED: 0.30
+- MAX_DRIVER_STRAFE_SCALE: 0.5
+- MAX_AUTO_STRAFE_SPEED: 0.20
 
-```java
-public static final double MAX_ROTATION_SPEED = 0.25;  // 25% of max
-public static final double MAX_FORWARD_SPEED = 0.30;   // 30% of max
-```
+If the robot is too aggressive during alignment, drop these.
 
-These are multipliers of your drivetrain's maximum speed.
+### Auto-Aim PID
 
-### Alignment Tolerances
+- KP = 4.0, KI = 0.0, KD = 0.1
+- Max rotation rate: 1.5 rad/s
+- Slew rate: 3.0 rad/s²
 
-Tighten tolerances for precision, loosen for speed:
+The D term adds damping so it doesn't overshoot the target heading. The slew limiter prevents sudden jerks.
 
-```java
-// Rotation tolerance in degrees
-public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;
+### Camera Setup
 
-// Distance tolerance in meters (converted from inches)
-public static final double DISTANCE_TOLERANCE_METERS = Units.inchesToMeters(3.0);
+Measure these on the actual robot and update VisionConstants:
+- CAMERA_HEIGHT_METERS — lens height from floor
+- CAMERA_MOUNT_ANGLE_DEGREES — 0 = horizontal, positive = tilted up
 
-// Lateral strafe tolerance in meters
-public static final double STRAFE_TOLERANCE_METERS = Units.inchesToMeters(3.0);
-```
+Mount the Limelight as high as you can, angled up 30–45 degrees. Set pipeline 0 for AprilTags.
 
-The command finishes when all three are satisfied for ALIGNED_LOOPS_REQUIRED consecutive loops (default 25 loops = 0.5 seconds).
+---
 
-## Common Issues
+## Controller Bindings
 
-### "No distance data" on SmartDashboard
+| Button | Action |
+|--------|--------|
+| Left stick | Drive (X/Y translation) |
+| Right stick X | Rotate (when auto-aim is off) |
+| Right bumper | Reset field-centric heading |
+| Left bumper | Toggle auto-aim |
+| START | Align to hub |
+| Y | Align to tower |
+| X | Align to outpost |
+| Right trigger | Shoot |
+| Left trigger | Eject |
 
-**Cause:** MegaTag2 is not providing camera-space coordinates.
+---
 
-**Solutions:**
-- Check Limelight is in AprilTag pipeline (pipeline 0)
-- Verify firmware is up to date
-- Check NetworkTables connection
-- Ensure robot orientation is being set (required for MegaTag2)
+## PathPlanner Integration
 
-### Robot doesn't see any tags
+Named commands registered for autonomous:
+- `"Align Hub"` — runs `createAutoHubAlign()` (no driver strafe)
+- `"Rev Shooter"`, `"Shoot"`, `"Idle Shooter"` — shooter control
+- `"AlignAndShoot"` — sequences hub align then shoot
 
-**Cause:** Tags are out of FOV or detection range.
+Use these in PathPlanner paths: drive near the target, run the named command, continue.
 
-**Solutions:**
-- Drive closer (max range is 8.0m in sim, varies with lighting in real life)
-- Check Limelight LED is on
-- Verify pipeline is set to AprilTags, not retroreflective
-- Check camera is not obstructed
+---
 
-### Alignment oscillates
+## Common Problems
 
-**Cause:** Gains too high or tolerances too tight.
+**No distance data on SmartDashboard** — MegaTag2 isn't returning camera-space data. Check that pipeline 0 is set, firmware is current, NetworkTables is connected, and `SetRobotOrientation` is being called.
 
-**Solutions:**
-- Reduce ROTATION_GAIN or FORWARD_GAIN
-- Increase ALIGNMENT_TOLERANCE_DEGREES
-- Add deadband to controller input if driver interference
+**Robot doesn't see tags** — too far away, camera obstructed, wrong pipeline, or LEDs off. Sim max range is 8.0m, real range depends on lighting.
 
-### Wrong alliance tags
+**Alignment oscillates** — gains too high or tolerances too tight. Lower ROTATION_GAIN / FORWARD_GAIN first. If the driver is accidentally providing input during alignment, check your deadband.
 
-**Cause:** Alliance not set in DriverStation or hardcoded tag group.
+**Wrong alliance tags** — DriverStation doesn't have alliance set, or you hardcoded a tag set instead of using the method reference getters. Always use `VisionConstants::getHubTags`, never `BLUE_HUB_TAGS` directly.
 
-**Solutions:**
-- Verify DriverStation shows correct alliance
-- Check you're using `VisionConstants::getHubTags` not `BLUE_HUB_TAGS`
-- Enable FMS simulation in DriverStation during testing
+**Sim shows nothing** — `setRobotPoseSupplier()` not called, or field layout failed to load. Check console for errors.
 
-### Simulation shows no target
-
-**Cause:** Robot pose supplier not set or field layout failed to load.
-
-**Solutions:**
-- Verify `limelight.setRobotPoseSupplier()` is called in RobotContainer
-- Check console for field layout load errors
-- Ensure you're using WPILib 2025 or later (has 2026 field data)
-
-## Integration with Other Systems
-
-### PathPlanner Integration
-
-Register alignment as a named command:
-
-```java
-NamedCommands.registerCommand("Align Hub", createAutoHubAlign());
-```
-
-Use in paths:
-1. Drive near scoring position
-2. Run "Align Hub" command
-3. Shoot
-
-### Shooter Integration
-
-Auto-aim updates shooter RPM based on distance:
-
-```java
-double distance = limelight.getDistanceMeters();
-if (distance > 0) {
-    shooterSubsystem.setVariableVelocity(
-        ShooterConstants.getVelocityForDistance(distance));
-}
-```
-
-You need to implement `getVelocityForDistance()` based on your shooter characterization data.
+---
 
 ## Testing Checklist
 
-**Before Competition:**
-- [ ] Test all tag types (hub, tower, outpost)
-- [ ] Verify both alliance colors work
-- [ ] Check alignment from multiple approach angles
-- [ ] Test with driver strafe enabled
-- [ ] Verify autonomous alignment completes
-- [ ] Confirm vision fusion doesn't corrupt odometry
-- [ ] Test timeout behavior
-- [ ] Check SmartDashboard values update
+Before competition:
+- [ ] All tag types work (hub, tower, outpost)
+- [ ] Both alliance colors work
+- [ ] Alignment from multiple approach angles
+- [ ] Driver strafe during alignment
+- [ ] Autonomous alignment completes
+- [ ] Vision fusion doesn't corrupt odometry
+- [ ] Timeout behavior
+- [ ] SmartDashboard values updating
 
-**Field Testing:**
-- [ ] Calibrate target distances for your shooter
-- [ ] Tune gains for actual field lighting
-- [ ] Test under both house lights and sunlight
-- [ ] Verify performance with bumps/defense
-- [ ] Check battery voltage effect on speed limits
+On the real field:
+- [ ] Calibrate target distances
+- [ ] Tune gains for field lighting
+- [ ] Test in different lighting (gym lights, sunlight)
+- [ ] Performance with bumps and defense
+- [ ] Battery voltage effects
 
-## Performance Expectations
+---
 
-With proper tuning:
-- **Alignment time:** 1-3 seconds from approach
-- **Positional accuracy:** ±3 inches
-- **Angular accuracy:** ±2 degrees
-- **Vision update rate:** 20-30 Hz (Limelight dependent)
-- **Command loop rate:** 50 Hz (20ms period)
-
-## Credits and Resources
-
-**Code Base:** Team 8041 Lake City Ultrabots (2026 season)  
-**Limelight Documentation:** https://docs.limelightvision.io/  
-**CTRE Phoenix 6:** https://v6.docs.ctr-electronics.com/  
-**2026 REBUILT Game Manual:** Official FRC game manual for tag positions  
-
-## Maintenance Notes
-
-**Annual Updates Required:**
-- Update field layout for new game (AprilTagFields.kDefaultField)
-- Revise tag groups for new field objectives
-- Adjust target distances based on new scoring mechanisms
-- Re-tune gains if drivetrain changes
-
-**Mid-Season Adjustments:**
-- Recalibrate after camera remounting
-- Update gains if battery performance degrades
-- Adjust tolerances based on competition performance
-- Add new tag groups if strategy evolves
-
-## Teaching This System
-
-When teaching other teams or new programmers:
-
-1. **Start with constants** - Show them VisionConstants first so they understand the field layout
-2. **Explain camera-space** - Draw diagrams of X/Y/Z axes relative to camera
-3. **Walk through one axis** - Rotation is easiest to understand, start there
-4. **Add complexity gradually** - Forward, then strafe, then auto-aim
-5. **Use simulation** - Let them experiment without risking hardware
-6. **Show SmartDashboard** - Live data helps build intuition
-7. **Have them tune** - Hands-on tuning teaches more than reading code
-
-The system is complex but each piece is simple. The power comes from combining them correctly.
+Team 8041 — Lake City Ultrabots, 2026
