@@ -101,6 +101,41 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
+        // Default drive — field-centric with auto-aim overlay
+        drivetrain.setDefaultCommand(
+            drivetrain.applyRequest(() -> {
+                double velocityX = -controller.getLeftY() * MaxSpeed;
+                double velocityY = -controller.getLeftX() * MaxSpeed;
+
+                if (autoAimEnabled && limelight.isTrackingHubTag()) {
+                    double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
+                    double targetHeading = currentHeading - Math.toRadians(limelight.getHorizontalOffset());
+
+                    double rawOutput = autoAimPID.calculate(currentHeading, targetHeading);
+                    double clampedOutput = MathUtil.clamp(rawOutput,
+                        -VisionConstants.AUTO_AIM_MAX_ROTATION_RATE,
+                         VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
+                    double smoothOutput = autoAimSlew.calculate(clampedOutput);
+
+                    // Spin up shooter when auto-aim is tracking
+                    if (shooterSubsystem.getState() == ShooterSubsystem.ShooterState.IDLE) {
+                        shooterSubsystem.revUp().schedule();
+                    }
+
+                    return drive.withVelocityX(velocityX)
+                                .withVelocityY(velocityY)
+                                .withRotationalRate(smoothOutput);
+                } else {
+                    autoAimSlew.reset(0);
+                    autoAimPID.reset();
+
+                    return drive.withVelocityX(velocityX)
+                                .withVelocityY(velocityY)
+                                .withRotationalRate(-controller.getRightX() * MaxAngularRate);
+                }
+            })
+        );
+
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
 
