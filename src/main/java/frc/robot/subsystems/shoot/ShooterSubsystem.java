@@ -50,16 +50,20 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Only send motor commands when state changes (not every loop)
-        if (currentState != lastState) {
+        // VARIABLE state sends velocity every loop (target changes continuously)
+        if (currentState == ShooterState.VARIABLE) {
+            setVelocity(targetVariableVelocity);
+        } else if (currentState != lastState) {
+            // Other states only send motor commands when state changes
             switch (currentState) {
                 case IDLE -> setVelocity(ShooterConstants.IDLE_VELOCITY);
                 case REVVING -> setVelocity(ShooterConstants.REV_VELOCITY);
                 case READY -> setVelocity(ShooterConstants.MAX_VELOCITY);
                 case EJECTING -> setVelocity(ShooterConstants.EJECT_VELOCITY);
+                default -> {}
             }
-            lastState = currentState;
         }
+        lastState = currentState;
 
         // Flywheel states
         if (flywheelState != lastFlywheelState) {
@@ -133,6 +137,15 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private void setVelocity(double velocityRPS) {
         shootMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+    }
+
+    /**
+     * Sets the shooter to VARIABLE state with a continuously-updating target velocity.
+     * Called directly (not a command) to avoid scheduling conflicts with auto-aim.
+     */
+    public void setVariableVelocity(double rps) {
+        targetVariableVelocity = rps;
+        currentState = ShooterState.VARIABLE;
     }
 
     public ShooterState getState() {

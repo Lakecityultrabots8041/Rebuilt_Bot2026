@@ -18,21 +18,8 @@ import frc.robot.subsystems.vision.VisionConstants;
 import static edu.wpi.first.units.Units.*;
 
 /**
- * Vision alignment command that aligns to ANY visible AprilTag within
- * a specified group (e.g., all HUB tags, all TOWER tags, etc.)
- * 
- * The tag group is resolved each time the command starts, so it
- * automatically picks up the correct alliance from DriverStation.
- * 
- * Usage examples:
- *   // Auto-detects alliance at runtime:
- *   new Limelight_Move(drive, ll, VisionConstants::getHubTags, strafeSupplier)
- *   new Limelight_Move(drive, ll, VisionConstants::getTowerTags)
- *   
- *   // Hardcoded to specific alliance:
- *   new Limelight_Move(drive, ll, () -> VisionConstants.BLUE_HUB_TAGS, strafeSupplier)
- * 
- * 
+ * Aligns to any visible AprilTag in a tag group. Tag group resolves at
+ * command start so alliance detection works automatically. See vision.md.
  */
 public class Limelight_Move extends Command {
 
@@ -41,7 +28,6 @@ public class Limelight_Move extends Command {
     private final Supplier<Set<Integer>> tagGroupSupplier;
     private final DoubleSupplier driverStrafeSupplier;
 
-    // Resolved at command start
     private Set<Integer> acceptedTagIDs;
 
     private final double maxSpeedMps;
@@ -51,23 +37,13 @@ public class Limelight_Move extends Command {
     private int alignedCount = 0;
     private double targetDistanceMeters;
 
-    /**
-     * Align to any tag in the group, no driver strafe (for autonomous).
-     */
+    /** Autonomous — no driver strafe. */
     public Limelight_Move(CommandSwerveDrivetrain drivetrain, LimelightSubsystem limelight,
                           Supplier<Set<Integer>> tagGroupSupplier) {
         this(drivetrain, limelight, tagGroupSupplier, () -> 0.0);
     }
 
-    /**
-     * Align to any tag in the group with driver strafe for arcing (teleop).
-     * 
-     * @param drivetrain         the swerve drivetrain
-     * @param limelight          the Limelight subsystem
-     * @param tagGroupSupplier   supplier that returns the Set of valid tag IDs
-     *                           (e.g. VisionConstants::getHubTags for auto-alliance)
-     * @param driverStrafeSupplier  driver's strafe input (-1 to 1, typically leftX)
-     */
+    /** Teleop — driver strafe input for arcing approaches. */
     public Limelight_Move(CommandSwerveDrivetrain drivetrain, LimelightSubsystem limelight,
                           Supplier<Set<Integer>> tagGroupSupplier, DoubleSupplier driverStrafeSupplier) {
         this.drivetrain = drivetrain;
@@ -86,7 +62,6 @@ public class Limelight_Move extends Command {
 
     @Override
     public void initialize() {
-        // Resolve the tag group NOW — picks up current alliance from DriverStation
         acceptedTagIDs = tagGroupSupplier.get();
 
         System.out.println("=== Vision Alignment Started ===");
@@ -97,7 +72,6 @@ public class Limelight_Move extends Command {
         alignedCount = 0;
         timer.restart();
 
-        // If we already see a valid tag, grab its distance
         if (limelight.hasValidTarget()) {
             int tagID = limelight.getAprilTagID();
             if (acceptedTagIDs.contains(tagID)) {
@@ -110,7 +84,6 @@ public class Limelight_Move extends Command {
 
     @Override
     public void execute() {
-        // Check if we see ANY tag in our accepted group
         if (!limelight.hasValidTarget() || !acceptedTagIDs.contains(limelight.getAprilTagID())) {
             drivetrain.driveRobotRelative(new ChassisSpeeds(0, 0, 0));
             SmartDashboard.putString("Vision/Status", "Searching for tags...");
@@ -118,7 +91,6 @@ public class Limelight_Move extends Command {
             return;
         }
 
-        // We see a valid tag in our group — align to it
         int tagID = limelight.getAprilTagID();
         targetDistanceMeters = VisionConstants.getAprilTagDistance(tagID);
         SmartDashboard.putString("Vision/Status", "Tracking tag " + tagID);
@@ -134,31 +106,40 @@ public class Limelight_Move extends Command {
         double horizontalErrorDeg = limelight.getHorizontalOffset();
         double distanceErrorMeters = currentDistanceMeters - targetDistanceMeters;
 
-        // ROTATION (AUTO) — positive TX = target right, need negative omega
+        // Rotation
         double rotationOutput = -horizontalErrorDeg * VisionConstants.ROTATION_GAIN;
         rotationOutput = MathUtil.clamp(rotationOutput,
             -VisionConstants.MAX_ROTATION_SPEED, VisionConstants.MAX_ROTATION_SPEED);
         double rotationVelocityRps = rotationOutput * maxAngularRateRps;
 
-        // FORWARD (AUTO) — positive error = too far, drive forward
+        // Forward/back
         double forwardOutput = distanceErrorMeters * VisionConstants.FORWARD_GAIN;
         forwardOutput = MathUtil.clamp(forwardOutput,
             -VisionConstants.MAX_FORWARD_SPEED, VisionConstants.MAX_FORWARD_SPEED);
         double forwardVelocityMps = forwardOutput * maxSpeedMps;
 
-        // STRAFE (DRIVER) — allows arcing around target
+        // Strafe — driver input in teleop, auto-correction in auto
         double driverStrafe = driverStrafeSupplier.getAsDouble();
         driverStrafe = Math.abs(driverStrafe) < 0.1 ? 0.0 : driverStrafe;
-        double strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE;
 
-        // Send to drivetrain (robot-relative)
+        double strafeVelocityMps;
+        double lateralOffsetMeters = limelight.getLateralOffsetMeters();
+
+        if (Math.abs(driverStrafe) > 0.0) {
+            strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE;
+        } else {
+            double strafeOutput = lateralOffsetMeters * VisionConstants.AUTO_STRAFE_GAIN;
+            strafeOutput = MathUtil.clamp(strafeOutput,
+                -VisionConstants.MAX_AUTO_STRAFE_SPEED, VisionConstants.MAX_AUTO_STRAFE_SPEED);
+            strafeVelocityMps = strafeOutput * maxSpeedMps;
+        }
+
         drivetrain.driveRobotRelative(new ChassisSpeeds(
             forwardVelocityMps,
             strafeVelocityMps,
             rotationVelocityRps
         ));
 
-        // Debug output
         SmartDashboard.putNumber("Vision/Active Tag", tagID);
         SmartDashboard.putNumber("Vision/TX Error (deg)", horizontalErrorDeg);
         SmartDashboard.putNumber("Vision/Distance (in)", Units.metersToInches(currentDistanceMeters));
@@ -166,16 +147,19 @@ public class Limelight_Move extends Command {
         SmartDashboard.putNumber("Vision/Distance Error (in)", Units.metersToInches(distanceErrorMeters));
         SmartDashboard.putNumber("Vision/Rotation Output", rotationOutput);
         SmartDashboard.putNumber("Vision/Forward Output", forwardOutput);
+        SmartDashboard.putNumber("Vision/Lateral Offset (in)", Units.metersToInches(lateralOffsetMeters));
+        SmartDashboard.putNumber("Vision/Strafe Output", strafeVelocityMps / maxSpeedMps);
         SmartDashboard.putNumber("Vision/Driver Strafe", driverStrafe);
 
-        // Alignment check
         boolean rotationGood = Math.abs(horizontalErrorDeg) < VisionConstants.ALIGNMENT_TOLERANCE_DEGREES;
         boolean distanceGood = Math.abs(distanceErrorMeters) < VisionConstants.DISTANCE_TOLERANCE_METERS;
+        boolean strafeGood = Math.abs(lateralOffsetMeters) < VisionConstants.STRAFE_TOLERANCE_METERS;
 
         SmartDashboard.putBoolean("Vision/Rotation Aligned", rotationGood);
         SmartDashboard.putBoolean("Vision/Distance Aligned", distanceGood);
+        SmartDashboard.putBoolean("Vision/Strafe Aligned", strafeGood);
 
-        if (rotationGood && distanceGood) {
+        if (rotationGood && distanceGood && strafeGood) {
             alignedCount++;
         } else {
             alignedCount = 0;
