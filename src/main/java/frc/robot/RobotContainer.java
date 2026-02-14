@@ -57,7 +57,12 @@ public class RobotContainer {
         VisionConstants.AUTO_AIM_KP, VisionConstants.AUTO_AIM_KI, VisionConstants.AUTO_AIM_KD);
     private final SlewRateLimiter autoAimSlew = new SlewRateLimiter(VisionConstants.AUTO_AIM_SLEW_RATE);
 
-    private final SendableChooser<Command> autoChooser;
+    // ===== INTAKE =====
+    private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
+
+    // ===== COMMAND FACTORIES =====
+    // Each call creates a NEW instance (required — can't share command instances)
+    // VisionConstants::getXxxTags auto-detects alliance from DriverStation
 
     // Command factories — each call returns a new instance
     private Limelight_Move createHubAlign() {

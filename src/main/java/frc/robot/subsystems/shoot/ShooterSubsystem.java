@@ -75,6 +75,16 @@ public class ShooterSubsystem extends SubsystemBase {
             lastFlywheelState = flywheelState;
         }
 
+        // Flywheel states
+        if (flywheelState != lastFlywheelState) {
+            switch (flywheelState) {
+                case FLYWHELLIDLE -> setVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
+                case FLYWHELLREVVING -> setVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
+                case FLYWHEELREADY -> setVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
+            }
+            lastFlywheelState = flywheelState;
+        }
+
         // Dashboard telemetry
         double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
         SmartDashboard.putNumber("Shooter/Velocity RPS", currentVelocity);
