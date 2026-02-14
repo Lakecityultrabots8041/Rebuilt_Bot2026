@@ -53,6 +53,7 @@ public class ClimberSubsystem extends SubsystemBase {
             ArmUp = false;
             justClumb = true;
         }
+    }
         if (justClumb == true) {
             timer += 0.02;
         }
@@ -61,6 +62,6 @@ public class ClimberSubsystem extends SubsystemBase {
             timer = 0;
         }
     }
-    }
+    
 
 }
