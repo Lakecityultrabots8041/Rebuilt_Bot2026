@@ -117,9 +117,11 @@ public class RobotContainer {
                          VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
                     double smoothOutput = autoAimSlew.calculate(clampedOutput);
 
-                    // Spin up shooter when auto-aim is tracking
-                    if (shooterSubsystem.getState() == ShooterSubsystem.ShooterState.IDLE) {
-                        shooterSubsystem.revUp().schedule();
+                    // Set shooter speed based on distance to target
+                    double distance = limelight.getDistanceMeters();
+                    if (distance > 0) {
+                        shooterSubsystem.setVariableVelocity(
+                            ShooterConstants.getVelocityForDistance(distance));
                     }
 
                     return drive.withVelocityX(velocityX)
@@ -128,6 +130,7 @@ public class RobotContainer {
                 } else {
                     autoAimSlew.reset(0);
                     autoAimPID.reset();
+                    shooterSubsystem.clearVariableVelocity();
 
                     return drive.withVelocityX(velocityX)
                                 .withVelocityY(velocityY)
