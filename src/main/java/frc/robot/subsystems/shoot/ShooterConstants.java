@@ -11,6 +11,7 @@ public final class ShooterConstants {
 
     // ===== CAN IDs =====
     public static final int SHOOTER_MOTOR = 2;
+    public static final int FLYWHEEL_MOTOR = 3;
 
 
     // Speed presets (rotations per second)
@@ -18,6 +19,11 @@ public final class ShooterConstants {
     public static final double REV_VELOCITY = 65.0;  
     public static final double EJECT_VELOCITY = -5.0;
     public static final double IDLE_VELOCITY = 0.0;
+
+    // Flywheel speed presets (rotations per second)
+    public static final double FLYWHEEL_MAX_VELOCITY = 90.0;
+    public static final double FLYWHEEL_REV_VELOCITY = 65.0;
+    public static final double FLYWHEEL_IDLE_VELOCITY = 0.0;
 
     // PID Gains
     public static final double kP = 3.0;

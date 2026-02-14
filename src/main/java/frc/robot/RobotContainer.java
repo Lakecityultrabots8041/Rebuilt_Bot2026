@@ -8,10 +8,12 @@ import frc.robot.subsystems.climb.ClimberSubsystem;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystems;
 import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.generated.TunerConstants;
 
 import static edu.wpi.first.units.Units.*;
@@ -154,13 +156,20 @@ public class RobotContainer {
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
+        controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
 
-        controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem))
-            .onFalse(ShooterCommands.idle(shooterSubsystem));
+        // ----- INTAKE ----
+        // Left DPad to intake, right DPad to stop
+        // Y to pivot up, A to pivot down
+        controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
+        controller.povRight().onTrue(IntakeCommands.idle(intakeSubsystem));
+        controller.b().whileTrue(IntakeCommands.pivotUp(intakeSubsystem));
+        controller.a().whileTrue(IntakeCommands.pivotDown(intakeSubsystem));
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }
     public ShooterSubsystem getShooter() { return shooterSubsystem; }
+    public IntakeSubsystems getIntake() { return intakeSubsystem; }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();

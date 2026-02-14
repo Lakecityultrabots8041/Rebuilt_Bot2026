@@ -8,29 +8,36 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+
 public class ShooterSubsystem extends SubsystemBase {
 
     private final TalonFX shootMotor;
+    private final TalonFX flywheelMotor;
     private final VelocityTorqueCurrentFOC velocityRequest;
 
     private ShooterState currentState = ShooterState.IDLE;
-    private ShooterState lastState = null;
-    private double targetVariableVelocity = 0;
+    private ShooterState flywheelState = ShooterState.FLYWHELLIDLE; 
+    private ShooterState lastState = null; 
+    private ShooterState lastFlywheelState = null;
 
     public enum ShooterState {
         IDLE,
+        FLYWHELLIDLE,
         REVVING,
+        FLYWHELLREVVING,
         READY,
-        EJECTING,
-        VARIABLE
+        FLYWHEELREADY,
+        FLYWHEELEJECTING,
+        EJECTING
     }
 
     public boolean isReady() {
-        return currentState == ShooterState.READY;
+        return currentState == ShooterState.READY && flywheelState == ShooterState.FLYWHEELREADY;
     }
 
     public ShooterSubsystem() {
         shootMotor = new TalonFX(ShooterConstants.SHOOTER_MOTOR, ShooterConstants.CANIVORE_NAME);
+        flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE_NAME);
         velocityRequest = new VelocityTorqueCurrentFOC(0);
 
         var configs = new TalonFXConfiguration();
@@ -58,38 +65,66 @@ public class ShooterSubsystem extends SubsystemBase {
         }
         lastState = currentState;
 
+        // Flywheel states
+        if (flywheelState != lastFlywheelState) {
+            switch (flywheelState) {
+                case FLYWHELLIDLE -> setVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
+                case FLYWHELLREVVING -> setVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
+                case FLYWHEELREADY -> setVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
+            }
+            lastFlywheelState = flywheelState;
+        }
+
         // Dashboard telemetry
         double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
         SmartDashboard.putNumber("Shooter/Velocity RPS", currentVelocity);
         SmartDashboard.putNumber("Shooter/Velocity RPM", currentVelocity * 60);
         SmartDashboard.putString("Shooter/State", currentState.toString());
-        SmartDashboard.putBoolean("Shooter/At Target", atTargetVelocity());
+        SmartDashboard.putString("Shooter/Flywheel State", flywheelState.toString());
+        
+        SmartDashboard.putBoolean("Shooter/At Target", atTargetVelocity() && atFlywheelTargetVelocity());
         SmartDashboard.putNumber("Shooter/Motor Voltage", shootMotor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Shooter/Motor Current", shootMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Shooter/Target Variable RPS", targetVariableVelocity);
+        SmartDashboard.putNumber("Slywheeler/Motor Voltage", flywheelMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Flywheeler/Motor Current", flywheelMotor.getStatorCurrent().getValueAsDouble());
     }
 
     // ===== COMMAND FACTORIES =====
 
     public Command revUp() {
-        return runOnce(() -> currentState = ShooterState.REVVING)
+        return runOnce(() -> {
+            currentState = ShooterState.REVVING;
+            flywheelState = ShooterState.FLYWHELLREVVING;
+        })
                 .andThen(Commands.waitSeconds(1.0))
-                .andThen(runOnce(() -> currentState = ShooterState.READY))
+                .andThen(runOnce(() -> {
+                    currentState = ShooterState.READY;
+                    flywheelState = ShooterState.FLYWHEELREADY;
+                }))
                 .withName("RevUpShooter");
     }
 
     public Command shoot() {
-        return runOnce(() -> currentState = ShooterState.READY)
+        return runOnce(() -> {
+            currentState = ShooterState.READY;
+            flywheelState = ShooterState.FLYWHEELREADY;
+        })
                 .withName("ShootReady");
     }
 
     public Command idle() {
-        return runOnce(() -> currentState = ShooterState.IDLE)
+        return runOnce(() -> {
+            currentState = ShooterState.IDLE;
+            flywheelState = ShooterState.FLYWHELLIDLE;
+        })
                 .withName("ShooterIdle");
     }
 
     public Command eject() {
-        return runOnce(() -> currentState = ShooterState.EJECTING)
+        return runOnce(() -> {
+            currentState = ShooterState.EJECTING;
+            flywheelState = ShooterState.FLYWHEELEJECTING;
+        })
                 .withName("ShooterEject");
     }
 
@@ -117,22 +152,38 @@ public class ShooterSubsystem extends SubsystemBase {
         return currentState;
     }
 
+    public ShooterState getFlywheelState() {
+        return flywheelState;
+    }
     public boolean atTargetVelocity() {
         double targetVelocity = switch (currentState) {
             case IDLE -> ShooterConstants.IDLE_VELOCITY;
             case REVVING -> ShooterConstants.REV_VELOCITY;
             case READY -> ShooterConstants.MAX_VELOCITY;
             case EJECTING -> ShooterConstants.EJECT_VELOCITY;
-            case VARIABLE -> targetVariableVelocity;
+            default -> 0.0;
         };
 
         double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
         return Math.abs(currentVelocity - targetVelocity) < ShooterConstants.VELOCITY_TOLERANCE_RPS;
     }
 
-    public Command waitUntilReady() {
-        return Commands.waitUntil(this::atTargetVelocity)
-                .withTimeout(ShooterConstants.READY_TIMEOUT_SECONDS)
-                .withName("WaitForShooterReady");
+    public boolean atFlywheelTargetVelocity() {
+        double targetVelocity = switch (flywheelState) {
+            case FLYWHELLIDLE -> ShooterConstants.FLYWHEEL_IDLE_VELOCITY;
+            case FLYWHELLREVVING -> ShooterConstants.FLYWHEEL_REV_VELOCITY;
+            case FLYWHEELREADY -> ShooterConstants.FLYWHEEL_MAX_VELOCITY;
+            case FLYWHEELEJECTING -> ShooterConstants.FLYWHEEL_IDLE_VELOCITY;
+            default -> 0.0;
+        };
+
+        double currentVelocity = flywheelMotor.getVelocity().getValueAsDouble();
+        return Math.abs(currentVelocity - targetVelocity) < ShooterConstants.VELOCITY_TOLERANCE_RPS;
     }
-}
+
+    public Command waitUntilReady() {
+        return Commands.waitUntil(() -> atTargetVelocity() && atFlywheelTargetVelocity())
+                .withTimeout(ShooterConstants.READY_TIMEOUT_SECONDS)
+                .withName("WaitForShooterAndFlywheelReady");
+    }
+}   
