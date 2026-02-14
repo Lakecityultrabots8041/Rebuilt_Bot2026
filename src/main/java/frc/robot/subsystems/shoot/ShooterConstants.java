@@ -33,4 +33,32 @@ public final class ShooterConstants {
     // Tolerances
     public static final double VELOCITY_TOLERANCE_RPS = 2.0;
     public static final double READY_TIMEOUT_SECONDS = 2.0;
+
+    // ===== Variable Distance Shooter RPM  =====
+    private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
+    private static final double[] VELOCITY_TABLE_RPS    = {60,  70,  80,   85,  88,  90,  90 };
+
+    /**
+     * Returns the interpolated shooter velocity (RPS) for a given distance in meters.
+     * Clamps at boundaries — distances below 1.5m use 60 RPS, above 5.0m use 90 RPS.
+     */
+    public static double getVelocityForDistance(double meters) {
+        // Clamp below minimum distance
+        if (meters <= DISTANCE_TABLE_METERS[0]) {
+            return VELOCITY_TABLE_RPS[0];
+        }
+        // Clamp above maximum distance
+        if (meters >= DISTANCE_TABLE_METERS[DISTANCE_TABLE_METERS.length - 1]) {
+            return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
+        }
+        // Linear interpolation between table entries
+        for (int i = 0; i < DISTANCE_TABLE_METERS.length - 1; i++) {
+            if (meters <= DISTANCE_TABLE_METERS[i + 1]) {
+                double t = (meters - DISTANCE_TABLE_METERS[i])
+                         / (DISTANCE_TABLE_METERS[i + 1] - DISTANCE_TABLE_METERS[i]);
+                return VELOCITY_TABLE_RPS[i] + t * (VELOCITY_TABLE_RPS[i + 1] - VELOCITY_TABLE_RPS[i]);
+            }
+        }
+        return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
+    }
 }
