@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +16,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystems extends SubsystemBase {
     
+private final TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
+private final TalonFXConfiguration pivotConfigs = new TalonFXConfiguration();
+
 private final TalonFX intakeMotor;
 private final TalonFX pivotMotor;
 private final VelocityTorqueCurrentFOC velocityRequest;
@@ -51,9 +55,19 @@ public IntakeSubsystems() {
     intakecConfigs.Slot0.kS = 0.1; //Change later in motion magic when we tune the motors
 
     var pivotConfigs = new TalonFXConfiguration();
-    pivotConfigs.Slot0.kP = 0.1; //Change later in motion magic when we tune the motors
-    pivotConfigs.Slot0.kV = 0.1; //Change later in motion magic when we tune the motors
-    pivotConfigs.Slot0.kS = 0.1; //Change later in motion magic when we tune the motors
+    pivotConfigs.Slot0.kP = IntakeConstants.kP;
+    pivotConfigs.Slot0.kI = IntakeConstants.kI;
+    pivotConfigs.Slot0.kD = IntakeConstants.kD;
+    pivotConfigs.Slot0.kS = IntakeConstants.kS;
+    pivotConfigs.Slot0.kV = IntakeConstants.kV;
+    pivotConfigs.Slot0.kA = IntakeConstants.kA;
+    pivotConfigs.Slot0.kG = IntakeConstants.kG;
+
+    pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+
+    pivotConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.CRUISE_VELOCITY;
+    pivotConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.ACCELERATION;
+    pivotConfigs.MotionMagic.MotionMagicJerk = IntakeConstants.JERK;
 
     intakeMotor.getConfigurator().apply(intakecConfigs);
     pivotMotor.getConfigurator().apply(pivotConfigs);

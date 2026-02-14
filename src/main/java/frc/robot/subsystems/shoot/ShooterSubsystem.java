@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ShooterSubsystem extends SubsystemBase {
 
+
     private final TalonFX shootMotor;
     private final TalonFX flywheelMotor;
     private final VelocityTorqueCurrentFOC velocityRequest;
