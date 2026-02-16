@@ -1,12 +1,17 @@
 package frc.robot.subsystems.shoot;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.Current;
 
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -15,6 +20,14 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TalonFX shootMotor;
     private final TalonFX flywheelMotor;
     private final VelocityTorqueCurrentFOC velocityRequest;
+
+    // Pre-registered status signals — bulk-refreshed once per loop
+    private final StatusSignal<AngularVelocity> shooterVelocitySig;
+    private final StatusSignal<AngularVelocity> flywheelVelocitySig;
+    private final StatusSignal<Voltage> shooterVoltageSig;
+    private final StatusSignal<Current> shooterCurrentSig;
+    private final StatusSignal<Voltage> flywheelVoltageSig;
+    private final StatusSignal<Current> flywheelCurrentSig;
 
     // Track what we're commanding so we can display it in sim
     private double lastCommandedShooterRPS = 0;
@@ -52,10 +65,24 @@ public class ShooterSubsystem extends SubsystemBase {
         configs.Slot0.kS = ShooterConstants.kS;
 
         shootMotor.getConfigurator().apply(configs);
+
+        // Register status signals once — bulk-refreshed in periodic()
+        shooterVelocitySig = shootMotor.getVelocity();
+        flywheelVelocitySig = flywheelMotor.getVelocity();
+        shooterVoltageSig = shootMotor.getMotorVoltage();
+        shooterCurrentSig = shootMotor.getStatorCurrent();
+        flywheelVoltageSig = flywheelMotor.getMotorVoltage();
+        flywheelCurrentSig = flywheelMotor.getStatorCurrent();
     }
 
     @Override
     public void periodic() {
+        // Bulk-refresh all signals once — single CAN round-trip
+        BaseStatusSignal.refreshAll(
+            shooterVelocitySig, flywheelVelocitySig,
+            shooterVoltageSig, shooterCurrentSig,
+            flywheelVoltageSig, flywheelCurrentSig);
+
         // VARIABLE state: update both motors every loop (speed changes with distance)
         if (currentState == ShooterState.VISION_TRACKING) {
             setVelocity(variableVelocityRPS);
@@ -85,32 +112,29 @@ public class ShooterSubsystem extends SubsystemBase {
             }
         }
 
-        // Dashboard telemetry — commanded values work in sim, actual values only on real robot
+        // Read cached signal values (already refreshed above)
+        double actualShooterVelocity = shooterVelocitySig.getValueAsDouble();
+        double actualFlywheelVelocity = flywheelVelocitySig.getValueAsDouble();
+
+        // Dashboard telemetry
         SmartDashboard.putString("Shooter/State", currentState.toString());
         SmartDashboard.putString("Shooter/Flywheel State", flywheelState.toString());
-
-        // Commanded values (what the code is telling the motors to do — visible in sim)
         SmartDashboard.putNumber("Shooter/Commanded RPS", lastCommandedShooterRPS);
         SmartDashboard.putNumber("Shooter/Commanded RPM", lastCommandedShooterRPS * 60);
         SmartDashboard.putNumber("Flywheel/Commanded RPS", lastCommandedFlywheelRPS);
         SmartDashboard.putNumber("Flywheel/Commanded RPM", lastCommandedFlywheelRPS * 60);
 
-        // Vision tracking info
         if (currentState == ShooterState.VISION_TRACKING) {
             SmartDashboard.putNumber("Shooter/Vision Target RPS", variableVelocityRPS);
         }
 
-        // Actual motor feedback (only meaningful on real robot)
-        double actualShooterVelocity = shootMotor.getVelocity().getValueAsDouble();
-        double actualFlywheelVelocity = flywheelMotor.getVelocity().getValueAsDouble();
         SmartDashboard.putNumber("Shooter/Actual RPS", actualShooterVelocity);
         SmartDashboard.putNumber("Flywheel/Actual RPS", actualFlywheelVelocity);
         SmartDashboard.putBoolean("Shooter/At Target", atTargetVelocity() && atFlywheelTargetVelocity());
-
-        SmartDashboard.putNumber("Shooter/Motor Voltage", shootMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Shooter/Motor Current", shootMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Flywheel/Motor Voltage", flywheelMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Flywheel/Motor Current", flywheelMotor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Shooter/Motor Voltage", shooterVoltageSig.getValueAsDouble());
+        SmartDashboard.putNumber("Shooter/Motor Current", shooterCurrentSig.getValueAsDouble());
+        SmartDashboard.putNumber("Flywheel/Motor Voltage", flywheelVoltageSig.getValueAsDouble());
+        SmartDashboard.putNumber("Flywheel/Motor Current", flywheelCurrentSig.getValueAsDouble());
     }
 
     // ===== COMMAND FACTORIES =====
@@ -216,7 +240,7 @@ public class ShooterSubsystem extends SubsystemBase {
             default -> 0.0;
         };
 
-        double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
+        double currentVelocity = shooterVelocitySig.getValueAsDouble();
         return Math.abs(currentVelocity - targetVelocity) < ShooterConstants.VELOCITY_TOLERANCE_RPS;
     }
 
@@ -230,7 +254,7 @@ public class ShooterSubsystem extends SubsystemBase {
             default -> 0.0;
         };
 
-        double currentVelocity = flywheelMotor.getVelocity().getValueAsDouble();
+        double currentVelocity = flywheelVelocitySig.getValueAsDouble();
         return Math.abs(currentVelocity - targetVelocity) < ShooterConstants.VELOCITY_TOLERANCE_RPS;
     }
 

@@ -87,11 +87,12 @@ public class IntakeSubsystems extends SubsystemBase {
             lastPivotState = pivotState;
         }
 
-        // Telemetry
+        // Telemetry — read position once, use for both display and target check
+        double currentPivotPosition = pivotMotor.getPosition().getValueAsDouble();
         SmartDashboard.putString("Intake/State", intakeState.toString());
         SmartDashboard.putString("Intake/Pivot State", pivotState.toString());
-        SmartDashboard.putNumber("Intake/Pivot Position", pivotMotor.getPosition().getValueAsDouble());
-        SmartDashboard.putBoolean("Intake/Pivot At Target", isPivotAtTarget());
+        SmartDashboard.putNumber("Intake/Pivot Position", currentPivotPosition);
+        SmartDashboard.putBoolean("Intake/Pivot At Target", isPivotAtTarget(currentPivotPosition));
     }
 
     // ===== INTAKE COMMANDS =====
@@ -131,7 +132,7 @@ public class IntakeSubsystems extends SubsystemBase {
         intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
     }
 
-    public boolean isPivotAtTarget() {
+    public boolean isPivotAtTarget(double currentPosition) {
         double targetPosition = switch (pivotState) {
             case STOW -> IntakeConstants.STOW_POSITION;
             case INTAKE -> IntakeConstants.INTAKE_POSITION;
@@ -139,7 +140,6 @@ public class IntakeSubsystems extends SubsystemBase {
             case IDLE -> Double.NaN;
         };
         if (Double.isNaN(targetPosition)) return false;
-        double currentPosition = pivotMotor.getPosition().getValueAsDouble();
         return Math.abs(currentPosition - targetPosition) < IntakeConstants.POSITION_TOLERANCE;
     }
 

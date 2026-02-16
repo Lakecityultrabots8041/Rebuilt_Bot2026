@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ===============================================================================
 SEASON LOCK — NON-NEGOTIABLE
 ===============================================================================
+Claude must use Opus for large code creation.
 
 This robot is built for:
 
