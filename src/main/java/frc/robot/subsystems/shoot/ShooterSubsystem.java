@@ -16,6 +16,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TalonFX flywheelMotor;
     private final VelocityTorqueCurrentFOC velocityRequest;
 
+    // Track what we're commanding so we can display it in sim
+    private double lastCommandedShooterRPS = 0;
+    private double lastCommandedFlywheelRPS = 0;
+
     private ShooterState currentState = ShooterState.IDLE;
     private ShooterState flywheelState = ShooterState.FLYWHELLIDLE; 
     private ShooterState lastState = null; 
@@ -29,7 +33,8 @@ public class ShooterSubsystem extends SubsystemBase {
         READY,
         FLYWHEELREADY,
         FLYWHEELEJECTING,
-        EJECTING
+        EJECTING,
+        VISION_TRACKING
     }
 
     public boolean isReady() {
@@ -51,39 +56,61 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Only send motor commands when state changes (not every loop)
-        if (currentState != lastState) {
-            switch (currentState) {
-                case IDLE -> setVelocity(ShooterConstants.IDLE_VELOCITY);
-                case REVVING -> setVelocity(ShooterConstants.REV_VELOCITY);
-                case READY -> setVelocity(ShooterConstants.MAX_VELOCITY);
-                case EJECTING -> setVelocity(ShooterConstants.EJECT_VELOCITY);
+        // VARIABLE state: update both motors every loop (speed changes with distance)
+        if (currentState == ShooterState.VISION_TRACKING) {
+            setVelocity(variableVelocityRPS);
+            setFlywheelVelocity(variableVelocityRPS);
+        } else {
+            // Only send motor commands when state changes (not every loop)
+            if (currentState != lastState) {
+                switch (currentState) {
+                    case IDLE -> setVelocity(ShooterConstants.IDLE_VELOCITY);
+                    case REVVING -> setVelocity(ShooterConstants.REV_VELOCITY);
+                    case READY -> setVelocity(ShooterConstants.MAX_VELOCITY);
+                    case EJECTING -> setVelocity(ShooterConstants.EJECT_VELOCITY);
+                    default -> {}
+                }
+                lastState = currentState;
             }
-            lastState = currentState;
+
+            // Flywheel states
+            if (flywheelState != lastFlywheelState) {
+                switch (flywheelState) {
+                    case FLYWHELLIDLE -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
+                    case FLYWHELLREVVING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
+                    case FLYWHEELREADY -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
+                    default -> {}
+                }
+                lastFlywheelState = flywheelState;
+            }
         }
 
-        // Flywheel states
-        if (flywheelState != lastFlywheelState) {
-            switch (flywheelState) {
-                case FLYWHELLIDLE -> setVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
-                case FLYWHELLREVVING -> setVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
-                case FLYWHEELREADY -> setVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
-            }
-            lastFlywheelState = flywheelState;
-        }
-
-        // Dashboard telemetry
-        double currentVelocity = shootMotor.getVelocity().getValueAsDouble();
-        SmartDashboard.putNumber("Shooter/Velocity RPS", currentVelocity);
-        SmartDashboard.putNumber("Shooter/Velocity RPM", currentVelocity * 60);
+        // Dashboard telemetry — commanded values work in sim, actual values only on real robot
         SmartDashboard.putString("Shooter/State", currentState.toString());
         SmartDashboard.putString("Shooter/Flywheel State", flywheelState.toString());
-        
+
+        // Commanded values (what the code is telling the motors to do — visible in sim)
+        SmartDashboard.putNumber("Shooter/Commanded RPS", lastCommandedShooterRPS);
+        SmartDashboard.putNumber("Shooter/Commanded RPM", lastCommandedShooterRPS * 60);
+        SmartDashboard.putNumber("Flywheel/Commanded RPS", lastCommandedFlywheelRPS);
+        SmartDashboard.putNumber("Flywheel/Commanded RPM", lastCommandedFlywheelRPS * 60);
+
+        // Vision tracking info
+        if (currentState == ShooterState.VISION_TRACKING) {
+            SmartDashboard.putNumber("Shooter/Vision Target RPS", variableVelocityRPS);
+        }
+
+        // Actual motor feedback (only meaningful on real robot)
+        double actualShooterVelocity = shootMotor.getVelocity().getValueAsDouble();
+        double actualFlywheelVelocity = flywheelMotor.getVelocity().getValueAsDouble();
+        SmartDashboard.putNumber("Shooter/Actual RPS", actualShooterVelocity);
+        SmartDashboard.putNumber("Flywheel/Actual RPS", actualFlywheelVelocity);
         SmartDashboard.putBoolean("Shooter/At Target", atTargetVelocity() && atFlywheelTargetVelocity());
+
         SmartDashboard.putNumber("Shooter/Motor Voltage", shootMotor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Shooter/Motor Current", shootMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Slywheeler/Motor Voltage", flywheelMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Flywheeler/Motor Current", flywheelMotor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Flywheel/Motor Voltage", flywheelMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Flywheel/Motor Current", flywheelMotor.getStatorCurrent().getValueAsDouble());
     }
 
     // ===== COMMAND FACTORIES =====
@@ -130,10 +157,46 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withName("ShooterSetVelocity_" + velocityRPS);
     }
 
+    // ===== VARIABLE VELOCITY (Limelight auto-aim) =====
+
+    private double variableVelocityRPS = 0;
+
+    /**
+     * Called each loop by auto-aim to set shooter speed based on Limelight distance.
+     * Bypasses the state machine and directly controls both motors.
+     */
+    public void setVariableVelocity(double velocityRPS) {
+        variableVelocityRPS = velocityRPS;
+        if (currentState != ShooterState.VISION_TRACKING) {
+            currentState = ShooterState.VISION_TRACKING;
+            flywheelState = ShooterState.VISION_TRACKING;
+        }
+    }
+
+    /**
+     * Stops variable velocity mode and returns to IDLE.
+     * Called when auto-aim disengages.
+     */
+    public void clearVariableVelocity() {
+        if (currentState == ShooterState.VISION_TRACKING) {
+            variableVelocityRPS = 0;
+            currentState = ShooterState.IDLE;
+            flywheelState = ShooterState.FLYWHELLIDLE;
+            lastState = null;
+            lastFlywheelState = null;
+        }
+    }
+
     // ===== HELPER METHODS =====
 
     private void setVelocity(double velocityRPS) {
+        lastCommandedShooterRPS = velocityRPS;
         shootMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+    }
+
+    private void setFlywheelVelocity(double velocityRPS) {
+        lastCommandedFlywheelRPS = velocityRPS;
+        flywheelMotor.setControl(velocityRequest.withVelocity(velocityRPS));
     }
 
     public ShooterState getState() {
@@ -149,6 +212,7 @@ public class ShooterSubsystem extends SubsystemBase {
             case REVVING -> ShooterConstants.REV_VELOCITY;
             case READY -> ShooterConstants.MAX_VELOCITY;
             case EJECTING -> ShooterConstants.EJECT_VELOCITY;
+            case VISION_TRACKING -> variableVelocityRPS;
             default -> 0.0;
         };
 
@@ -162,6 +226,7 @@ public class ShooterSubsystem extends SubsystemBase {
             case FLYWHELLREVVING -> ShooterConstants.FLYWHEEL_REV_VELOCITY;
             case FLYWHEELREADY -> ShooterConstants.FLYWHEEL_MAX_VELOCITY;
             case FLYWHEELEJECTING -> ShooterConstants.FLYWHEEL_IDLE_VELOCITY;
+            case VISION_TRACKING -> variableVelocityRPS;
             default -> 0.0;
         };
 
