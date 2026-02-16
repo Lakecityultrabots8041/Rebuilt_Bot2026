@@ -89,17 +89,22 @@ public class RobotContainer {
 
         // PathPlanner named commands
         NamedCommands.registerCommand("Align Hub", createAutoHubAlign());
+
+        // =====Shooter Name Commands=====
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+        // =====Intake Commands=====
         NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
         NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
+        NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
+        NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 
         autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);

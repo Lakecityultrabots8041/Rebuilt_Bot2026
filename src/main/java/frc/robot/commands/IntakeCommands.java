@@ -8,10 +8,11 @@ public class IntakeCommands extends Command {
 
     // ====== INTAKE WHEEL COMMANDS ======
     public static Command intake(IntakeSubsystems intakeSubsystems) {
-        Commands.runOnce(() -> System.out.println("Starting intake command"))
-                .andThen(intakeSubsystems.intake())
-                .withName("IntakeCommand");
-        return intakeSubsystems.intake();
+       return Commands.sequence(
+        Commands.runOnce(() -> System.out.println("Starting intake command")),
+        intakeSubsystems.intake()
+       ).withName("IntakeCommand");
+        
     }
 
     public static Command eject(IntakeSubsystems intakeSubsystems) {
@@ -48,5 +49,30 @@ public class IntakeCommands extends Command {
                 .andThen(intakeSubsystems.pivotToTravel())
                 .withName("PivotToTravelCommand");
         return intakeSubsystems.pivotToTravel();
+    }
+
+    // =====Advance Commands=====
+    public static Command startingIntakeSequence(IntakeSubsystems intakeSubsystems) {
+        return Commands.sequence(
+            Commands.runOnce(() -> System.out.println("Starting Intake Sequence")),
+            Commands.waitSeconds(0.5), // Change when we find the exact time it takes to do that action
+            Commands.runOnce(() -> System.out.println("Lowering Intake To Intake Position")),
+            intakeSubsystems.pivotToIntake(),
+            Commands.waitSeconds(0.5), // Change when we find the exact time it takes to do that action
+            Commands.runOnce(() -> System.out.println("Intaking Fuel")),
+            intakeSubsystems.intake()
+        ).withName("IntakeSequenceCommand");
+    }
+
+    public static Command endingIntakeSequence(IntakeSubsystems intakeSubsystems) {
+        return Commands.sequence(
+            Commands.runOnce(() -> System.out.println("Starting End Intake Sequence")),
+            Commands.waitSeconds(0.5), // Change when we find the exact time it takes to do that action
+            Commands.runOnce(() -> System.out.println("Stopping Intake Wheels")),
+            intakeSubsystems.idle(),
+            Commands.waitSeconds(0.5), // Change when we find the exact time it takes to do that action
+            Commands.runOnce(() -> System.out.println("Lifting Intake To Travel Position")),
+            intakeSubsystems.pivotToTravel()
+        ).withName("EndIntakeSequenceCommand");
     }
 }

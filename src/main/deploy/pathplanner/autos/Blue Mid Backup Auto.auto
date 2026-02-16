@@ -11,9 +11,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Start Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "MB to CLimb"
+            "pathName": "MB Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "End Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MB Intake to Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignAndShoot"
           }
         }
       ]
