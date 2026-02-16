@@ -27,16 +27,7 @@ public class IntakeCommands extends Command {
         return intakeSubsystems.pivotToIntake();
     }
 
-    // ====== PIVOT MANUAL COMMANDS ======
-    public static Command pivotManualUp(IntakeSubsystems intakeSubsystems) {
-        return intakeSubsystems.pivotManualUp();
-    }
-
-    public static Command pivotManualDown(IntakeSubsystems intakeSubsystems) {
-        return intakeSubsystems.pivotManualDown();
-    }
-
-    public static Command pivotStop(IntakeSubsystems intakeSubsystems) {
-        return intakeSubsystems.pivotStop();
+    public static Command pivotToTravel(IntakeSubsystems intakeSubsystems) {
+        return intakeSubsystems.pivotToTravel();
     }
 }

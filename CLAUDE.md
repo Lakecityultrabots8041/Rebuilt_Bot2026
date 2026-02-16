@@ -2,63 +2,373 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+===============================================================================
+SEASON LOCK — NON-NEGOTIABLE
+===============================================================================
 
-FRC Team 8041 (Lake City Ultrabots) 2026 competition robot. Java-based, using WPILib's command-based framework with AdvantageKit logging. Runs on a RoboRIO 2.0 with CTRE Phoenix 6 swerve drivetrain and Limelight 4 vision.
+This robot is built for:
 
-## Build Commands
+FRC 2026  
+Game: REBUILT  
 
-```bash
-./gradlew build            # Compile and build
-./gradlew deploy           # Deploy to robot (requires robot connection)
-./gradlew simulateJava     # Run desktop simulation
-./gradlew test             # Run JUnit 5 tests
-```
+All strategic, scoring, field, and rules-based reasoning MUST apply strictly to the 2026 REBUILT game.
 
-On Windows, use `gradlew.bat` directly if `./gradlew` doesn't work in your shell.
+Claude must NOT:
+- Assume rules from prior seasons
+- Reuse previous game mechanics
+- Invent scoring values
+- Invent field dimensions
+- Invent endgame conditions
 
-## Architecture
+If rules or scoring are unclear:
+- Explicitly state uncertainty
+- Request official documentation
+- Do NOT fabricate
 
-### Lifecycle Flow
+Required uncertainty response:
+"I cannot verify this from official 2026 REBUILT documentation."
 
-`Main.java` → `RobotBase.startRobot(Robot::new)` → `Robot` (extends `LoggedRobot`) → creates `RobotContainer` which wires all subsystems, commands, and controller bindings. `CommandScheduler.run()` is called every robot periodic cycle.
+No invented rules. No speculative geometry.
 
-### Subsystem Pattern
+===============================================================================
+PROJECT OVERVIEW
+===============================================================================
 
-Each subsystem lives in its own package under `src/main/java/frc/robot/subsystems/` with a subsystem class and a constants class. Subsystems use **state machine enums** (e.g., `ShooterState`, `IntakeState`) where motor commands are only sent on state transitions (`currentState != lastState`), reducing CAN bus traffic.
+FRC Team 8041 (Lake City Ultrabots) 2026 competition robot.
 
-### Command Pattern
+Java-based  
+WPILib command-based framework  
+AdvantageKit logging  
 
-Commands are created via **static factory classes** (`ShooterCommands`, `IntakeCommands`) that delegate to subsystem methods returning `Command` objects. Vision alignment uses a standalone `Limelight_Move` command. All command bindings are in `RobotContainer.configureBindings()`.
+Hardware:
+- RoboRIO 2.0
+- CTRE Phoenix 6 swerve drivetrain
+- Pigeon 2 IMU
+- CANcoders
+- Limelight 4 vision
 
-### CAN Bus Layout
+===============================================================================
+ENGINEERING PRIORITIES (STRICT ORDER)
+===============================================================================
 
-- **Default bus (`""`):** Swerve drive motors, CANcoders, Pigeon 2 IMU
-- **CANivore (`"Jeffery"`):** Shooter motors (IDs 2, 3), intake motors (IDs 4, 5)
+1. Robot safety
+2. Deterministic behavior
+3. Competition reliability
+4. CAN bus efficiency
+5. Simulation compatibility
+6. Student readability
+7. Maintainability during build season
+8. Elegance (last)
 
-### Vision Integration
+Simplicity beats cleverness.
 
-`LimelightSubsystem` reads from NetworkTables (`limelight-april`) and has a full simulation mode. Vision poses are fused into the CTRE swerve Kalman filter via dependency-injected pose supplier/consumer set in `RobotContainer`, avoiding circular dependencies. Auto-aim heading lock is embedded directly in the default drive command lambda.
+Do NOT over-architect.
 
-### Autonomous
+Reliability > abstraction.
+Determinism > fancy patterns.
 
-PathPlanner 2026 with holonomic path following. Named commands registered in `RobotContainer.configureAutoBuilder()`. Auto routines stored in `src/main/deploy/pathplanner/autos/`. Translation PID kP=10, rotation PID kP=7.
+===============================================================================
+ANTI-FABRICATION & SOURCE HIERARCHY (STRICT)
+===============================================================================
 
-### Logging
+When generating solutions:
 
-AdvantageKit writes WPILOG to USB (`/U/logs`) and streams via NT4. CTRE SignalLogger records swerve data to `.hoot` files. Subsystems publish state to SmartDashboard (e.g., `Shooter/State`, `Limelight/Has Target`, `Vision/Status`).
+1. Check existing repository structure first.
+2. Use official WPILib documentation.
+3. Use official 2026 REBUILT Game Manual.
+4. Use CTRE Phoenix 6 documentation.
+5. Use vendor documentation.
+6. Then reference reputable FRC GitHub repositories.
 
-## Key Files
+Never rely on memory of prior seasons.
 
-- `RobotContainer.java` — central wiring: subsystem creation, command bindings, auto builder config
-- `generated/TunerConstants.java` — CTRE Tuner X auto-generated swerve constants (do not hand-edit)
-- `LimelightHelpers.java` — third-party Limelight helper library (do not hand-edit)
-- `ShooterConstants.java` — includes distance-to-velocity interpolation table for vision tracking
-- `VisionConstants.java` — tag groups, PID gains, alignment tolerances
+Never invent:
+- WPILib APIs
+- CTRE APIs
+- Game rules
+- Hardware behavior
+- PathPlanner methods
 
-## Vendor Libraries
+If unsure, ask.
 
-Phoenix6 26.1.0 (CTRE hardware), PathplannerLib 2026.1.2, AdvantageKit 26.0.0, ChoreoLib 2026.0.1 (installed but unused). Descriptors in `vendordeps/`.
+===============================================================================
+BUILD COMMANDS
+===============================================================================
+
+./gradlew build  
+./gradlew deploy  
+./gradlew simulateJava  
+./gradlew test  
+
+On Windows use gradlew.bat if needed.
+
+===============================================================================
+ARCHITECTURE
+===============================================================================
+
+Lifecycle Flow:
+
+Main.java  
+→ RobotBase.startRobot(Robot::new)  
+→ Robot (extends LoggedRobot)  
+→ RobotContainer  
+
+CommandScheduler.run() executes every periodic cycle.
+
+Never bypass scheduler structure.
+
+Robot.java must remain minimal.  
+RobotContainer wires all subsystems and bindings.
+
+===============================================================================
+SUBSYSTEM PATTERN
+===============================================================================
+
+Location:
+src/main/java/frc/robot/subsystems/
+
+Each subsystem contains:
+- Subsystem class
+- Folder-scoped constants class
+
+Subsystems use state machine enums:
+Example: ShooterState, IntakeState
+
+Motor commands are sent ONLY on state transitions:
+
+currentState != lastState
+
+Purpose:
+- Reduce CAN traffic
+- Avoid redundant frames
+- Improve determinism
+
+Do not remove this optimization without justification.
+
+===============================================================================
+COMMAND PATTERN
+===============================================================================
+
+Commands created via static factory classes:
+- ShooterCommands
+- IntakeCommands
+
+Subsystem methods return Command objects.
+
+All bindings belong in:
+RobotContainer.configureBindings()
+
+Do not bind commands elsewhere.
+
+Avoid embedding subsystem logic inside autos.
+
+===============================================================================
+CONSTANTS STRUCTURE
+===============================================================================
+
+Constants are folder-scoped per subsystem.
+
+Example:
+
+subsystems/
+    drive/
+        DriveConstants.java
+    shooter/
+        ShooterConstants.java
+
+Constants.java (root) is ONLY for:
+- Controller ports
+- Rare shared values
+
+No magic numbers anywhere.
+
+Student readability is mandatory.
+
+===============================================================================
+CAN BUS LAYOUT
+===============================================================================
+
+Default bus (""):
+- Swerve drive motors
+- CANcoders
+- Pigeon 2
+
+CANivore ("Jeffery"):
+- Shooter motors (IDs 2, 3)
+- Intake motors (IDs 4, 5)
+
+When configuring motors:
+- Confirm motor type
+- Confirm bus
+- Confirm device ID
+- Restore factory defaults
+- Set current limits
+- Set neutral mode explicitly
+- Set inversion explicitly
+- Validate firmware compatibility
+
+Never assume defaults.
+
+===============================================================================
+SWERVE SYSTEM
+===============================================================================
+
+Phoenix 6 swerve  
+CTRE Tuner X generated constants:
+generated/TunerConstants.java
+
+DO NOT hand-edit TunerConstants.java.
+
+Use proper CTRE kinematics and odometry.
+
+No manual gyro math hacks.
+
+Maintain clean separation:
+- Module logic
+- Drivetrain subsystem
+
+Pose estimation required.
+
+===============================================================================
+VISION INTEGRATION
+===============================================================================
+
+Limelight 4  
+NetworkTables key: "limelight-april"
+
+Vision subsystem:
+- Encapsulates ALL NetworkTables access
+- Supports full simulation
+- Injects pose supplier/consumer via RobotContainer
+
+Vision fused into CTRE swerve Kalman filter.
+
+Never:
+- Access NetworkTables outside vision subsystem
+- Hard reset odometry mid-match unless intentional
+- Trust single-frame measurement blindly
+
+If using AprilTags:
+- Validate ambiguity
+- Validate latency
+- Reject poor measurements
+- Fuse with timestamp
+
+===============================================================================
+AUTONOMOUS
+===============================================================================
+
+PathPlanner 2026  
+Holonomic path following
+
+NamedCommands registered in:
+RobotContainer.configureAutoBuilder()
+
+Autos stored in:
+src/main/deploy/pathplanner/autos/
+
+Translation PID kP = 10  
+Rotation PID kP = 7  
+
+Autos must:
+- Be deterministic
+- Validate starting pose
+- Handle missing vision gracefully
+- Not assume perfect localization
+
+===============================================================================
+LOGGING
+===============================================================================
+
+AdvantageKit:
+- WPILOG → /U/logs
+- NT4 streaming
+
+CTRE SignalLogger:
+- .hoot files
+
+SmartDashboard publishes:
+- Shooter/State
+- Limelight/Has Target
+- Vision/Status
+
+Avoid console spam during matches.
+No blocking logs in teleop.
+
+===============================================================================
+CONTROL PHILOSOPHY
+===============================================================================
+
+PID is fragile.
+
+Use only when necessary:
+- Shooter velocity
+- Precise positioning
+
+Avoid PID for:
+- Intake rollers
+- Simple mechanisms
+
+If PID is used:
+- Explain each gain
+- Keep names readable
+- Provide tuning notes
+
+Gravity-loaded mechanisms:
+- Motion Magic REQUIRED
+- Brake mode REQUIRED
+- Current limits REQUIRED
+- Soft limits REQUIRED
+- Timeout failsafes REQUIRED
+
+Never suggest percent output to hold load.
+
+===============================================================================
+SIMULATION
+===============================================================================
+
+Simulation must function.
+
+- simPeriodic() supported
+- No hardware-only blocking logic
+- Vision fails gracefully in sim
+- Commands schedulable without hardware
+
+Simulation used to validate command flow.
+
+===============================================================================
+KNOWN ISSUES (DO NOT IGNORE)
+===============================================================================
+
+- Climber subsystem stubbed out
+- IntakeSubsystems.setVelocity() links intake + pivot incorrectly
+- Intake PID gains (0.1) placeholders
+- VisionConstants camera mounting placeholders
+- Robot.java metadata string stale
+
+Do not assume these are production-ready.
+
+===============================================================================
+WHEN UNSURE
+===============================================================================
+
+Ask:
+- Practice or competition robot?
+- Gravity-loaded?
+- Match-critical?
+- Which motor type?
+- Which CAN bus?
+- What does 2026 REBUILT manual specify?
+
+Never assume.
+
+===============================================================================
+NON-FRC PROJECTS
+===============================================================================
+
+If not FRC:
+- Confirm stack
+- Apply secure engineering best practices
 
 ## Known Issues
 

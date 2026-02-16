@@ -162,15 +162,10 @@ public class RobotContainer {
         controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
         controller.povRight().onTrue(IntakeCommands.idle(intakeSubsystem));
 
-        // Pivot presets: DPad Up = stow, DPad Down = intake position
+        // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
         controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
-
-        // Pivot manual: B = up (hold), A = down (hold), release = stop
-        controller.b().whileTrue(IntakeCommands.pivotManualUp(intakeSubsystem))
-            .onFalse(IntakeCommands.pivotStop(intakeSubsystem));
-        controller.a().whileTrue(IntakeCommands.pivotManualDown(intakeSubsystem))
-            .onFalse(IntakeCommands.pivotStop(intakeSubsystem));
+        controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }

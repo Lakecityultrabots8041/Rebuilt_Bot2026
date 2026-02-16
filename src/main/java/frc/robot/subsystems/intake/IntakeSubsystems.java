@@ -3,7 +3,6 @@ package frc.robot.subsystems.intake;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,7 +16,6 @@ public class IntakeSubsystems extends SubsystemBase {
     private final TalonFX pivotMotor;
     private final VelocityTorqueCurrentFOC velocityRequest;
     private final MotionMagicVoltage motionMagicRequest;
-    private final DutyCycleOut dutyCycleRequest;
 
     private IntakeState intakeState = IntakeState.IDLE;
     private IntakeState lastIntakeState = null;
@@ -27,8 +25,7 @@ public class IntakeSubsystems extends SubsystemBase {
     public enum PivotState {
         STOW,
         INTAKE,
-        MANUAL_UP,
-        MANUAL_DOWN,
+        TRAVEL,
         IDLE
     }
 
@@ -39,11 +36,10 @@ public class IntakeSubsystems extends SubsystemBase {
     }
 
     public IntakeSubsystems() {
-        intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE_NAME);
-        pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE_NAME);
+        intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE);
+        pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
         velocityRequest = new VelocityTorqueCurrentFOC(0);
         motionMagicRequest = new MotionMagicVoltage(0);
-        dutyCycleRequest = new DutyCycleOut(0);
 
         var intakeConfigs = new TalonFXConfiguration();
         intakeConfigs.Slot0.kP = 0.1;
@@ -80,22 +76,15 @@ public class IntakeSubsystems extends SubsystemBase {
             lastIntakeState = intakeState;
         }
 
-        // Pivot motor — Motion Magic for presets, duty cycle for manual
+        // Pivot motor — Motion Magic positions, only send on state change
         if (pivotState != lastPivotState) {
             switch (pivotState) {
                 case STOW -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
                 case INTAKE -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
-                case MANUAL_UP, MANUAL_DOWN, IDLE -> {} // handled below
+                case TRAVEL -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
+                case IDLE -> {}
             }
             lastPivotState = pivotState;
-        }
-
-        // Manual states send every loop since they're active duty cycle control
-        switch (pivotState) {
-            case MANUAL_UP -> pivotMotor.setControl(dutyCycleRequest.withOutput(IntakeConstants.MANUAL_OUTPUT));
-            case MANUAL_DOWN -> pivotMotor.setControl(dutyCycleRequest.withOutput(-IntakeConstants.MANUAL_OUTPUT));
-            case IDLE -> pivotMotor.setControl(dutyCycleRequest.withOutput(0));
-            default -> {}
         }
 
         // Telemetry
@@ -132,19 +121,9 @@ public class IntakeSubsystems extends SubsystemBase {
             .withName("PivotToIntake");
     }
 
-    public Command pivotManualUp() {
-        return Commands.runOnce(() -> pivotState = PivotState.MANUAL_UP)
-            .withName("PivotManualUp");
-    }
-
-    public Command pivotManualDown() {
-        return Commands.runOnce(() -> pivotState = PivotState.MANUAL_DOWN)
-            .withName("PivotManualDown");
-    }
-
-    public Command pivotStop() {
-        return Commands.runOnce(() -> pivotState = PivotState.IDLE)
-            .withName("PivotStop");
+    public Command pivotToTravel() {
+        return Commands.runOnce(() -> pivotState = PivotState.TRAVEL)
+            .withName("PivotToTravel");
     }
 
     // ===== HELPER METHODS =====
@@ -153,12 +132,13 @@ public class IntakeSubsystems extends SubsystemBase {
     }
 
     public boolean isPivotAtTarget() {
-        if (pivotState != PivotState.STOW && pivotState != PivotState.INTAKE) {
-            return false;
-        }
-        double targetPosition = (pivotState == PivotState.STOW)
-            ? IntakeConstants.STOW_POSITION
-            : IntakeConstants.INTAKE_POSITION;
+        double targetPosition = switch (pivotState) {
+            case STOW -> IntakeConstants.STOW_POSITION;
+            case INTAKE -> IntakeConstants.INTAKE_POSITION;
+            case TRAVEL -> IntakeConstants.TRAVEL_POSITION;
+            case IDLE -> Double.NaN;
+        };
+        if (Double.isNaN(targetPosition)) return false;
         double currentPosition = pivotMotor.getPosition().getValueAsDouble();
         return Math.abs(currentPosition - targetPosition) < IntakeConstants.POSITION_TOLERANCE;
     }

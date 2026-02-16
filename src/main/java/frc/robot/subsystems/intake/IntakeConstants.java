@@ -39,9 +39,7 @@ public class IntakeConstants {
         // Pivot preset positions (rotor rotations — tune on robot)
         public static final double STOW_POSITION = 0.0;
         public static final double INTAKE_POSITION = 5.0;
-
-        // Manual pivot control (duty cycle output, 0 to 1)
-        public static final double MANUAL_OUTPUT = 0.3;
+        public static final double TRAVEL_POSITION = 3.5; // slightly above intake, safe for ramp
 
         // Position tolerance for "at target" checks (rotations)
         public static final double POSITION_TOLERANCE = 0.1;
