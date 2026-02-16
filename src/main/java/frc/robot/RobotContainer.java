@@ -77,6 +77,7 @@ public class RobotContainer {
     }
 
     private Limelight_Move createAutoHubAlign() {
+        System.out.println("Aligning to hub...");
         return new Limelight_Move(drivetrain, limelight, VisionConstants::getHubTags);
     }
 
@@ -93,8 +94,14 @@ public class RobotContainer {
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+        NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
+        NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
+        NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
 
-        autoChooser = AutoBuilder.buildAutoChooser("SimplePathAuto");
+        autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);
 
         configureBindings();
