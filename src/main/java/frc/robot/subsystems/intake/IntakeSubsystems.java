@@ -1,133 +1,166 @@
 package frc.robot.subsystems.intake;
 
-
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-@SuppressWarnings("unused")
-
-
-
 public class IntakeSubsystems extends SubsystemBase {
-    
-private final TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
-private final TalonFXConfiguration pivotConfigs = new TalonFXConfiguration();
 
-private final TalonFX intakeMotor;
-private final TalonFX pivotMotor;
-private final VelocityTorqueCurrentFOC velocityRequest;
+    private final TalonFX intakeMotor;
+    private final TalonFX pivotMotor;
+    private final VelocityTorqueCurrentFOC velocityRequest;
+    private final MotionMagicVoltage motionMagicRequest;
+    private final DutyCycleOut dutyCycleRequest;
 
-private PivotState pivotSate = PivotState.DOWN;
-private IntakeState intakeState = IntakeState.IDLE;
-private IntakeState lastIntakeState = null;
-private PivotState lastPivotState = null;
+    private IntakeState intakeState = IntakeState.IDLE;
+    private IntakeState lastIntakeState = null;
+    private PivotState pivotState = PivotState.STOW;
+    private PivotState lastPivotState = null;
 
-public enum PivotState {
-    UP,
-    DOWN,
-    IDLE
-}
-
-public enum IntakeState {
-    INTAKING,
-    EJECTING,
-    IDLE
-}
-
-public boolean isUP() {
-    return pivotSate == PivotState.UP;
-}
-
-public IntakeSubsystems() {
-    intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE_NAME);
-    pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE_NAME);
-    velocityRequest = new VelocityTorqueCurrentFOC(0);
-
-    var intakecConfigs = new TalonFXConfiguration();
-    intakecConfigs.Slot0.kP = 0.1; //Change later in motion magic when we tune the motors
-    intakecConfigs.Slot0.kV = 0.1; //Change later in motion magic when we tune the motors
-    intakecConfigs.Slot0.kS = 0.1; //Change later in motion magic when we tune the motors
-
-    var pivotConfigs = new TalonFXConfiguration();
-    pivotConfigs.Slot0.kP = IntakeConstants.kP;
-    pivotConfigs.Slot0.kI = IntakeConstants.kI;
-    pivotConfigs.Slot0.kD = IntakeConstants.kD;
-    pivotConfigs.Slot0.kS = IntakeConstants.kS;
-    pivotConfigs.Slot0.kV = IntakeConstants.kV;
-    pivotConfigs.Slot0.kA = IntakeConstants.kA;
-    pivotConfigs.Slot0.kG = IntakeConstants.kG;
-
-    pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
-
-    pivotConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.CRUISE_VELOCITY;
-    pivotConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.ACCELERATION;
-    pivotConfigs.MotionMagic.MotionMagicJerk = IntakeConstants.JERK;
-
-    intakeMotor.getConfigurator().apply(intakecConfigs);
-    pivotMotor.getConfigurator().apply(pivotConfigs);
-}
-
-@Override
-public void periodic() {
-    // Only send motor commands when state changes (not every loop)
-    if (intakeState != lastIntakeState) {
-        switch (intakeState) {
-            case INTAKING -> setVelocity(IntakeConstants.INTAKE_VELOCITY); //Change when we find the speed we want it at
-            case EJECTING -> setVelocity(IntakeConstants.EJECT_VELOCITY); //Change when we find the speed we want it at
-            case IDLE -> setVelocity(IntakeConstants.IDLE_VELOCITY); //Change when we find the speed we want it at
-        }
-        lastIntakeState = intakeState;
+    public enum PivotState {
+        STOW,
+        INTAKE,
+        MANUAL_UP,
+        MANUAL_DOWN,
+        IDLE
     }
 
-    if (pivotSate != lastPivotState) {
-        switch (pivotSate) {
-            case UP -> setVelocity(IntakeConstants.PIVOT_UP_VELOCITY); //Change when we find the speed we want it at
-            case DOWN -> setVelocity(IntakeConstants.PIVOT_DOWN_VELOCITY); //Change when we find the speed we want it at
-            case IDLE -> setVelocity(IntakeConstants.PIVOT_IDLE_VELOCITY); //Change when we find the speed we want it at
-        }
-        lastPivotState = pivotSate;
+    public enum IntakeState {
+        INTAKING,
+        EJECTING,
+        IDLE
     }
 
-}
+    public IntakeSubsystems() {
+        intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE_NAME);
+        pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE_NAME);
+        velocityRequest = new VelocityTorqueCurrentFOC(0);
+        motionMagicRequest = new MotionMagicVoltage(0);
+        dutyCycleRequest = new DutyCycleOut(0);
 
-// ===== INTAKE COMMANDS =====
-public Command intake() {
-    return Commands.runOnce(() -> intakeState = IntakeState.INTAKING)
-        .withName("RunningIntakeMotor");
-}
+        var intakeConfigs = new TalonFXConfiguration();
+        intakeConfigs.Slot0.kP = 0.1;
+        intakeConfigs.Slot0.kV = 0.1;
+        intakeConfigs.Slot0.kS = 0.1;
 
-public Command eject() {
-    return Commands.runOnce(() -> intakeState = IntakeState.EJECTING)
-        .withName("ReversingIntakeMotor");
-}
+        var pivotConfigs = new TalonFXConfiguration();
+        pivotConfigs.Slot0.kP = IntakeConstants.kP;
+        pivotConfigs.Slot0.kI = IntakeConstants.kI;
+        pivotConfigs.Slot0.kD = IntakeConstants.kD;
+        pivotConfigs.Slot0.kS = IntakeConstants.kS;
+        pivotConfigs.Slot0.kV = IntakeConstants.kV;
+        pivotConfigs.Slot0.kA = IntakeConstants.kA;
+        pivotConfigs.Slot0.kG = IntakeConstants.kG;
+        pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
+        pivotConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.CRUISE_VELOCITY;
+        pivotConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.ACCELERATION;
+        pivotConfigs.MotionMagic.MotionMagicJerk = IntakeConstants.JERK;
 
-public Command idle() {
-    return Commands.runOnce(() -> intakeState = IntakeState.IDLE)
-        .withName("StoppingIntakeMotor");
-}
+        intakeMotor.getConfigurator().apply(intakeConfigs);
+        pivotMotor.getConfigurator().apply(pivotConfigs);
+    }
 
-// ===== PIVOT COMMANDS =====
-public Command pivotUp() {
-    return Commands.runOnce(() -> pivotSate = PivotState.UP)
-        .withName("LiftingIntake");
-}
+    @Override
+    public void periodic() {
+        // Intake motor — only send on state change
+        if (intakeState != lastIntakeState) {
+            switch (intakeState) {
+                case INTAKING -> setIntakeVelocity(IntakeConstants.INTAKE_VELOCITY);
+                case EJECTING -> setIntakeVelocity(IntakeConstants.EJECT_VELOCITY);
+                case IDLE -> setIntakeVelocity(IntakeConstants.IDLE_VELOCITY);
+            }
+            lastIntakeState = intakeState;
+        }
 
-public Command pivotDown() {
-    return Commands.runOnce(() -> pivotSate = PivotState.DOWN)
-        .withName("LoweringIntake");
-}
+        // Pivot motor — Motion Magic for presets, duty cycle for manual
+        if (pivotState != lastPivotState) {
+            switch (pivotState) {
+                case STOW -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
+                case INTAKE -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
+                case MANUAL_UP, MANUAL_DOWN, IDLE -> {} // handled below
+            }
+            lastPivotState = pivotState;
+        }
 
-// ===== HELPER METHODS =====
- private void setVelocity(double velocityRPS) {
+        // Manual states send every loop since they're active duty cycle control
+        switch (pivotState) {
+            case MANUAL_UP -> pivotMotor.setControl(dutyCycleRequest.withOutput(IntakeConstants.MANUAL_OUTPUT));
+            case MANUAL_DOWN -> pivotMotor.setControl(dutyCycleRequest.withOutput(-IntakeConstants.MANUAL_OUTPUT));
+            case IDLE -> pivotMotor.setControl(dutyCycleRequest.withOutput(0));
+            default -> {}
+        }
+
+        // Telemetry
+        SmartDashboard.putString("Intake/State", intakeState.toString());
+        SmartDashboard.putString("Intake/Pivot State", pivotState.toString());
+        SmartDashboard.putNumber("Intake/Pivot Position", pivotMotor.getPosition().getValueAsDouble());
+        SmartDashboard.putBoolean("Intake/Pivot At Target", isPivotAtTarget());
+    }
+
+    // ===== INTAKE COMMANDS =====
+    public Command intake() {
+        return Commands.runOnce(() -> intakeState = IntakeState.INTAKING)
+            .withName("RunningIntakeMotor");
+    }
+
+    public Command eject() {
+        return Commands.runOnce(() -> intakeState = IntakeState.EJECTING)
+            .withName("ReversingIntakeMotor");
+    }
+
+    public Command idle() {
+        return Commands.runOnce(() -> intakeState = IntakeState.IDLE)
+            .withName("StoppingIntakeMotor");
+    }
+
+    // ===== PIVOT COMMANDS =====
+    public Command pivotToStow() {
+        return Commands.runOnce(() -> pivotState = PivotState.STOW)
+            .withName("PivotToStow");
+    }
+
+    public Command pivotToIntake() {
+        return Commands.runOnce(() -> pivotState = PivotState.INTAKE)
+            .withName("PivotToIntake");
+    }
+
+    public Command pivotManualUp() {
+        return Commands.runOnce(() -> pivotState = PivotState.MANUAL_UP)
+            .withName("PivotManualUp");
+    }
+
+    public Command pivotManualDown() {
+        return Commands.runOnce(() -> pivotState = PivotState.MANUAL_DOWN)
+            .withName("PivotManualDown");
+    }
+
+    public Command pivotStop() {
+        return Commands.runOnce(() -> pivotState = PivotState.IDLE)
+            .withName("PivotStop");
+    }
+
+    // ===== HELPER METHODS =====
+    private void setIntakeVelocity(double velocityRPS) {
         intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
-        pivotMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+    }
+
+    public boolean isPivotAtTarget() {
+        if (pivotState != PivotState.STOW && pivotState != PivotState.INTAKE) {
+            return false;
+        }
+        double targetPosition = (pivotState == PivotState.STOW)
+            ? IntakeConstants.STOW_POSITION
+            : IntakeConstants.INTAKE_POSITION;
+        double currentPosition = pivotMotor.getPosition().getValueAsDouble();
+        return Math.abs(currentPosition - targetPosition) < IntakeConstants.POSITION_TOLERANCE;
     }
 
     public IntakeState getState() {
@@ -135,9 +168,6 @@ public Command pivotDown() {
     }
 
     public PivotState getPivotState() {
-        return pivotSate;
+        return pivotState;
     }
-
 }
-
-

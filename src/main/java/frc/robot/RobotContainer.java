@@ -159,11 +159,18 @@ public class RobotContainer {
 
         // ----- INTAKE ----
         // Left DPad to intake, right DPad to stop
-        // Y to pivot up, A to pivot down
         controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
         controller.povRight().onTrue(IntakeCommands.idle(intakeSubsystem));
-        controller.b().whileTrue(IntakeCommands.pivotUp(intakeSubsystem));
-        controller.a().whileTrue(IntakeCommands.pivotDown(intakeSubsystem));
+
+        // Pivot presets: DPad Up = stow, DPad Down = intake position
+        controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
+        controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
+
+        // Pivot manual: B = up (hold), A = down (hold), release = stop
+        controller.b().whileTrue(IntakeCommands.pivotManualUp(intakeSubsystem))
+            .onFalse(IntakeCommands.pivotStop(intakeSubsystem));
+        controller.a().whileTrue(IntakeCommands.pivotManualDown(intakeSubsystem))
+            .onFalse(IntakeCommands.pivotStop(intakeSubsystem));
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }

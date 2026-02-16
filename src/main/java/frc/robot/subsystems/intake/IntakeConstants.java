@@ -4,13 +4,13 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 
 public class IntakeConstants {
-    
+
         private IntakeConstants() {} // Prevent instantiation
-    
+
         // ===== CAN Bus =====
         public static final String CANIVORE_NAME = "Jeffery";
         public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
-    
+
         // ===== CAN IDs =====
         public static final int INTAKE_MOTOR = 4; //Change when we find the CAN ID for the intake motor
         public static final int PIVOT_MOTOR = 5; //Change when we find the CAN ID for the pivot motor
@@ -31,9 +31,18 @@ public class IntakeConstants {
 
         public static final GravityTypeValue GRAVITY_TYPE = GravityTypeValue.Arm_Cosine;
 
-        //motition magic constants
-       public static final int CRUISE_VELOCITY = 15;
-       public static final int ACCELERATION = 20;
-       public static final int JERK = 20;
-     
+        // Motion Magic constants
+        public static final int CRUISE_VELOCITY = 15;
+        public static final int ACCELERATION = 20;
+        public static final int JERK = 20;
+
+        // Pivot preset positions (rotor rotations — tune on robot)
+        public static final double STOW_POSITION = 0.0;
+        public static final double INTAKE_POSITION = 5.0;
+
+        // Manual pivot control (duty cycle output, 0 to 1)
+        public static final double MANUAL_OUTPUT = 0.3;
+
+        // Position tolerance for "at target" checks (rotations)
+        public static final double POSITION_TOLERANCE = 0.1;
 }
