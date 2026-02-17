@@ -11,8 +11,8 @@ public class IntakeConstants {
         public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
     
         // ===== CAN IDs =====
-        public static final int INTAKE_MOTOR = 4; //Change when we find the CAN ID for the intake motor
-        public static final int PIVOT_MOTOR = 5; //Change when we find the CAN ID for the pivot motor
+        public static final int INTAKE_MOTOR = 3; //Change when we find the CAN ID for the intake motor
+        public static final int PIVOT_MOTOR = 2; //Change when we find the CAN ID for the pivot motor
 
         // Speed presets for intake motor (rotations per second)
         public static final double INTAKE_VELOCITY = 50.0; //Change when we find the speed we want it at

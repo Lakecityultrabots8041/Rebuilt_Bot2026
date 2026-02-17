@@ -10,8 +10,8 @@ public final class ShooterConstants {
     public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
 
     // ===== CAN IDs =====
-    public static final int SHOOTER_MOTOR = 2;
-    public static final int FLYWHEEL_MOTOR = 3;
+    public static final int SHOOTER_MOTOR = 5;
+    public static final int FLYWHEEL_MOTOR = 6;
 
 
     // Speed presets (rotations per second)
