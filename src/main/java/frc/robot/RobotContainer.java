@@ -10,11 +10,14 @@ import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystems;
 import frc.robot.subsystems.vision.LimelightSubsystem;
+import frc.robot.subsystems.vision.FuelDetectionSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.commands.DriveToFuel;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.drive.DriveConstants;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -49,8 +52,13 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final LimelightSubsystem limelight = new LimelightSubsystem();
+    private final FuelDetectionSubsystem fuelDetection = new FuelDetectionSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
+
+    // Tracked commanded speeds for asymmetric slew (fast accel, controlled decel)
+    private double currentDriveX = 0.0;
+    private double currentDriveY = 0.0;
 
     // Auto-aim
     private boolean autoAimEnabled = false;
@@ -94,6 +102,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
+        NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         // =====Intake Commands=====
@@ -105,6 +114,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
         NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
         NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
+        NamedCommands.registerCommand("Drive To Fuel", new DriveToFuel(drivetrain, fuelDetection));
 
         autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);
@@ -116,8 +126,10 @@ public class RobotContainer {
         // Default drive — field-centric with auto-aim overlay
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                double velocityX = -controller.getLeftY() * MaxSpeed;
-                double velocityY = -controller.getLeftX() * MaxSpeed;
+                currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed);
+                currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed);
+                double velocityX = currentDriveX;
+                double velocityY = currentDriveY;
 
                 if (autoAimEnabled && limelight.isTrackingHubTag()) {
                     double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
@@ -168,6 +180,12 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
         controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
+        controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
+
+        // ----- FUEL DETECTION ----
+        // TODO: assign a button for DriveToFuel once a free button is chosen.
+        // Example: controller.leftStick().whileTrue(new DriveToFuel(drivetrain, fuelDetection));
+        // Can also run in parallel with intake: .alongWith(IntakeCommands.startingIntakeSequence(intakeSubsystem))
 
         // ----- INTAKE ----
         // Left DPad to intake, right DPad to stop
@@ -178,6 +196,20 @@ public class RobotContainer {
         controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
         controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
+    }
+
+    /**
+     * Asymmetric slew rate limiter.
+     * Accelerating (|requested| > |current|) uses MAX_TELEOP_ACCEL_MPS2.
+     * Decelerating or reversing  uses MAX_TELEOP_DECEL_MPS2.
+     * Tune both values in DriveConstants.java.
+     */
+    private double applyDriveSlew(double current, double requested) {
+        double rateLimit = (Math.abs(requested) > Math.abs(current))
+            ? DriveConstants.MAX_TELEOP_ACCEL_MPS2
+            : DriveConstants.MAX_TELEOP_DECEL_MPS2;
+        double maxDelta = rateLimit * 0.02; // 20 ms loop period
+        return current + MathUtil.clamp(requested - current, -maxDelta, maxDelta);
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }

@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -146,8 +147,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configureDriveMotors();
         configureAutoBuilder();
-       
     }
 
     /**
@@ -172,8 +173,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configureDriveMotors();
         configureAutoBuilder();
-
     }
 
     /**
@@ -206,7 +207,26 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-       configureAutoBuilder();
+        configureDriveMotors();
+        configureAutoBuilder();
+    }
+
+    /**
+     * Applies drive motor current limits to all four swerve modules.
+     *
+     * These are set here rather than in TunerConstants.java so they survive
+     * a Tuner X regeneration. Tune the values in DriveConstants.java.
+     */
+    private void configureDriveMotors() {
+        var currentLimits = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(DriveConstants.DRIVE_STATOR_CURRENT_LIMIT_AMPS)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(DriveConstants.DRIVE_SUPPLY_CURRENT_LIMIT_AMPS)
+            .withSupplyCurrentLimitEnable(true);
+
+        for (var module : getModules()) {
+            module.getDriveMotor().getConfigurator().apply(currentLimits);
+        }
     }
 
  private void configureAutoBuilder() {

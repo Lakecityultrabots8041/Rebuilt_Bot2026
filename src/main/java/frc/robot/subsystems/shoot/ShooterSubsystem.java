@@ -47,6 +47,8 @@ public class ShooterSubsystem extends SubsystemBase {
         FLYWHEELREADY,
         FLYWHEELEJECTING,
         EJECTING,
+        PASSING,
+        FLYWHEELPASS,
         VISION_TRACKING
     }
 
@@ -59,12 +61,17 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
         velocityRequest = new VelocityTorqueCurrentFOC(0);
 
-        var configs = new TalonFXConfiguration();
-        configs.Slot0.kP = ShooterConstants.kP;
-        configs.Slot0.kV = ShooterConstants.kV;
-        configs.Slot0.kS = ShooterConstants.kS;
+        var shooterConfigs = new TalonFXConfiguration();
+        shooterConfigs.Slot0.kP = ShooterConstants.kP;
+        shooterConfigs.Slot0.kV = ShooterConstants.kV;
+        shooterConfigs.Slot0.kS = ShooterConstants.kS;
+        shootMotor.getConfigurator().apply(shooterConfigs);
 
-        shootMotor.getConfigurator().apply(configs);
+        var flywheelConfigs = new TalonFXConfiguration();
+        flywheelConfigs.Slot0.kP = ShooterConstants.FLYWHEEL_kP;
+        flywheelConfigs.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
+        flywheelConfigs.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
+        flywheelMotor.getConfigurator().apply(flywheelConfigs);
 
         // Register status signals once — bulk-refreshed in periodic()
         shooterVelocitySig = shootMotor.getVelocity();
@@ -86,15 +93,16 @@ public class ShooterSubsystem extends SubsystemBase {
         // VARIABLE state: update both motors every loop (speed changes with distance)
         if (currentState == ShooterState.VISION_TRACKING) {
             setVelocity(variableVelocityRPS);
-            setFlywheelVelocity(variableVelocityRPS);
+            setFlywheelVelocity(variableVelocityRPS * ShooterConstants.FLYWHEEL_SPEED_RATIO);
         } else {
             // Only send motor commands when state changes (not every loop)
             if (currentState != lastState) {
                 switch (currentState) {
-                    case IDLE -> setVelocity(ShooterConstants.IDLE_VELOCITY);
+                    case IDLE    -> setVelocity(ShooterConstants.IDLE_VELOCITY);
                     case REVVING -> setVelocity(ShooterConstants.REV_VELOCITY);
-                    case READY -> setVelocity(ShooterConstants.MAX_VELOCITY);
+                    case READY   -> setVelocity(ShooterConstants.MAX_VELOCITY);
                     case EJECTING -> setVelocity(ShooterConstants.EJECT_VELOCITY);
+                    case PASSING -> setVelocity(ShooterConstants.PASS_VELOCITY);
                     default -> {}
                 }
                 lastState = currentState;
@@ -103,9 +111,10 @@ public class ShooterSubsystem extends SubsystemBase {
             // Flywheel states
             if (flywheelState != lastFlywheelState) {
                 switch (flywheelState) {
-                    case FLYWHELLIDLE -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
+                    case FLYWHELLIDLE    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
                     case FLYWHELLREVVING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
-                    case FLYWHEELREADY -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
+                    case FLYWHEELREADY   -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
+                    case FLYWHEELPASS    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_PASS_VELOCITY);
                     default -> {}
                 }
                 lastFlywheelState = flywheelState;
@@ -176,6 +185,14 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withName("ShooterEject");
     }
 
+    public Command pass() {
+        return runOnce(() -> {
+            currentState = ShooterState.PASSING;
+            flywheelState = ShooterState.FLYWHEELPASS;
+        })
+                .withName("ShooterPass");
+    }
+
     public Command setVelocityCommand(double velocityRPS) {
         return run(() -> setVelocity(velocityRPS))
                 .withName("ShooterSetVelocity_" + velocityRPS);
@@ -232,10 +249,11 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     public boolean atTargetVelocity() {
         double targetVelocity = switch (currentState) {
-            case IDLE -> ShooterConstants.IDLE_VELOCITY;
+            case IDLE    -> ShooterConstants.IDLE_VELOCITY;
             case REVVING -> ShooterConstants.REV_VELOCITY;
-            case READY -> ShooterConstants.MAX_VELOCITY;
+            case READY   -> ShooterConstants.MAX_VELOCITY;
             case EJECTING -> ShooterConstants.EJECT_VELOCITY;
+            case PASSING  -> ShooterConstants.PASS_VELOCITY;
             case VISION_TRACKING -> variableVelocityRPS;
             default -> 0.0;
         };
@@ -246,11 +264,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public boolean atFlywheelTargetVelocity() {
         double targetVelocity = switch (flywheelState) {
-            case FLYWHELLIDLE -> ShooterConstants.FLYWHEEL_IDLE_VELOCITY;
+            case FLYWHELLIDLE    -> ShooterConstants.FLYWHEEL_IDLE_VELOCITY;
             case FLYWHELLREVVING -> ShooterConstants.FLYWHEEL_REV_VELOCITY;
-            case FLYWHEELREADY -> ShooterConstants.FLYWHEEL_MAX_VELOCITY;
+            case FLYWHEELREADY   -> ShooterConstants.FLYWHEEL_MAX_VELOCITY;
             case FLYWHEELEJECTING -> ShooterConstants.FLYWHEEL_IDLE_VELOCITY;
-            case VISION_TRACKING -> variableVelocityRPS;
+            case FLYWHEELPASS    -> ShooterConstants.FLYWHEEL_PASS_VELOCITY;
+            case VISION_TRACKING -> variableVelocityRPS * ShooterConstants.FLYWHEEL_SPEED_RATIO;
             default -> 0.0;
         };
 
