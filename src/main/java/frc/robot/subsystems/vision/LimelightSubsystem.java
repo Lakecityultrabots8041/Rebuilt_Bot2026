@@ -34,6 +34,13 @@ public class LimelightSubsystem extends SubsystemBase {
     private double cachedLateralOffsetMeters = 0;
     private boolean megatag2Available = false;
 
+    // Per-loop NT cache (read once in periodic, used everywhere)
+    private boolean cachedHasTarget = false;
+    private double cachedTx = 0;
+    private double cachedTy = 0;
+    private double cachedTa = 0;
+    private int cachedTid = -1;
+
     // Vision fusion
     private BiConsumer<Pose2d, Double> visionMeasurementConsumer = null;
 
@@ -86,31 +93,31 @@ public class LimelightSubsystem extends SubsystemBase {
         this.visionMeasurementConsumer = consumer;
     }
 
-    // Limelight data — transparent between real and sim
+    // Limelight data — all return per-loop cached values (updated at top of periodic)
     public boolean hasValidTarget() {
         if (isSimulation) return simHasTarget;
-        return tv.getDouble(0) == 1;
+        return cachedHasTarget;
     }
 
     /** Horizontal offset in degrees. Positive = target right. */
     public double getHorizontalOffset() {
         if (isSimulation) return simTx;
-        return tx.getDouble(0.0);
+        return cachedTx;
     }
 
     public double getVerticalOffset() {
         if (isSimulation) return simTy;
-        return ty.getDouble(0.0);
+        return cachedTy;
     }
 
     public double getTargetArea() {
         if (isSimulation) return simArea;
-        return ta.getDouble(0.0);
+        return cachedTa;
     }
 
     public int getAprilTagID() {
         if (isSimulation) return simTagID;
-        return (int) tid.getInteger(-1);
+        return cachedTid;
     }
 
     public boolean isTargetID(int targetID) {
@@ -193,6 +200,13 @@ public class LimelightSubsystem extends SubsystemBase {
         if (isSimulation) {
             updateSimVision();
         } else {
+            // Read all NT values once per loop — everything else uses cached fields
+            cachedHasTarget = tv.getDouble(0) == 1;
+            cachedTx = tx.getDouble(0.0);
+            cachedTy = ty.getDouble(0.0);
+            cachedTa = ta.getDouble(0.0);
+            cachedTid = (int) tid.getInteger(-1);
+
             updateMegaTag2Cache();
             updateVisionFusion();
         }
@@ -221,7 +235,7 @@ public class LimelightSubsystem extends SubsystemBase {
         Pose2d currentPose = robotPoseSupplier.get();
         if (currentPose == null) return;
 
-        LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME,
+        LimelightHelpers.SetRobotOrientation_NoFlush(LIMELIGHT_NAME,
             currentPose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
         LimelightHelpers.PoseEstimate result =
@@ -242,7 +256,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private void updateMegaTag2Cache() {
         try {
             double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(LIMELIGHT_NAME);
-            if (targetPose != null && targetPose.length >= 3 && tv.getDouble(0) == 1) {
+            if (targetPose != null && targetPose.length >= 3 && cachedHasTarget) {
                 cachedLateralOffsetMeters = targetPose[0]; // X = lateral
                 cachedDistanceMeters = targetPose[2];      // Z = forward
                 megatag2Available = true;

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.9089821428571425,
-        "y": 4.1969642857142855
+        "x": 0.49571428571428544,
+        "y": 7.193303571428571
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2519633838383846,
-        "y": 3.697165404040404
+        "x": 0.4957142857142855,
+        "y": 6.399678571428572
       },
       "isLocked": false,
-      "linkedName": "MB Intake To Shoot"
+      "linkedName": "MBClimber"
     },
     {
       "anchor": {
-        "x": 1.6106502525252533,
-        "y": 3.3135227272727277
+        "x": 0.49571428571428544,
+        "y": 4.925803571428571
       },
       "prevControl": {
-        "x": 2.051553030303031,
-        "y": 3.5368371212121215
+        "x": 0.5119107142857139,
+        "y": 5.606053571428572
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "MB Intake"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -89.4437477729194
+    "rotation": 89.50351520412816
   },
   "reversed": false,
   "folder": "Blue Side Paths",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": 0.0
+    "velocity": 0,
+    "rotation": 90.80566879415257
   },
   "useDefaultConstraints": true
 }

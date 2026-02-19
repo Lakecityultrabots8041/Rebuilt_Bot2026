@@ -77,6 +77,7 @@ public class RobotContainer {
     }
 
     private Limelight_Move createAutoHubAlign() {
+        System.out.println("Aligning to hub...");
         return new Limelight_Move(drivetrain, limelight, VisionConstants::getHubTags);
     }
 
@@ -88,13 +89,24 @@ public class RobotContainer {
 
         // PathPlanner named commands
         NamedCommands.registerCommand("Align Hub", createAutoHubAlign());
+
+        // =====Shooter Name Commands=====
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+        // =====Intake Commands=====
+        NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
+        NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
+        NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
+        NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
+        NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 
-        autoChooser = AutoBuilder.buildAutoChooser("SimplePathAuto");
+        autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);
 
         configureBindings();
@@ -159,11 +171,13 @@ public class RobotContainer {
 
         // ----- INTAKE ----
         // Left DPad to intake, right DPad to stop
-        // Y to pivot up, A to pivot down
         controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
         controller.povRight().onTrue(IntakeCommands.idle(intakeSubsystem));
-        controller.b().whileTrue(IntakeCommands.pivotUp(intakeSubsystem));
-        controller.a().whileTrue(IntakeCommands.pivotDown(intakeSubsystem));
+
+        // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
+        controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
+        controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
+        controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }

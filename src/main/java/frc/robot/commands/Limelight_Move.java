@@ -33,6 +33,9 @@ public class Limelight_Move extends Command {
     private final double maxSpeedMps;
     private final double maxAngularRateRps;
 
+    // Preallocated to avoid per-loop heap allocations
+    private final ChassisSpeeds reusableSpeeds = new ChassisSpeeds();
+
     private final Timer timer;
     private int alignedCount = 0;
     private double targetDistanceMeters;
@@ -84,20 +87,25 @@ public class Limelight_Move extends Command {
 
     @Override
     public void execute() {
-        if (!limelight.hasValidTarget() || !acceptedTagIDs.contains(limelight.getAprilTagID())) {
-            drivetrain.driveRobotRelative(new ChassisSpeeds(0, 0, 0));
+        int tagID = limelight.getAprilTagID();
+        if (!limelight.hasValidTarget() || !acceptedTagIDs.contains(tagID)) {
+            reusableSpeeds.vxMetersPerSecond = 0;
+            reusableSpeeds.vyMetersPerSecond = 0;
+            reusableSpeeds.omegaRadiansPerSecond = 0;
+            drivetrain.driveRobotRelative(reusableSpeeds);
             SmartDashboard.putString("Vision/Status", "Searching for tags...");
             alignedCount = 0;
             return;
         }
-
-        int tagID = limelight.getAprilTagID();
         targetDistanceMeters = VisionConstants.getAprilTagDistance(tagID);
         SmartDashboard.putString("Vision/Status", "Tracking tag " + tagID);
 
         double currentDistanceMeters = limelight.getDistanceMeters();
         if (currentDistanceMeters < 0) {
-            drivetrain.driveRobotRelative(new ChassisSpeeds(0, 0, 0));
+            reusableSpeeds.vxMetersPerSecond = 0;
+            reusableSpeeds.vyMetersPerSecond = 0;
+            reusableSpeeds.omegaRadiansPerSecond = 0;
+            drivetrain.driveRobotRelative(reusableSpeeds);
             SmartDashboard.putString("Vision/Status", "No distance data");
             alignedCount = 0;
             return;
@@ -134,11 +142,10 @@ public class Limelight_Move extends Command {
             strafeVelocityMps = strafeOutput * maxSpeedMps;
         }
 
-        drivetrain.driveRobotRelative(new ChassisSpeeds(
-            forwardVelocityMps,
-            strafeVelocityMps,
-            rotationVelocityRps
-        ));
+        reusableSpeeds.vxMetersPerSecond = forwardVelocityMps;
+        reusableSpeeds.vyMetersPerSecond = strafeVelocityMps;
+        reusableSpeeds.omegaRadiansPerSecond = rotationVelocityRps;
+        drivetrain.driveRobotRelative(reusableSpeeds);
 
         SmartDashboard.putNumber("Vision/Active Tag", tagID);
         SmartDashboard.putNumber("Vision/TX Error (deg)", horizontalErrorDeg);
@@ -169,7 +176,10 @@ public class Limelight_Move extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        drivetrain.driveRobotRelative(new ChassisSpeeds(0, 0, 0));
+        reusableSpeeds.vxMetersPerSecond = 0;
+        reusableSpeeds.vyMetersPerSecond = 0;
+        reusableSpeeds.omegaRadiansPerSecond = 0;
+        drivetrain.driveRobotRelative(reusableSpeeds);
         limelight.setLEDMode(false);
 
         if (interrupted) {
