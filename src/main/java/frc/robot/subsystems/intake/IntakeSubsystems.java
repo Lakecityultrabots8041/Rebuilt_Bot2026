@@ -77,7 +77,7 @@ public class IntakeSubsystems extends SubsystemBase {
         intakeMotor.getConfigurator().apply(intakeConfigs);
         pivotMotor.getConfigurator().apply(pivotConfigs);
 
-        // Seed the pivot encoder to stow position.
+        // Put the arm in starting config -> That way the pivot encoder is set to stow position everytime.
         // The arm must be physically placed at stow before powering on (required for legal start config).
         // This tells Motion Magic where the arm is so it can hold and move correctly from boot.
         pivotMotor.setPosition(IntakeConstants.STOW_POSITION);
