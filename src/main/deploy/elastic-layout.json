@@ -68,8 +68,8 @@
               "topic": "/SmartDashboard/Match Time",
               "period": 0.033,
               "time_display_mode": "Seconds Only",
-              "red_start_time": 15,
-              "yellow_start_time": 30
+              "red_start_time": 30,
+              "yellow_start_time": 55
             }
           },
 
@@ -77,12 +77,26 @@
             "title": "FMS",
             "x": 1280.0,
             "y": 0.0,
-            "width": 640.0,
+            "width": 384.0,
             "height": 128.0,
             "type": "FMSInfo",
             "properties": {
               "topic": "/FMSInfo",
               "period": 0.033
+            }
+          },
+
+          {
+            "title": "Shift",
+            "x": 1664.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Shift",
+              "period": 0.033,
+              "show_submit_button": false
             }
           },
 
@@ -327,6 +341,23 @@
               "topic": "/SmartDashboard/Flywheel/Motor Current",
               "period": 0.033,
               "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "END GAME",
+            "x": 0.0,
+            "y": 512.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/End Game",
+              "period": 0.033,
+              "true_color": 4294944000,
+              "false_color": 4281348144,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
 
