@@ -12,7 +12,9 @@ import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -24,7 +26,11 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends LoggedRobot {
-  
+
+  // Voltage threshold for the low battery warning on the driver dashboard.
+  // With multiple cameras and extra hardware, watch this carefully during matches.
+  private static final double BATTERY_LOW_VOLTAGE = 12.0;
+
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -44,7 +50,7 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
       // Set up the logger for data recording
       super.robotInit();
-      Logger.recordMetadata("ProjectName", "Elevator Simulation");
+      Logger.recordMetadata("ProjectName", "Rebuilt Bot 2026");
       Logger.addDataReceiver(new WPILOGWriter("/U/logs"));  // Save logs to USB on the RoboRIO
       Logger.addDataReceiver(new NT4Publisher());  // Stream data live to NetworkTables
       Logger.start();
@@ -69,6 +75,17 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
     Logger.recordOutput("Robot/Status", "Running");
 
+    // Battery
+    double voltage = RobotController.getBatteryVoltage();
+    SmartDashboard.putNumber("Driver/Battery Voltage", voltage);
+    SmartDashboard.putBoolean("Driver/Battery Low", voltage < BATTERY_LOW_VOLTAGE);
+
+    // Alliance color — resolves from DriverStation once the match connects
+    SmartDashboard.putString("Driver/Alliance",
+        DriverStation.getAlliance().map(a -> a.name()).orElse("Unknown"));
+
+    // Compound driver indicators (shooter state, vision lock, intake position)
+    m_robotContainer.updateDriverDashboard();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

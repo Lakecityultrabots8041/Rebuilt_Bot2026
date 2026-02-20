@@ -66,11 +66,6 @@ public class Limelight_Move extends Command {
     @Override
     public void initialize() {
         acceptedTagIDs = tagGroupSupplier.get();
-
-        System.out.println("=== Vision Alignment Started ===");
-        System.out.println("Alliance: " + (VisionConstants.isRedAlliance() ? "RED" : "BLUE"));
-        System.out.println("Accepting tag IDs: " + acceptedTagIDs);
-
         limelight.setLEDMode(true);
         alignedCount = 0;
         timer.restart();
@@ -79,8 +74,6 @@ public class Limelight_Move extends Command {
             int tagID = limelight.getAprilTagID();
             if (acceptedTagIDs.contains(tagID)) {
                 targetDistanceMeters = VisionConstants.getAprilTagDistance(tagID);
-                System.out.println("Aligning to tag " + tagID + " at " +
-                                   Units.metersToInches(targetDistanceMeters) + " inches");
             }
         }
     }
@@ -181,25 +174,12 @@ public class Limelight_Move extends Command {
         reusableSpeeds.omegaRadiansPerSecond = 0;
         drivetrain.driveRobotRelative(reusableSpeeds);
         limelight.setLEDMode(false);
-
-        if (interrupted) {
-            System.out.println("=== Vision Alignment Interrupted ===");
-        } else {
-            System.out.println("=== Vision Alignment Complete! ===");
-        }
         SmartDashboard.putString("Vision/Status", "Stopped");
     }
 
     @Override
     public boolean isFinished() {
-        if (alignedCount >= VisionConstants.ALIGNED_LOOPS_REQUIRED) {
-            System.out.println("Vision alignment achieved!");
-            return true;
-        }
-        if (timer.hasElapsed(VisionConstants.ALIGNMENT_TIMEOUT_SECONDS)) {
-            System.out.println("Vision alignment timed out!");
-            return true;
-        }
-        return false;
+        return alignedCount >= VisionConstants.ALIGNED_LOOPS_REQUIRED
+            || timer.hasElapsed(VisionConstants.ALIGNMENT_TIMEOUT_SECONDS);
     }
 }

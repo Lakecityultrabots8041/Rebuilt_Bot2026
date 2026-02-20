@@ -23,7 +23,7 @@ import static edu.wpi.first.units.Units.*;
  * Tune thresholds and gains in VisionConstants. See docs/HAILO_TRAINING.md.
  *
  * NOTE: Bind this command to a controller button in RobotContainer once a button is chosen.
- * Run it alongside intake controls — this command only moves the robot, it does not
+ * Run it alongside intake controls, this command only moves the robot, it does not
  * trigger the intake motors or pivot. Use in parallel with IntakeCommands if desired.
  */
 public class DriveToFuel extends Command {

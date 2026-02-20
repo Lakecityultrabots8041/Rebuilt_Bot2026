@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -60,6 +62,11 @@ public class LimelightSubsystem extends SubsystemBase {
     private static final double HORIZONTAL_FOV_DEG = 29.8;
     private static final double MAX_DETECTION_RANGE_METERS = 8.0;
 
+    // Pre-computed tag positions for simulation — built once in constructor,
+    // zero per-loop allocations in updateSimVision().
+    private record SimTag(int id, double x, double y) {}
+    private final List<SimTag> simTagCache = new ArrayList<>();
+
     public LimelightSubsystem() {
         limelightTable = NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME);
         tv = limelightTable.getEntry("tv");
@@ -77,6 +84,16 @@ public class LimelightSubsystem extends SubsystemBase {
             System.err.println("WARNING: Could not load 2026 field layout: " + e.getMessage());
         }
         fieldLayout = tempLayout;
+
+        // Build the sim tag cache once so periodic() never allocates Optional or Pose objects.
+        if (fieldLayout != null) {
+            for (var tag : fieldLayout.getTags()) {
+                fieldLayout.getTagPose(tag.ID).ifPresent(pose -> {
+                    var t = pose.toPose2d().getTranslation();
+                    simTagCache.add(new SimTag(tag.ID, t.getX(), t.getY()));
+                });
+            }
+        }
 
         if (!isSimulation) {
             setPipeline(0);
@@ -220,10 +237,8 @@ public class LimelightSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("Limelight/MegaTag2 Available", hasMegaTag2Data());
         SmartDashboard.putBoolean("Limelight/Sim Mode", isSimulation);
 
-        if (hasValidTarget()) {
-            SmartDashboard.putNumber("Limelight/Distance (in)", getDistanceInchesForDisplay());
-            SmartDashboard.putNumber("Limelight/Distance (m)", getDistanceMeters());
-        }
+        SmartDashboard.putNumber("Limelight/Distance (in)", getDistanceInchesForDisplay());
+        SmartDashboard.putNumber("Limelight/Distance (m)", getDistanceMeters());
     }
 
     // Feeds MegaTag2 poses into drivetrain Kalman filter
@@ -268,9 +283,10 @@ public class LimelightSubsystem extends SubsystemBase {
         }
     }
 
-    // Sim — finds closest visible tag from robot pose and field layout
+    // Sim — finds closest visible tag from robot pose using pre-built cache.
+    // No per-loop object allocations — Optional and Pose objects are built once at startup.
     private void updateSimVision() {
-        if (robotPoseSupplier == null || fieldLayout == null) {
+        if (robotPoseSupplier == null || simTagCache.isEmpty()) {
             simHasTarget = false;
             return;
         }
@@ -281,27 +297,21 @@ public class LimelightSubsystem extends SubsystemBase {
             return;
         }
 
+        double robotX = robotPose.getX();
+        double robotY = robotPose.getY();
+        double robotHeading = robotPose.getRotation().getRadians();
+
         double bestDistance = Double.MAX_VALUE;
         int bestTagID = -1;
         double bestTx = 0;
 
-        for (var tag : fieldLayout.getTags()) {
-            Optional<Pose3d> tagPoseOpt = fieldLayout.getTagPose(tag.ID);
-            if (tagPoseOpt.isEmpty()) continue;
-
-            Pose3d tagPose3d = tagPoseOpt.get();
-            Translation2d tagPos = tagPose3d.toPose2d().getTranslation();
-            Translation2d robotPos = robotPose.getTranslation();
-
-            double distance = robotPos.getDistance(tagPos);
+        for (var tag : simTagCache) {
+            double dx = tag.x() - robotX;
+            double dy = tag.y() - robotY;
+            double distance = Math.hypot(dx, dy);
             if (distance > MAX_DETECTION_RANGE_METERS) continue;
 
-            double angleToTag = Math.atan2(
-                tagPos.getY() - robotPos.getY(),
-                tagPos.getX() - robotPos.getX()
-            );
-            double robotHeading = robotPose.getRotation().getRadians();
-
+            double angleToTag = Math.atan2(dy, dx);
             double angleDiff = Math.toDegrees(angleToTag - robotHeading);
             while (angleDiff > 180) angleDiff -= 360;
             while (angleDiff < -180) angleDiff += 360;
@@ -310,7 +320,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
             if (distance < bestDistance) {
                 bestDistance = distance;
-                bestTagID = tag.ID;
+                bestTagID = tag.id();
                 bestTx = -angleDiff; // negate for Limelight TX convention
             }
         }

@@ -1,0 +1,837 @@
+{
+  "version": 1.0,
+  "grid_size": 128,
+  "tabs": [
+    {
+      "name": "Driver",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+
+          {
+            "title": "Battery",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Voltage View",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Battery Voltage",
+              "period": 0.033,
+              "min_value": 10.0,
+              "max_value": 13.0,
+              "divisions": 6,
+              "inverted": false,
+              "orientation": "horizontal"
+            }
+          },
+
+          {
+            "title": "Batt Low",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Battery Low",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Alliance",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Alliance",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Match Time",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/SmartDashboard/Match Time",
+              "period": 0.033,
+              "time_display_mode": "Seconds Only",
+              "red_start_time": 15,
+              "yellow_start_time": 30
+            }
+          },
+
+          {
+            "title": "FMS",
+            "x": 1280.0,
+            "y": 0.0,
+            "width": 640.0,
+            "height": 128.0,
+            "type": "FMSInfo",
+            "properties": {
+              "topic": "/FMSInfo",
+              "period": 0.033
+            }
+          },
+
+          {
+            "title": "Ready to Shoot",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Ready to Shoot",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Auto Aim",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Auto Aim On",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Shooter Ready",
+            "x": 384.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Shooter Ready",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Vision Locked",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Vision Locked",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Intake Down",
+            "x": 384.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Intake Down",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Limelight",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 640.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-april",
+              "period": 0.033,
+              "rotation_turns": 0
+            }
+          },
+
+          {
+            "title": "Vision Status",
+            "x": 1152.0,
+            "y": 128.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/Status",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Tag ID",
+            "x": 1536.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Limelight/AprilTag ID",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Has Target",
+            "x": 1152.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Limelight/Has Target",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "TX Error",
+            "x": 1408.0,
+            "y": 256.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Limelight/TX (deg)",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Battery Over Time",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Battery Voltage",
+              "period": 0.033,
+              "time_displayed": 150.0,
+              "color": 4283215696,
+              "line_width": 2.0
+            }
+          },
+
+          {
+            "title": "Shooter",
+            "x": 512.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Intake",
+            "x": 768.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Pivot",
+            "x": 1024.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Shooter A",
+            "x": 1280.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Motor Current",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Flywheel A",
+            "x": 1536.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Flywheel/Motor Current",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          }
+
+        ]
+      }
+    },
+
+    {
+      "name": "Autonomous",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+
+          {
+            "title": "Auto Mode",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Split Button Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auton Mode",
+              "period": 0.033,
+              "sort_options": false
+            }
+          },
+
+          {
+            "title": "Battery",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Voltage View",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Battery Voltage",
+              "period": 0.033,
+              "min_value": 10.0,
+              "max_value": 13.0,
+              "divisions": 6,
+              "inverted": false,
+              "orientation": "horizontal"
+            }
+          },
+
+          {
+            "title": "Alliance",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Alliance",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "FMS",
+            "x": 1152.0,
+            "y": 0.0,
+            "width": 768.0,
+            "height": 128.0,
+            "type": "FMSInfo",
+            "properties": {
+              "topic": "/FMSInfo",
+              "period": 0.033
+            }
+          },
+
+          {
+            "title": "Field",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 896.0,
+            "height": 512.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/Pose",
+              "period": 0.033,
+              "field_game": "Reefscape",
+              "robot_width": 0.82,
+              "robot_length": 1.0,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
+            }
+          },
+
+          {
+            "title": "Vision Status",
+            "x": 896.0,
+            "y": 128.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/Status",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Has Target",
+            "x": 896.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Limelight/Has Target",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Tag ID",
+            "x": 1152.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Limelight/AprilTag ID",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "MegaTag2",
+            "x": 896.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Limelight/MegaTag2 Available",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Shooter Ready",
+            "x": 896.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/At Target",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Shooter State",
+            "x": 1152.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          }
+
+        ]
+      }
+    },
+
+    {
+      "name": "Shooter Tuning",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+
+          {
+            "title": "Shooter Actual RPS",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Actual RPS",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Shooter Commanded RPS",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Commanded RPS",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Shooter At Target",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/At Target",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Shooter State",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Vision Target RPS",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Vision Target RPS",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Flywheel Actual RPS",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Flywheel/Actual RPS",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Flywheel Commanded RPS",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Flywheel/Commanded RPS",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Flywheel State",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Flywheel State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Shooter Current",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Motor Current",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Shooter Voltage",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Motor Voltage",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Flywheel Current",
+            "x": 512.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Flywheel/Motor Current",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Flywheel Voltage",
+            "x": 768.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Flywheel/Motor Voltage",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Shooter RPS Graph",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 512.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Actual RPS",
+              "period": 0.033,
+              "time_displayed": 10.0,
+              "color": 4283215696,
+              "line_width": 2.0
+            }
+          },
+
+          {
+            "title": "Flywheel RPS Graph",
+            "x": 512.0,
+            "y": 384.0,
+            "width": 512.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Flywheel/Actual RPS",
+              "period": 0.033,
+              "time_displayed": 10.0,
+              "color": 4294198070,
+              "line_width": 2.0
+            }
+          }
+
+        ]
+      }
+    },
+
+    {
+      "name": "Intake Tuning",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+
+          {
+            "title": "Pivot Position",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot Position",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Pivot State",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Pivot At Target",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot At Target",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Intake State",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Intake Down",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Driver/Intake Down",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Pivot Position Graph",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 512.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot Position",
+              "period": 0.033,
+              "time_displayed": 10.0,
+              "color": 4283215696,
+              "line_width": 2.0
+            }
+          }
+
+        ]
+      }
+    }
+
+  ]
+}

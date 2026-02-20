@@ -10,9 +10,7 @@ import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystems;
 import frc.robot.subsystems.vision.LimelightSubsystem;
-import frc.robot.subsystems.vision.FuelDetectionSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.commands.DriveToFuel;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.IntakeCommands;
@@ -52,7 +50,6 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final LimelightSubsystem limelight = new LimelightSubsystem();
-    private final FuelDetectionSubsystem fuelDetection = new FuelDetectionSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
 
@@ -114,7 +111,6 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
         NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
         NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
-        NamedCommands.registerCommand("Drive To Fuel", new DriveToFuel(drivetrain, fuelDetection));
 
         autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);
@@ -182,11 +178,6 @@ public class RobotContainer {
         controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
         controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
 
-        // ----- FUEL DETECTION ----
-        // TODO: assign a button for DriveToFuel once a free button is chosen.
-        // Example: controller.leftStick().whileTrue(new DriveToFuel(drivetrain, fuelDetection));
-        // Can also run in parallel with intake: .alongWith(IntakeCommands.startingIntakeSequence(intakeSubsystem))
-
         // ----- INTAKE ----
         // Left DPad to intake, right DPad to stop
         controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
@@ -200,16 +191,29 @@ public class RobotContainer {
 
     /**
      * Asymmetric slew rate limiter.
-     * Accelerating (|requested| > |current|) uses MAX_TELEOP_ACCEL_MPS2.
-     * Decelerating or reversing  uses MAX_TELEOP_DECEL_MPS2.
+     * Accelerating (|requested| > |current|) uses MAX_TELEOP_ACCEL.
+     * Decelerating or reversing  uses MAX_TELEOP_DECEL.
      * Tune both values in DriveConstants.java.
      */
     private double applyDriveSlew(double current, double requested) {
         double rateLimit = (Math.abs(requested) > Math.abs(current))
-            ? DriveConstants.MAX_TELEOP_ACCEL_MPS2
-            : DriveConstants.MAX_TELEOP_DECEL_MPS2;
+            ? DriveConstants.MAX_TELEOP_ACCEL
+            : DriveConstants.MAX_TELEOP_DECEL;
         double maxDelta = rateLimit * 0.02; // 20 ms loop period
         return current + MathUtil.clamp(requested - current, -maxDelta, maxDelta);
+    }
+
+    public void updateDriverDashboard() {
+        boolean shooterReady = shooterSubsystem.atTargetVelocity() && shooterSubsystem.atFlywheelTargetVelocity();
+        boolean visionLocked = autoAimEnabled && limelight.isTrackingHubTag();
+        boolean intakeDown   = intakeSubsystem.getPivotState() == IntakeSubsystems.PivotState.INTAKE
+                               && intakeSubsystem.isPivotAtTarget();
+
+        SmartDashboard.putBoolean("Driver/Ready to Shoot", shooterReady && visionLocked);
+        SmartDashboard.putBoolean("Driver/Shooter Ready",  shooterReady);
+        SmartDashboard.putBoolean("Driver/Vision Locked",  visionLocked);
+        SmartDashboard.putBoolean("Driver/Auto Aim On",    autoAimEnabled);
+        SmartDashboard.putBoolean("Driver/Intake Down",    intakeDown);
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }
