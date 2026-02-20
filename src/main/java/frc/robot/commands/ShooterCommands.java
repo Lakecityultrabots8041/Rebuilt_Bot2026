@@ -34,10 +34,15 @@ public class ShooterCommands extends Command {
     }
     
     /**
-     * Reverse motors to eject stuck balls
+     * Reverse motors to eject stuck fuel
      */
     public static Command eject(ShooterSubsystem shooter) {
         return shooter.eject();
+    }
+
+    /** Spin up to passing speed (higher velocity, flatter arc for long-distance shots). */
+    public static Command pass(ShooterSubsystem shooter) {
+        return shooter.pass();
     }
     
     // ===== COMPOSITE COMMANDS =====
@@ -46,16 +51,16 @@ public class ShooterCommands extends Command {
      * Complete shooting sequence: rev up, wait for ready, shoot, then idle
      */
     public static Command shootSequence(ShooterSubsystem shooter) {
-    return Commands.sequence(
-        Commands.runOnce(() -> System.out.println("Starting shoot sequence")),
-        shooter.revUp(),                    // Actually rev up!
-        shooter.waitUntilReady(),          // Wait for speed
-        Commands.waitSeconds(0.5),         // Hold shooting speed
-        shooter.idle(), 
-        Commands.runOnce(() -> System.out.println("Commplete shoot sequence")) // Stop
-    ).withTimeout(3.0)
-     .withName("CompleteShootSequence");
-}
+        return Commands.sequence(
+            Commands.runOnce(() -> System.out.println("Starting shoot sequence")),
+            shooter.shoot(),           // Command max velocity immediately
+            shooter.waitUntilReady(),  // Wait until motors actually reach speed
+            Commands.waitSeconds(0.5), // Hold at speed while fuel fires
+            shooter.idle(),
+            Commands.runOnce(() -> System.out.println("Complete shoot sequence"))
+        ).withTimeout(3.0)
+         .withName("CompleteShootSequence");
+    }
     
     /**
      * Quick shoot - assumes shooter is already revved
@@ -68,6 +73,23 @@ public class ShooterCommands extends Command {
         ).withName("QuickShoot");
     }
     
+    /**
+     * Passing sequence — spin to pass speed, wait for ready, fire, then idle.
+     * Tune PASS_VELOCITY and FLYWHEEL_PASS_VELOCITY in ShooterConstants.
+     * See docs/SHOOTER_TUNING.md for guidance.
+     */
+    public static Command passSequence(ShooterSubsystem shooter) {
+        return Commands.sequence(
+            Commands.runOnce(() -> System.out.println("Starting pass sequence")),
+            shooter.pass(),
+            shooter.waitUntilReady(),
+            Commands.waitSeconds(0.5),
+            shooter.idle(),
+            Commands.runOnce(() -> System.out.println("Pass complete"))
+        ).withTimeout(3.0)
+         .withName("PassSequence");
+    }
+
     /**
      * Emergency eject sequence - eject for specified duration then idle
      */

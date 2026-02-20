@@ -20,6 +20,7 @@ Claude must NOT:
 - Invent scoring values
 - Invent field dimensions
 - Invent endgame conditions
+- Make variables to formal, kids need to understand how this works
 
 If rules or scoring are unclear:
 - Explicitly state uncertainty

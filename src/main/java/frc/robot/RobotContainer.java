@@ -15,6 +15,7 @@ import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.drive.DriveConstants;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -51,6 +52,10 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
+
+    // Tracked commanded speeds for asymmetric slew (fast accel, controlled decel)
+    private double currentDriveX = 0.0;
+    private double currentDriveY = 0.0;
 
     // Auto-aim
     private boolean autoAimEnabled = false;
@@ -94,6 +99,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
+        NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         // =====Intake Commands=====
@@ -116,8 +122,10 @@ public class RobotContainer {
         // Default drive — field-centric with auto-aim overlay
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                double velocityX = -controller.getLeftY() * MaxSpeed;
-                double velocityY = -controller.getLeftX() * MaxSpeed;
+                currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed);
+                currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed);
+                double velocityX = currentDriveX;
+                double velocityY = currentDriveY;
 
                 if (autoAimEnabled && limelight.isTrackingHubTag()) {
                     double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
@@ -168,6 +176,7 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
         controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
+        controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
 
         // ----- INTAKE ----
         // Left DPad to intake, right DPad to stop
@@ -178,6 +187,33 @@ public class RobotContainer {
         controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
         controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
+    }
+
+    /**
+     * Asymmetric slew rate limiter.
+     * Accelerating (|requested| > |current|) uses MAX_TELEOP_ACCEL.
+     * Decelerating or reversing  uses MAX_TELEOP_DECEL.
+     * Tune both values in DriveConstants.java.
+     */
+    private double applyDriveSlew(double current, double requested) {
+        double rateLimit = (Math.abs(requested) > Math.abs(current))
+            ? DriveConstants.MAX_TELEOP_ACCEL
+            : DriveConstants.MAX_TELEOP_DECEL;
+        double maxDelta = rateLimit * 0.02; // 20 ms loop period
+        return current + MathUtil.clamp(requested - current, -maxDelta, maxDelta);
+    }
+
+    public void updateDriverDashboard() {
+        boolean shooterReady = shooterSubsystem.atTargetVelocity() && shooterSubsystem.atFlywheelTargetVelocity();
+        boolean visionLocked = autoAimEnabled && limelight.isTrackingHubTag();
+        boolean intakeDown   = intakeSubsystem.getPivotState() == IntakeSubsystems.PivotState.INTAKE
+                               && intakeSubsystem.isPivotAtTarget();
+
+        SmartDashboard.putBoolean("Driver/Ready to Shoot", shooterReady && visionLocked);
+        SmartDashboard.putBoolean("Driver/Shooter Ready",  shooterReady);
+        SmartDashboard.putBoolean("Driver/Vision Locked",  visionLocked);
+        SmartDashboard.putBoolean("Driver/Auto Aim On",    autoAimEnabled);
+        SmartDashboard.putBoolean("Driver/Intake Down",    intakeDown);
     }
 
     public LimelightSubsystem getLimelight() { return limelight; }

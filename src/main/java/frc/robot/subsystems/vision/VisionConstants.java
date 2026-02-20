@@ -158,4 +158,29 @@ public final class VisionConstants {
         }
         return DEFAULT_APRILTAG_DISTANCE;
     }
+
+    // ===== Fuel Detection — limelight-climb + Hailo neural detector =====
+    // See docs/HAILO_TRAINING.md for model training and camera setup.
+    // All values are placeholders — tune on the robot with the trained model active.
+
+    /** Limelight pipeline index for Hailo neural fuel detection. */
+    public static final int FUEL_DETECTOR_PIPELINE = 1;
+
+    /** Limelight pipeline index for AprilTag mode (used if camera is repurposed for climbing). */
+    public static final int CLIMBING_PIPELINE = 0;
+
+    /** Ignore detections smaller than this (% of image) — filters out distant or partial detections. */
+    public static final double FUEL_MIN_AREA = 0.5;
+
+    /** Target area (% of image) at which the robot is close enough to intake fuel. */
+    public static final double FUEL_INTAKE_AREA_THRESHOLD = 8.0;
+
+    /** Proportional gain for rotating toward detected fuel. Same scale as ROTATION_GAIN. */
+    public static final double FUEL_ROTATION_GAIN = 0.03;
+
+    /** Max fraction of full speed when approaching detected fuel. */
+    public static final double FUEL_APPROACH_SPEED_FRACTION = 0.25;
+
+    /** Command timeout — stops approach if fuel is lost or robot gets stuck. */
+    public static final double FUEL_APPROACH_TIMEOUT_SECONDS = 5.0;
 }
