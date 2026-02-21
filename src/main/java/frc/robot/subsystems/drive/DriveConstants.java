@@ -4,8 +4,7 @@ package frc.robot.subsystems.drive;
 public final class DriveConstants {
 
     private DriveConstants() {}
-
-    // Asymmetric slew: accel and decel are limited separately.
+    
     // Tune ACCEL freely. Tune DECEL carefully — too high tips the robot on hard stops.
     public static final double MAX_TELEOP_ACCEL = 8.0;
     public static final double MAX_TELEOP_DECEL = 4.0;

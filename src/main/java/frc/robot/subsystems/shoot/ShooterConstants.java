@@ -9,13 +9,14 @@ public final class ShooterConstants {
     public static final String CANIVORE_NAME = "Jeffery";
     public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
 
-    public static final int SHOOTER_MOTOR  = 5;
+    public static final int Act_Floor  = 5;
+    public static final int Act_Ceiling = 7;
     public static final int FLYWHEEL_MOTOR = 6;
 
     // ===== Shooter speed presets (RPS) =====
-    public static final double MAX_VELOCITY    = 90.0;
-    public static final double REV_VELOCITY    = 65.0;
-    public static final double EJECT_VELOCITY  = -5.0;
+    public static final double MAX_VELOCITY    = 45.0;
+    public static final double REV_VELOCITY    = 30.0;
+    public static final double EJECT_VELOCITY  = -25.0;
     public static final double IDLE_VELOCITY   =  0.0;
 
     // ===== Flywheel speed presets (RPS) =====
@@ -28,8 +29,8 @@ public final class ShooterConstants {
     // ===== Passing speed presets (RPS) =====
     // Higher velocity, lower flywheel ratio → flatter, longer-range trajectory.
     // Tune on the field. See docs/SHOOTER_TUNING.md.
-    public static final double PASS_VELOCITY          = 100.0;
-    public static final double FLYWHEEL_PASS_VELOCITY = 110.0;
+    public static final double PASS_VELOCITY          = 60.0;
+    public static final double FLYWHEEL_PASS_VELOCITY = 65.0;
 
     /**
      * Ratio applied to the shooter's variable (distance-based) velocity to get flywheel velocity.
@@ -42,6 +43,7 @@ public final class ShooterConstants {
     public static final double kP = 3.0;
     public static final double kV = 0.15;
     public static final double kS = 0.25;
+
 
     // ===== Flywheel PID =====
     // Start identical to shooter — tune independently if flywheel has different inertia or friction.

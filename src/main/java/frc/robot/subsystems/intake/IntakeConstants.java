@@ -16,14 +16,14 @@ public class IntakeConstants {
     public static final int PIVOT_MOTOR = 2;
 
     // Intake roller speeds (rotations per second)
-    public static final double INTAKE_VELOCITY = 50.0;
+    public static final double INTAKE_VELOCITY = 30.0;
     public static final double EJECT_VELOCITY = -30.9;
     public static final double IDLE_VELOCITY = 0.0;
 
     // Pivot PID and feedforward (tune on robot)
-    public static final double kP = 30;
+    public static final double kP = 12.0;
     public static final double kI = 0;
-    public static final double kD = 0.1;
+    public static final double kD = 0.2;
     public static final double kS = 2.0;
     public static final double kV = 4.5;
     public static final double kA = 0.01;
@@ -50,8 +50,8 @@ public class IntakeConstants {
     // Pivot current limits
     // Stator controls how hard the motor pushes. Keeps it from grinding against the bumper hard stop.
     // Supply limits current drawn from the battery.
-    public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0;
-    public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 30.0;
+    public static final double PIVOT_STATOR_CURRENT_LIMIT = 60.0;
+    public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 35.0;
 
     // Pivot soft limits (rotor rotations - tune after measuring real positions on the robot)
     // Forward = toward intake (higher position number). Set just past INTAKE_POSITION so the

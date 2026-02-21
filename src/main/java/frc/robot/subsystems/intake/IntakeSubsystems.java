@@ -44,9 +44,10 @@ public class IntakeSubsystems extends SubsystemBase {
         motionMagicRequest = new MotionMagicVoltage(0);
 
         var intakeConfigs = new TalonFXConfiguration();
-        intakeConfigs.Slot0.kP = 0.1;
-        intakeConfigs.Slot0.kV = 0.1;
-        intakeConfigs.Slot0.kS = 0.1;
+        intakeConfigs.Slot0.kP = 20.0;
+        intakeConfigs.Slot0.kV = 1.0;
+        //intakeConfigs.Slot0.kD = 0.05;
+        intakeConfigs.Slot0.kS = 0.25;
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         var pivotConfigs = new TalonFXConfiguration();

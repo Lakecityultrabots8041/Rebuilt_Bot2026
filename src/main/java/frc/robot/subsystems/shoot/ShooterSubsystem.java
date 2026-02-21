@@ -17,7 +17,8 @@ import edu.wpi.first.units.measure.Current;
 public class ShooterSubsystem extends SubsystemBase {
 
 
-    private final TalonFX shootMotor;
+    private final TalonFX actFloor;
+    private final TalonFX actCeiling;
     private final TalonFX flywheelMotor;
     private final VelocityTorqueCurrentFOC velocityRequest;
 
@@ -57,7 +58,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public ShooterSubsystem() {
-        shootMotor = new TalonFX(ShooterConstants.SHOOTER_MOTOR, ShooterConstants.CANIVORE);
+        actFloor = new TalonFX(ShooterConstants.Act_Floor, ShooterConstants.CANIVORE);
+        actCeiling = new TalonFX(ShooterConstants.Act_Ceiling, ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
         velocityRequest = new VelocityTorqueCurrentFOC(0);
 
@@ -65,7 +67,8 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterConfigs.Slot0.kP = ShooterConstants.kP;
         shooterConfigs.Slot0.kV = ShooterConstants.kV;
         shooterConfigs.Slot0.kS = ShooterConstants.kS;
-        shootMotor.getConfigurator().apply(shooterConfigs);
+        actFloor.getConfigurator().apply(shooterConfigs);
+        actCeiling.getConfigurator().apply(shooterConfigs);
 
         var flywheelConfigs = new TalonFXConfiguration();
         flywheelConfigs.Slot0.kP = ShooterConstants.FLYWHEEL_kP;
@@ -74,10 +77,10 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelMotor.getConfigurator().apply(flywheelConfigs);
 
         // Register status signals once — bulk-refreshed in periodic()
-        shooterVelocitySig = shootMotor.getVelocity();
+        shooterVelocitySig = actFloor.getVelocity();
         flywheelVelocitySig = flywheelMotor.getVelocity();
-        shooterVoltageSig = shootMotor.getMotorVoltage();
-        shooterCurrentSig = shootMotor.getStatorCurrent();
+        shooterVoltageSig = actFloor.getMotorVoltage();
+        shooterCurrentSig = actFloor.getStatorCurrent();
         flywheelVoltageSig = flywheelMotor.getMotorVoltage();
         flywheelCurrentSig = flywheelMotor.getStatorCurrent();
     }
@@ -232,7 +235,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private void setVelocity(double velocityRPS) {
         lastCommandedShooterRPS = velocityRPS;
-        shootMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+        actFloor.setControl(velocityRequest.withVelocity(velocityRPS));
+        actCeiling.setControl(velocityRequest.withVelocity(velocityRPS));
     }
 
     private void setFlywheelVelocity(double velocityRPS) {
