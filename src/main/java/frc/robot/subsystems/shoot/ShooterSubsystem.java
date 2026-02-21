@@ -5,13 +5,20 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
+//import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.units.measure.Current;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -20,7 +27,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TalonFX actFloor;
     private final TalonFX actCeiling;
     private final TalonFX flywheelMotor;
-    private final VelocityTorqueCurrentFOC velocityRequest;
+    private final VelocityVoltage velocityRequest;
+    private final MotionMagicVoltage motionMagicRequest;
+    private final NeutralOut neutralRequest = new NeutralOut();
+    //private final VelocityTorqueCurrentFOC velocityRequest;
 
     // Pre-registered status signals — bulk-refreshed once per loop
     private final StatusSignal<AngularVelocity> shooterVelocitySig;
@@ -29,6 +39,9 @@ public class ShooterSubsystem extends SubsystemBase {
     private final StatusSignal<Current> shooterCurrentSig;
     private final StatusSignal<Voltage> flywheelVoltageSig;
     private final StatusSignal<Current> flywheelCurrentSig;
+    private final StatusSignal<Voltage> CeilingVoltageSig;
+    private final StatusSignal<Current> CeilingCurrentSig;
+    private final StatusSignal<AngularVelocity> CeilingVelocitySig;
 
     // Track what we're commanding so we can display it in sim
     private double lastCommandedShooterRPS = 0;
@@ -61,14 +74,24 @@ public class ShooterSubsystem extends SubsystemBase {
         actFloor = new TalonFX(ShooterConstants.Act_Floor, ShooterConstants.CANIVORE);
         actCeiling = new TalonFX(ShooterConstants.Act_Ceiling, ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
-        velocityRequest = new VelocityTorqueCurrentFOC(0);
+        //velocityRequest = new VelocityTorqueCurrentFOC(0);
+        velocityRequest = new VelocityVoltage(0);
+        motionMagicRequest = new MotionMagicVoltage(0);
+
 
         var shooterConfigs = new TalonFXConfiguration();
         shooterConfigs.Slot0.kP = ShooterConstants.kP;
         shooterConfigs.Slot0.kV = ShooterConstants.kV;
         shooterConfigs.Slot0.kS = ShooterConstants.kS;
+        shooterConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         actFloor.getConfigurator().apply(shooterConfigs);
-        actCeiling.getConfigurator().apply(shooterConfigs);
+
+        var CeilingConfigs = new TalonFXConfiguration();
+        CeilingConfigs.Slot0.kP = ShooterConstants.CkP;
+        CeilingConfigs.Slot0.kV = ShooterConstants.CkV;
+        CeilingConfigs.Slot0.kS = ShooterConstants.CkS;
+        CeilingConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        actCeiling.getConfigurator().apply(CeilingConfigs);
 
         var flywheelConfigs = new TalonFXConfiguration();
         flywheelConfigs.Slot0.kP = ShooterConstants.FLYWHEEL_kP;
@@ -83,6 +106,9 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterCurrentSig = actFloor.getStatorCurrent();
         flywheelVoltageSig = flywheelMotor.getMotorVoltage();
         flywheelCurrentSig = flywheelMotor.getStatorCurrent();
+        CeilingVelocitySig = actCeiling.getVelocity();
+        CeilingVoltageSig = actCeiling.getMotorVoltage();
+        CeilingCurrentSig = actCeiling.getStatorCurrent();
     }
 
     @Override
@@ -91,7 +117,9 @@ public class ShooterSubsystem extends SubsystemBase {
         BaseStatusSignal.refreshAll(
             shooterVelocitySig, flywheelVelocitySig,
             shooterVoltageSig, shooterCurrentSig,
-            flywheelVoltageSig, flywheelCurrentSig);
+            flywheelVoltageSig, flywheelCurrentSig,
+            CeilingCurrentSig, CeilingVelocitySig,
+            CeilingVoltageSig);
 
         // VARIABLE state: update both motors every loop (speed changes with distance)
         if (currentState == ShooterState.VISION_TRACKING) {
@@ -235,14 +263,23 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private void setVelocity(double velocityRPS) {
         lastCommandedShooterRPS = velocityRPS;
-        actFloor.setControl(velocityRequest.withVelocity(velocityRPS));
-        actCeiling.setControl(velocityRequest.withVelocity(velocityRPS));
+        if (velocityRPS == 0.0) {
+            actFloor.setControl(neutralRequest);
+            actCeiling.setControl(neutralRequest);
+        } else {
+            actFloor.setControl(velocityRequest.withVelocity(velocityRPS));
+            actCeiling.setControl(velocityRequest.withVelocity(-velocityRPS));
+        }
     }
 
-    private void setFlywheelVelocity(double velocityRPS) {
-        lastCommandedFlywheelRPS = velocityRPS;
+   private void setFlywheelVelocity(double velocityRPS) {
+    lastCommandedFlywheelRPS = velocityRPS;
+    if (velocityRPS == 0.0) {
+        flywheelMotor.setControl(neutralRequest);
+    } else {
         flywheelMotor.setControl(velocityRequest.withVelocity(velocityRPS));
     }
+}
 
     public ShooterState getState() {
         return currentState;

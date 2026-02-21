@@ -4,7 +4,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,13 +17,20 @@ public class IntakeSubsystems extends SubsystemBase {
 
     private final TalonFX intakeMotor;
     private final TalonFX pivotMotor;
-    private final VelocityTorqueCurrentFOC velocityRequest;
+    //private final VelocityTorqueCurrentFOC velocityRequest;
+
+    private final VelocityVoltage velocityRequest;
+
+
     private final MotionMagicVoltage motionMagicRequest;
+    private final NeutralOut neutralRequest = new NeutralOut(); 
+
+
 
     private IntakeState intakeState = IntakeState.IDLE;
     private IntakeState lastIntakeState = null;
     private PivotState pivotState = PivotState.STOW;
-    private PivotState lastPivotState = null;
+    private PivotState lastPivotState = PivotState.STOW;
     private boolean cachedPivotAtTarget = false;
 
     public enum PivotState {
@@ -40,14 +49,16 @@ public class IntakeSubsystems extends SubsystemBase {
     public IntakeSubsystems() {
         intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE);
         pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
-        velocityRequest = new VelocityTorqueCurrentFOC(0);
+        //velocityRequest = new VelocityTorqueCurrentFOC(0);
+        // In constructor:
+        velocityRequest = new VelocityVoltage(0);
         motionMagicRequest = new MotionMagicVoltage(0);
+        
 
         var intakeConfigs = new TalonFXConfiguration();
-        intakeConfigs.Slot0.kP = 20.0;
-        intakeConfigs.Slot0.kV = 1.0;
-        //intakeConfigs.Slot0.kD = 0.05;
-        intakeConfigs.Slot0.kS = 0.25;
+        intakeConfigs.Slot0.kP = 5.5;   // was 5 
+        intakeConfigs.Slot0.kV = 0.1;   // was 20
+        intakeConfigs.Slot0.kS = 3.0;   // was 5
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         var pivotConfigs = new TalonFXConfiguration();
@@ -157,7 +168,12 @@ public class IntakeSubsystems extends SubsystemBase {
 
     // ===== HELPER METHODS =====
     private void setIntakeVelocity(double velocityRPS) {
-        intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+        if (velocityRPS == 0) {
+            intakeMotor.setControl(neutralRequest);
+        } else {
+            intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+        }
+        //intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
     }
 
     public boolean isPivotAtTarget(double currentPosition) {

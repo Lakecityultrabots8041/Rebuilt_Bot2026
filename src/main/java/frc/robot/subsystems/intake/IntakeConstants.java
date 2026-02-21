@@ -16,7 +16,7 @@ public class IntakeConstants {
     public static final int PIVOT_MOTOR = 2;
 
     // Intake roller speeds (rotations per second)
-    public static final double INTAKE_VELOCITY = 30.0;
+    public static final double INTAKE_VELOCITY = 60.0;
     public static final double EJECT_VELOCITY = -30.9;
     public static final double IDLE_VELOCITY = 0.0;
 

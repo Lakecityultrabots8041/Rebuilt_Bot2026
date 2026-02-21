@@ -44,6 +44,10 @@ public final class ShooterConstants {
     public static final double kV = 0.15;
     public static final double kS = 0.25;
 
+    // ==== Ceiling PID =====
+    public static final double CkP = 3.0;
+    public static final double CkV = 0.15;
+    public static final double CkS = 0.25;
 
     // ===== Flywheel PID =====
     // Start identical to shooter — tune independently if flywheel has different inertia or friction.
