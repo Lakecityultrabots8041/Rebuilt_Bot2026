@@ -175,6 +175,20 @@ public class RobotContainer {
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
+
+        // Right Trigger plan if we want auto align on shoot, 
+        // Align to hub in parallel with spinning up, then confirm on target before firing                                                        
+       /*  controller.rightTrigger().whileTrue(                                                                                                      
+                Commands.sequence(                                                                                                                    
+                Commands.parallel(                                                                                                                
+                        createHubAlign(),                                                                                                             
+                        shooterSubsystem.shoot()                                                                                                      
+                        ),                                                                                                                                
+                        shooterSubsystem.waitUntilReady(),                                                                                                
+                        Commands.waitSeconds(0.5),                                                                                                        
+                        shooterSubsystem.idle()                                                                                                           
+        ) 
+    */                                                                                                                                    
         controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
         controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
 

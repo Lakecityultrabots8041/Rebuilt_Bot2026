@@ -5,9 +5,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
-//import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,8 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.units.measure.Current;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 
@@ -28,9 +24,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TalonFX actCeiling;
     private final TalonFX flywheelMotor;
     private final VelocityVoltage velocityRequest;
-    private final MotionMagicVoltage motionMagicRequest;
     private final NeutralOut neutralRequest = new NeutralOut();
-    //private final VelocityTorqueCurrentFOC velocityRequest;
 
     // Pre-registered status signals — bulk-refreshed once per loop
     private final StatusSignal<AngularVelocity> shooterVelocitySig;
@@ -74,9 +68,7 @@ public class ShooterSubsystem extends SubsystemBase {
         actFloor = new TalonFX(ShooterConstants.Act_Floor, ShooterConstants.CANIVORE);
         actCeiling = new TalonFX(ShooterConstants.Act_Ceiling, ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
-        //velocityRequest = new VelocityTorqueCurrentFOC(0);
         velocityRequest = new VelocityVoltage(0);
-        motionMagicRequest = new MotionMagicVoltage(0);
 
 
         var shooterConfigs = new TalonFXConfiguration();
@@ -97,6 +89,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfigs.Slot0.kP = ShooterConstants.FLYWHEEL_kP;
         flywheelConfigs.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
         flywheelConfigs.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
+        flywheelConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         flywheelMotor.getConfigurator().apply(flywheelConfigs);
 
         // Register status signals once — bulk-refreshed in periodic()
@@ -109,12 +102,22 @@ public class ShooterSubsystem extends SubsystemBase {
         CeilingVelocitySig = actCeiling.getVelocity();
         CeilingVoltageSig = actCeiling.getMotorVoltage();
         CeilingCurrentSig = actCeiling.getStatorCurrent();
+
+        // Velocity signals at 100 Hz so fresh data arrives every 10 ms.
+        // Telemetry signals at 50 Hz — plenty for dashboard display.
+        BaseStatusSignal.setUpdateFrequencyForAll(100,
+            shooterVelocitySig, flywheelVelocitySig, CeilingVelocitySig);
+        BaseStatusSignal.setUpdateFrequencyForAll(50,
+            shooterVoltageSig, shooterCurrentSig,
+            flywheelVoltageSig, flywheelCurrentSig,
+            CeilingVoltageSig, CeilingCurrentSig);
     }
 
     @Override
     public void periodic() {
-        // Bulk-refresh all signals once — single CAN round-trip
-        BaseStatusSignal.refreshAll(
+        // Non-blocking fetch — returns latest cached values from CAN background thread.
+        // refreshAll() was blocking up to 100ms per signal; waitForAll(0,...) does not block.
+        BaseStatusSignal.waitForAll(0,
             shooterVelocitySig, flywheelVelocitySig,
             shooterVoltageSig, shooterCurrentSig,
             flywheelVoltageSig, flywheelCurrentSig,
@@ -142,10 +145,11 @@ public class ShooterSubsystem extends SubsystemBase {
             // Flywheel states
             if (flywheelState != lastFlywheelState) {
                 switch (flywheelState) {
-                    case FLYWHELLIDLE    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
-                    case FLYWHELLREVVING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
-                    case FLYWHEELREADY   -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
-                    case FLYWHEELPASS    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_PASS_VELOCITY);
+                    case FLYWHELLIDLE     -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
+                    case FLYWHELLREVVING  -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_REV_VELOCITY);
+                    case FLYWHEELREADY    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_MAX_VELOCITY);
+                    case FLYWHEELPASS     -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_PASS_VELOCITY);
+                    case FLYWHEELEJECTING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_VELOCITY);
                     default -> {}
                 }
                 lastFlywheelState = flywheelState;

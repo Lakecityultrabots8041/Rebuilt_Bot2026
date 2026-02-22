@@ -36,6 +36,9 @@ public class LimelightSubsystem extends SubsystemBase {
     private double cachedLateralOffsetMeters = 0;
     private boolean megatag2Available = false;
 
+    // Cached once per loop — prevents calling getBotPoseEstimate twice per periodic()
+    private LimelightHelpers.PoseEstimate cachedMegaTag2Estimate = null;
+
     // Per-loop NT cache (read once in periodic, used everywhere)
     private boolean cachedHasTarget = false;
     private double cachedTx = 0;
@@ -224,6 +227,11 @@ public class LimelightSubsystem extends SubsystemBase {
             cachedTa = ta.getDouble(0.0);
             cachedTid = (int) tid.getInteger(-1);
 
+            // Fetch MegaTag2 once per loop — shared by cache update and vision fusion
+            LimelightHelpers.SetRobotOrientation_NoFlush(LIMELIGHT_NAME,
+                robotPoseSupplier != null ? robotPoseSupplier.get().getRotation().getDegrees() : 0,
+                0, 0, 0, 0, 0);
+            cachedMegaTag2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
             updateMegaTag2Cache();
             updateVisionFusion();
         }
@@ -241,33 +249,6 @@ public class LimelightSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Limelight/Distance (m)", getDistanceMeters());
     }
 
-    // Feeds MegaTag2 poses into drivetrain Kalman filter
-    private void updateVisionFusion() {
-        if (visionMeasurementConsumer == null) return;
-        if (!hasValidTarget()) return;
-        if (robotPoseSupplier == null) return;
-
-        Pose2d currentPose = robotPoseSupplier.get();
-        if (currentPose == null) return;
-
-        LimelightHelpers.SetRobotOrientation_NoFlush(LIMELIGHT_NAME,
-            currentPose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
-
-        LimelightHelpers.PoseEstimate result =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
-
-        if (result == null) return;
-        if (result.tagCount == 0) return;
-        if (result.avgTagArea < VisionConstants.MIN_TARGET_AREA) return;
-
-        // Reject off-field poses
-        double x = result.pose.getX();
-        double y = result.pose.getY();
-        if (x < 0 || x > 17.0 || y < 0 || y > 9.0) return;
-
-        visionMeasurementConsumer.accept(result.pose, result.timestampSeconds);
-    }
-
     private void updateMegaTag2Cache() {
         try {
             double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(LIMELIGHT_NAME);
@@ -281,6 +262,24 @@ public class LimelightSubsystem extends SubsystemBase {
         } catch (Exception e) {
             megatag2Available = false;
         }
+    }
+
+    // Uses the estimate already fetched this loop — no second NT call
+    private void updateVisionFusion() {
+        if (visionMeasurementConsumer == null) return;
+        if (!hasValidTarget()) return;
+        if (robotPoseSupplier == null) return;
+
+        LimelightHelpers.PoseEstimate result = cachedMegaTag2Estimate;
+        if (result == null) return;
+        if (result.tagCount == 0) return;
+        if (result.avgTagArea < VisionConstants.MIN_TARGET_AREA) return;
+
+        double x = result.pose.getX();
+        double y = result.pose.getY();
+        if (x < 0 || x > 17.0 || y < 0 || y > 9.0) return;
+
+        visionMeasurementConsumer.accept(result.pose, result.timestampSeconds);
     }
 
     // Sim — finds closest visible tag from robot pose using pre-built cache.
