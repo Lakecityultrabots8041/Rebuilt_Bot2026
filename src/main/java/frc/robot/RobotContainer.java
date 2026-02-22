@@ -137,9 +137,10 @@ public class RobotContainer {
                          VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
                     double smoothOutput = autoAimSlew.calculate(clampedOutput);
 
-                    // Set shooter speed based on distance to target
+                    // Pre-spin shooter to distance-based velocity only when trigger is not held.
+                    // When trigger is held, shooter is already firing — don't fight it.
                     double distance = limelight.getDistanceMeters();
-                    if (distance > 0) {
+                    if (distance > 0 && !controller.rightTrigger().getAsBoolean()) {
                         shooterSubsystem.setVariableVelocity(
                             ShooterConstants.getVelocityForDistance(distance));
                     }

@@ -120,8 +120,8 @@ public final class VisionConstants {
     public static final double TRENCH_TAG_HEIGHT_METERS = Units.inchesToMeters(35.0);
 
     // Camera mounting — TODO: measure these on the actual robot
-    public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(12);
-    public static final double CAMERA_MOUNT_ANGLE_DEGREES = 45;
+    public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
+    public static final double CAMERA_MOUNT_ANGLE_DEGREES = 0;
 
     // Alignment tolerances
     public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;
