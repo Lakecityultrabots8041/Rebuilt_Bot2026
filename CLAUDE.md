@@ -186,6 +186,9 @@ No magic numbers anywhere.
 
 Student readability is mandatory.
 
+Do NOT use em dashes (—) in any documentation or comments.
+Use commas or end the sentence.
+
 ===============================================================================
 CAN BUS LAYOUT
 ===============================================================================

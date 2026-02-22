@@ -6,16 +6,26 @@ All tunable values live in: `src/main/java/frc/robot/subsystems/shoot/ShooterCon
 
 ## How the Mechanism Works
 
-The shooter has two motors: **shooter** (bottom wheel, motor ID 5) and **flywheel** (top wheel, motor ID 6). Fuel passes between them. Both wheels spin in directions that push the fuel out.
+The shooter has three motors, split into two jobs:
 
-The difference in speed between the two wheels is what puts spin on the fuel, and spin is what creates the arc.
+**Feed rollers:** `actFloor` (ID 5) and `actCeiling` (ID 7) on CANivore "Jeffery".
+These are the active floor and ceiling that push the ball from the intake up into the flywheel. They run on `DutyCycleOut`, which is simple power with no PID. They do not affect how far the ball goes. They just need enough force to push the ball in consistently.
 
-- Both wheels same speed: minimal spin, flatter more direct exit
-- Flywheel faster than shooter: backspin on the fuel, the shot arcs upward and carries farther
-- Bigger ratio: more backspin, higher arc
-- Higher absolute speed (both wheels faster): more velocity, longer range at any given arc
+**Flywheel:** `flywheelMotor` (ID 6) on CANivore "Jeffery".
+This is what actually launches the ball. It uses `VelocityVoltage` (PID closed-loop) because the exit speed needs to be precise and consistent. Faster flywheel means more distance.
 
-`FLYWHEEL_SPEED_RATIO` in ShooterConstants controls how much faster the flywheel runs relative to the shooter in auto-aim mode. The preset velocities (`FLYWHEEL_MAX_VELOCITY` vs `MAX_VELOCITY`) control the same thing for button-triggered shots.
+### Why feed rollers don't use PID
+
+The feed rollers are under heavy, variable compression as the ball passes through. Velocity PID fights that load. It tries to maintain a target RPS but the mechanical resistance is constantly changing. That causes stalling, jerky behavior, and inconsistent feeding. `DutyCycleOut` just says "push at 80% power" regardless of load. If the ball compresses the rollers, they slow down and push harder. If load is light, they spin faster. Either way the ball moves through.
+
+### Shooting sequence (how the code works)
+
+1. Flywheel spins up to target RPS. Feed rollers are OFF during this.
+2. Code waits until flywheel actually reaches that speed.
+3. Feed rollers turn on and push the ball into the spinning flywheel.
+4. Ball exits, everything idles.
+
+This order matters. If the ball enters before the flywheel is at speed, the shot will be short and inconsistent.
 
 ---
 
@@ -23,146 +33,233 @@ The difference in speed between the two wheels is what puts spin on the fuel, an
 
 All of these are in `ShooterConstants.java`:
 
+### Feed Roller Power
+
 | Constant | Default | What it controls |
 |---|---|---|
-| `MAX_VELOCITY` | 90 RPS | Shooter motor speed for normal scoring shots |
-| `FLYWHEEL_MAX_VELOCITY` | 105 RPS | Flywheel speed for normal scoring shots |
-| `FLYWHEEL_SPEED_RATIO` | 1.15 | Flywheel multiplier in auto-aim mode (flywheel = shooter x ratio) |
-| `PASS_VELOCITY` | 100 RPS | Shooter speed for long-distance passing |
-| `FLYWHEEL_PASS_VELOCITY` | 110 RPS | Flywheel speed for long-distance passing |
-| `VELOCITY_TOLERANCE_RPS` | 2.0 RPS | How close motors must be to target before "ready" |
-| `READY_TIMEOUT_SECONDS` | 2.0 s | Max wait for motors to reach speed |
-| `kP / kV / kS` | 3.0 / 0.15 / 0.25 | Shooter motor PID (see below) |
-| `FLYWHEEL_kP / kV / kS` | 3.0 / 0.15 / 0.25 | Flywheel motor PID (see below) |
+| `FEED_POWER` | 0.80 | Power to run feed rollers when shooting (0.0 to 1.0) |
+| `EJECT_POWER` | -0.60 | Power when ejecting a stuck ball (negative = reverse) |
+| `PASS_POWER` | 0.60 | Power when passing |
+
+### Flywheel Speed Presets
+
+| Constant | Default | What it controls |
+|---|---|---|
+| `FLYWHEEL_READY_RPS` | 105.0 | Full shooting speed |
+| `FLYWHEEL_REV_RPS` | 75.0 | Pre-spin speed before going to full power |
+| `FLYWHEEL_PASS_RPS` | 65.0 | Passing speed |
+| `FLYWHEEL_IDLE_RPS` | 0.0 | Stopped |
+
+### Flywheel PID
+
+| Constant | Default | Role |
+|---|---|---|
+| `FLYWHEEL_kP` | 3.0 | Proportional, corrects velocity error at speed |
+| `FLYWHEEL_kV` | 0.15 | Velocity feedforward, main effort while spinning |
+| `FLYWHEEL_kS` | 0.25 | Static feedforward, overcomes friction to start |
+
+### Tolerances
+
+| Constant | Default | What it controls |
+|---|---|---|
+| `FLYWHEEL_TOLERANCE_RPS` | 2.0 | How close flywheel must be to target to count as "ready" |
+| `READY_TIMEOUT_SECONDS` | 3.0 | Gives up waiting for flywheel after this long |
 
 ---
 
-## Tuning the Arc (Shot Shape)
+## Step 1 - Tune FEED_POWER First
 
-### Step 1 - Get the right exit velocity first
+This is the easiest thing to tune and should be done before any flywheel work.
 
-Before worrying about arc, get the shot reaching the hub consistently.
+The goal: ball moves through the feed path smoothly and consistently without stalling or slamming.
 
-1. Start with `MAX_VELOCITY = 90` and `FLYWHEEL_MAX_VELOCITY = 105`.
-2. Watch `Shooter/Actual RPS` and `Flywheel/Actual RPS` on SmartDashboard.
-3. If the shot falls short, increase both velocities proportionally.
-4. If the shot overshoots, decrease both.
+1. With the robot stationary and flywheel OFF, command "Start Feeding"
+2. Watch the ball travel through the feed path
+3. If the ball stalls or barely moves, raise `FEED_POWER`
+4. If the ball slams through violently or the rollers sound strained, lower `FEED_POWER`
+5. Typical working range: 0.70 to 0.90
 
-### Step 2 - Tune the arc shape
+Do NOT try to fix a stalling feed roller by tuning PID. There is no PID on these motors. If the ball stalls at `FEED_POWER = 0.90`, the problem is mechanical. Check compression, obstructions, and belt tension.
 
-Once distance is right, adjust the ratio to get the arc you want.
+### Signs FEED_POWER is wrong
 
-- Shot too flat or hits the rim low: increase `FLYWHEEL_MAX_VELOCITY` (or increase `FLYWHEEL_SPEED_RATIO` for auto-aim shots)
-- Shot too high or arcs over the target: decrease `FLYWHEEL_MAX_VELOCITY`
-- Shot not consistent: check PIDs first (section below), then revisit velocities
+| Symptom | Adjustment |
+|---|---|
+| Ball stalls halfway through | Raise FEED_POWER |
+| Ball makes grinding or straining sound | Lower FEED_POWER |
+| Ball gets stuck and motors stall | Check mechanical clearance first, then raise FEED_POWER |
+| Ball shoots out erratically before hitting flywheel | Lower FEED_POWER |
 
-A 10-20% flywheel advantage is a typical starting range. Current defaults are about 16.7% (105 / 90).
+---
 
-### Step 3 - Distance-based velocity (auto-aim mode)
+## Step 2 - Tune Flywheel PID
 
-In auto-aim, shooter velocity is interpolated from the distance table and flywheel = shooter x `FLYWHEEL_SPEED_RATIO`. The table is in ShooterConstants:
+The flywheel needs to hit its target RPS reliably. Tune these gains in order.
+
+### kS: Static friction override
+
+Set kP and kV to 0 first. Increase kS from 0 until the flywheel reliably starts spinning from rest when commanded. If you command 105 RPS and the flywheel takes more than half a second to even start moving, kS is too low.
+
+Too high: the flywheel lurches or spikes on startup.
+Typical range: 0.1 to 0.5
+
+### kV: Velocity feedforward
+
+Keep kP at 0. Increase kV until `Flywheel/Actual RPS` on SmartDashboard gets close to `Flywheel/Target RPS`. This is the main tuning knob. It tells the motor how much voltage to apply per RPS of target speed.
+
+Too low: flywheel runs consistently below target.
+Too high: flywheel runs consistently above target.
+Typical range: 0.10 to 0.20
+
+### kP: Proportional correction
+
+Re-enable kP. Increase from 0 until the flywheel closes the remaining gap between actual and target RPS. This handles the last 3 to 5 RPS of error that kV leaves behind.
+
+Too high: `Flywheel/Actual RPS` oscillates up and down around the target.
+Too low: flywheel sits a few RPS below target permanently.
+Typical range: 1.0 to 5.0
+
+### SmartDashboard values to watch
+
+| Key | What to look for |
+|---|---|
+| `Flywheel/Actual RPS` | Should match Target RPS within 2 RPS at steady state |
+| `Flywheel/Target RPS` | Should show the preset value for the current state |
+| `Flywheel/Current` | Should drop after spin-up. Sustained current over 60A means gains are too aggressive. |
+| `Shooter/Flywheel Ready` | Should go true within 2 to 3 seconds of commanding |
+
+---
+
+## Step 3 - Tune Shot Distance and Arc
+
+Once the flywheel reaches its target speed consistently, tune the speed presets for the right shot distance.
+
+### FLYWHEEL_READY_RPS: normal scoring shot
+
+1. Position robot at your expected shooting distance
+2. Command shoot sequence, watch ball exit
+3. Shot too short, raise `FLYWHEEL_READY_RPS`
+4. Shot too long, lower `FLYWHEEL_READY_RPS`
+
+Start with a fixed position before trying to tune distance-based shots.
+
+### FLYWHEEL_SPEED_RATIO: vision tracking (Limelight auto-aim)
+
+In auto-aim mode, flywheel speed is calculated from the distance table and the ratio controls how the flywheel scales. This ratio exists for vision tracking only. Fixed presets use their own constants.
+
+If shots in auto-aim mode are consistently short at all distances, raise ratio slightly (try 1.20).
+If shots are consistently long, lower ratio (try 1.10).
+
+### Distance table: auto-aim interpolation
 
 ```java
 private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
 private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
 ```
 
-Tune these on the real field. Shoot from each distance, note whether the shot is long or short, and adjust the corresponding RPS value. The code interpolates between rows automatically.
+This table maps shooting distance (from Limelight) to flywheel RPS. The code interpolates between rows automatically. You don't need to add every possible distance, just enough points to cover your shooting range.
 
-The flywheel follows the same ratio at every distance. If you find the arc changes too much at different ranges, `FLYWHEEL_SPEED_RATIO` can be adjusted to fix it globally.
+How to tune the table:
+1. Enable auto-aim (left bumper)
+2. Stand at each distance listed in the table
+3. Watch `Flywheel/Actual RPS` on SmartDashboard to confirm the right velocity is being commanded
+4. Shoot and note if ball lands short or long at that distance
+5. Adjust the corresponding RPS in `VELOCITY_TABLE_RPS`
 
----
-
-## PID Tuning (VelocityTorqueCurrentFOC)
-
-The shooter uses `VelocityTorqueCurrentFOC`, which is torque-current based closed-loop velocity control. Three gains matter:
-
-| Gain | Role | Units | Tune when |
-|---|---|---|---|
-| `kS` | Static feedforward, overcomes friction to get the motor moving | Amps | Motor hesitates to start or has a dead band |
-| `kV` | Velocity feedforward, main effort at speed | Amps per RPS | Motor runs consistently above or below target |
-| `kP` | Proportional feedback on velocity error | Amps per RPS error | Motor is close but not quite hitting target |
-
-### Tuning order: kS first, then kV, then kP
-
-**kS** - Start at 0. Increase until the motor reliably starts spinning from rest without hesitation. Too high and the motor jerks on startup. Typical: 0.1-0.5 A.
-
-**kV** - Set kP = 0 first. Increase kV until the motor runs close to the target RPS at steady state. Watch `Shooter/Actual RPS` vs `Shooter/Commanded RPS` on SmartDashboard. Too low and the motor runs slow, too high and it runs fast. Typical: 0.1-0.2 A/RPS.
-
-**kP** - Re-enable kP. Increase from 0 until steady-state error closes. Too high causes oscillation where the RPS bounces around the target. Too low and the motor sits 3-5 RPS below target. Typical: 1.0-5.0.
-
-The flywheel has its own independent gains (`FLYWHEEL_kP`, `FLYWHEEL_kV`, `FLYWHEEL_kS`). Start identical to the shooter gains, then tune separately if the flywheel has different mechanical characteristics.
-
-### SmartDashboard values to watch during PID tuning
-
-| Key | What to look for |
-|---|---|
-| `Shooter/Actual RPS` | Should match Commanded RPS within 2 RPS |
-| `Shooter/Commanded RPS` | Should be the preset value for the current state |
-| `Shooter/At Target` | Should go true within 1-2 seconds of commanding |
-| `Flywheel/Actual RPS` | Same check for flywheel |
-| `Shooter/Motor Current` | Excessive current (over 60A sustained) means PID is too aggressive or gains are too high |
+If you never shoot from certain distances, you can remove those rows. The table only needs to cover the real shooting positions used in a match.
 
 ---
 
-## Passing Shot Setup
+## Step 4 - Tune Passing
 
-The passing command (B button) spins up to `PASS_VELOCITY` / `FLYWHEEL_PASS_VELOCITY` instead of the normal scoring presets. These are intentionally set lower than scoring maximums because for a long-distance pass you typically want a flatter faster trajectory with less arc and more range.
+Passing uses `FLYWHEEL_PASS_RPS` for the flywheel and `PASS_POWER` for the feed rollers. Feed power during a pass is lower than during a shot because you are not slamming the ball into a high-speed flywheel.
 
-### Constants to tune for passing
-
-| Constant | Default | Direction to tune |
+| Constant | Default | Direction |
 |---|---|---|
-| `PASS_VELOCITY` | 100 RPS | Up for more range, down if overshooting |
-| `FLYWHEEL_PASS_VELOCITY` | 110 RPS | Lower ratio than scoring = flatter arc for distance |
+| `FLYWHEEL_PASS_RPS` | 65.0 | Up for more range, down if overshooting |
+| `PASS_POWER` | 0.60 | Up if ball stalls during a pass, down if too aggressive |
 
-The default pass ratio is 110/100 = 1.10, intentionally less than the scoring ratio of 1.15. If you want a more lofted pass, increase `FLYWHEEL_PASS_VELOCITY`. If you want flatter, decrease it toward or below `PASS_VELOCITY`.
-
-### Passing workflow in teleop
-
-1. Drive toward the center of the field.
-2. Hold **B button**, robot spins up to pass speed. SmartDashboard `Shooter/At Target` goes true.
-3. Release **B button**, shooter idles.
+Passing is lower precision than shooting, so these don't need to be tuned as tightly.
 
 ---
 
-## Tuning Checklist
+## Step 5 - Eject Tuning
 
-### Initial setup (first time on robot)
-- [ ] Verify `Shooter/Actual RPS` responds when shooter is commanded
-- [ ] Verify `Flywheel/Actual RPS` responds independently of shooter
-- [ ] Confirm `Shooter/At Target` goes true reliably within `READY_TIMEOUT_SECONDS`
-- [ ] Tune kS, kV, kP for shooter motor
-- [ ] Tune FLYWHEEL_kS, kV, kP separately if flywheel lags or oscillates
+The eject command runs feed rollers in reverse to clear a stuck ball. Flywheel stays idle during eject.
 
-### Shot tuning
-- [ ] Scoring shot reaches hub at 2.46m (default hub distance)
-- [ ] Arc is consistent, not low and skipping off rim, not high and arcing over
-- [ ] Adjust `FLYWHEEL_MAX_VELOCITY` for arc shape
-- [ ] Walk through each distance in the table and verify auto-aim shots land correctly
-
-### Passing tuning
-- [ ] Pass shot reaches target from center field
-- [ ] Trajectory is flat enough to not hit field elements
-- [ ] `PASS_VELOCITY` and `FLYWHEEL_PASS_VELOCITY` confirmed on carpet
+`EJECT_POWER = -0.60`. If the ball doesn't clear, raise the magnitude (try -0.70). If it's too violent, lower it.
 
 ---
 
-## Quick Reference - What to Change for Each Problem
+## Sequences Reference
 
-| Problem | Change |
+### ShootSequence (used in autonomous)
+
+```
+readyFlywheel()          -> flywheel to FLYWHEEL_READY_RPS
+waitUntilFlywheelReady() -> wait up to READY_TIMEOUT_SECONDS
+startFeeding()           -> feed rollers on at FEED_POWER
+wait 0.5 seconds         -> hold while ball fires
+idleAll()                -> everything off
+```
+
+### Teleop Trigger (right trigger)
+
+```
+shoot()  -> flywheel + feed both start simultaneously
+idle()   -> called when trigger is released
+```
+
+Note: The trigger starts both at once with no wait. If the driver holds the trigger before the flywheel is at speed, the shot may be short. Have drivers pre-rev with auto-aim before pulling the trigger for important shots.
+
+### QuickShoot
+
+Assumes flywheel is already at speed. Skips the wait and just runs the feed. Used in `smartShoot()` when `isFlywheelReady()` returns true.
+
+---
+
+## Named Commands (PathPlanner)
+
+| Name | What it does |
 |---|---|
-| Shot too short | Increase `MAX_VELOCITY` and `FLYWHEEL_MAX_VELOCITY` proportionally |
-| Shot too long | Decrease both velocities |
-| Shot arcs too high | Decrease `FLYWHEEL_MAX_VELOCITY` |
-| Shot arcs too low or hits rim | Increase `FLYWHEEL_MAX_VELOCITY` |
-| Auto-aim shots inconsistent arc | Adjust `FLYWHEEL_SPEED_RATIO` |
-| Motor not reaching target speed | Tune kV upward, check kP isn't too high causing oscillation |
-| Motor oscillates around target | Lower kP |
-| Motor slow to start from rest | Raise kS |
-| Pass too short | Increase `PASS_VELOCITY` |
-| Pass too flat or no arc | Increase `FLYWHEEL_PASS_VELOCITY` |
-| Pass too arced | Decrease `FLYWHEEL_PASS_VELOCITY` toward `PASS_VELOCITY` |
+| `Rev Shooter` | Spins flywheel to FLYWHEEL_REV_RPS (pre-spin) |
+| `Shoot` | Flywheel to READY and feed on simultaneously |
+| `Idle Shooter` | Everything off |
+| `Pass` | Flywheel and feed to pass speeds simultaneously |
+| `AlignAndShoot` | Limelight hub align, then full shoot sequence |
+
+---
+
+## Pre-Match Checklist
+
+- [ ] `Flywheel/Actual RPS` responds when shooter is commanded
+- [ ] `Shooter/Flywheel Ready` goes true within 3 seconds
+- [ ] Feed rollers push ball through cleanly at FEED_POWER
+- [ ] ShootSequence fires ball consistently at expected scoring distance
+- [ ] Eject clears a stuck ball when commanded
+- [ ] Auto-aim (left bumper) spins flywheel to distance-correct speed
+- [ ] `Flywheel/Current` is not excessively high at steady state
+
+---
+
+## Quick Reference: What to Change for Each Problem
+
+| Problem | What to change |
+|---|---|
+| Ball stalls in feed path | Raise `FEED_POWER` |
+| Feed rollers sound like they're straining | Lower `FEED_POWER` or check mechanical compression |
+| Shot too short (fixed position) | Raise `FLYWHEEL_READY_RPS` |
+| Shot too long (fixed position) | Lower `FLYWHEEL_READY_RPS` |
+| Shot too short at one auto-aim distance | Raise that distance's RPS in `VELOCITY_TABLE_RPS` |
+| Flywheel runs below target consistently | Raise `FLYWHEEL_kV` |
+| Flywheel oscillates around target | Lower `FLYWHEEL_kP` |
+| Flywheel slow to start from rest | Raise `FLYWHEEL_kS` |
+| Flywheel never hits "ready" in time | Raise `READY_TIMEOUT_SECONDS` or improve kV and kP |
+| Teleop shots inconsistent | Drivers need to pre-rev before pulling trigger |
+| Ball fired before flywheel at speed in auto | `READY_TIMEOUT_SECONDS` may have expired, check flywheel PID |
+| Eject doesn't clear ball | Raise `EJECT_POWER` magnitude (try -0.70) |
+| Pass too short | Raise `FLYWHEEL_PASS_RPS` |
+| Pass too long | Lower `FLYWHEEL_PASS_RPS` |
 
 ---
 

@@ -9,69 +9,49 @@ public final class ShooterConstants {
     public static final String CANIVORE_NAME = "Jeffery";
     public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
 
-    public static final int Act_Floor  = 5;
-    public static final int Act_Ceiling = 7;
+    public static final int ACT_FLOOR     = 5;
+    public static final int ACT_CEILING   = 7;
     public static final int FLYWHEEL_MOTOR = 6;
 
-    // ===== Shooter speed presets (RPS) =====
-    public static final double MAX_VELOCITY    = 50.0;
-    public static final double REV_VELOCITY    = 30.0;
-    public static final double EJECT_VELOCITY  = -25.0;
-    public static final double IDLE_VELOCITY   =  0.0;
+    // ===== Feed roller power (0.0 to 1.0) =====
+    // DutyCycleOut — no PID, just push the ball.
+    // Tune FEED_POWER first. If the ball stalls, raise it. If it slams too hard, lower it.
+    public static final double FEED_POWER  =  0.80;
+    public static final double EJECT_POWER = -0.60; // Negative = reverse
+    public static final double PASS_POWER  =  0.60;
 
     // ===== Flywheel speed presets (RPS) =====
-    // Flywheel is the top wheel — runs faster than the shooter to impart backspin and arc.
-    // Tune FLYWHEEL_MAX_VELOCITY on the robot. See docs/SHOOTER_TUNING.md.
-    public static final double FLYWHEEL_MAX_VELOCITY   = 105.0;
-    public static final double FLYWHEEL_REV_VELOCITY   =  75.0;
-    public static final double FLYWHEEL_IDLE_VELOCITY  =   0.0;
-
-    // ===== Passing speed presets (RPS) =====
-    // Higher velocity, lower flywheel ratio → flatter, longer-range trajectory.
-    // Tune on the field. See docs/SHOOTER_TUNING.md.
-    public static final double PASS_VELOCITY          = 60.0;
-    public static final double FLYWHEEL_PASS_VELOCITY = 65.0;
-
-    /**
-     * Ratio applied to the shooter's variable (distance-based) velocity to get flywheel velocity.
-     * Keeps the two motors proportional without needing a second distance table.
-     * Tune this on the robot — a ratio of 1.15 means flywheel spins 15% faster than shooter.
-     */
-    public static final double FLYWHEEL_SPEED_RATIO = 1.15;
-
-    // ===== Shooter PID =====
-    public static final double kP = 10.0;
-    public static final double kV = 0.15;
-    public static final double kS = 7.00;
-
-    // ==== Ceiling PID =====
-    public static final double CkP = 3.0;
-    public static final double CkV = 0.15;
-    public static final double CkS = 0.25;
+    // Ball exit speed is controlled by flywheel RPS — higher = farther.
+    // Feed power does not affect shot distance, only how fast the ball enters.
+    public static final double FLYWHEEL_READY_RPS = 105.0;
+    public static final double FLYWHEEL_REV_RPS   =  75.0; // Pre-spin before going to full speed
+    public static final double FLYWHEEL_PASS_RPS  =  65.0;
+    public static final double FLYWHEEL_IDLE_RPS  =   0.0;
 
     // ===== Flywheel PID =====
-    // Start identical to shooter — tune independently if flywheel has different inertia or friction.
+    // kV is the main tuning knob — it tells the motor how much voltage per RPS.
+    // kS overcomes static friction to get the motor moving.
+    // kP corrects for error once spinning.
     public static final double FLYWHEEL_kP = 3.0;
     public static final double FLYWHEEL_kV = 0.15;
     public static final double FLYWHEEL_kS = 0.25;
 
     // ===== Tolerances =====
-    public static final double VELOCITY_TOLERANCE_RPS  = 2.0;
-    public static final double READY_TIMEOUT_SECONDS   = 2.0;
+    public static final double FLYWHEEL_TOLERANCE_RPS = 2.0;  // How close is "close enough"
+    public static final double READY_TIMEOUT_SECONDS  = 3.0;  // Give up waiting after this long
 
     // ===== Variable distance velocity table =====
-    // Shooter motor only. Flywheel scales by FLYWHEEL_SPEED_RATIO automatically.
+    // Flywheel speed is adjusted based on distance from the target (from Limelight).
+    // Feed rollers always use FEED_POWER regardless of distance.
     private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
     private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
 
-    /** Returns interpolated shooter velocity (RPS) for a given distance in meters. */
+    /** Returns interpolated flywheel velocity (RPS) for a given distance in meters. */
     public static double getVelocityForDistance(double meters) {
-        if (meters <= DISTANCE_TABLE_METERS[0]) {
-            return VELOCITY_TABLE_RPS[0];
-        }
-        if (meters >= DISTANCE_TABLE_METERS[DISTANCE_TABLE_METERS.length - 1]) {
+        if (meters <= DISTANCE_TABLE_METERS[0]) return VELOCITY_TABLE_RPS[0];
+        if (meters >= DISTANCE_TABLE_METERS[DISTANCE_TABLE_METERS.length - 1])
             return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
-        }
+
         for (int i = 0; i < DISTANCE_TABLE_METERS.length - 1; i++) {
             if (meters <= DISTANCE_TABLE_METERS[i + 1]) {
                 double t = (meters - DISTANCE_TABLE_METERS[i])

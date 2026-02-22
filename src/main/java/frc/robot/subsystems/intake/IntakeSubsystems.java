@@ -6,7 +6,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import edu.wpi.first.units.measure.Angle;
@@ -19,9 +19,8 @@ public class IntakeSubsystems extends SubsystemBase {
 
     private final TalonFX intakeMotor;
     private final TalonFX pivotMotor;
-    //private final VelocityTorqueCurrentFOC velocityRequest;
-
-    private final VelocityVoltage velocityRequest;
+    // Roller uses DutyCycleOut — no PID, just push power (same reason as shooter feed rollers)
+    private final DutyCycleOut intakeRequest    = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest;
     private final NeutralOut neutralRequest = new NeutralOut();
 
@@ -52,16 +51,10 @@ public class IntakeSubsystems extends SubsystemBase {
     public IntakeSubsystems() {
         intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE);
         pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
-        //velocityRequest = new VelocityTorqueCurrentFOC(0);
-        // In constructor:
-        velocityRequest = new VelocityVoltage(0);
         motionMagicRequest = new MotionMagicVoltage(0);
-        
 
+        // Intake roller — DutyCycleOut, no PID config needed
         var intakeConfigs = new TalonFXConfiguration();
-        intakeConfigs.Slot0.kP = 5.5;   // was 5 
-        intakeConfigs.Slot0.kV = 0.1;   // was 20
-        intakeConfigs.Slot0.kS = 3.0;   // was 5
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         var pivotConfigs = new TalonFXConfiguration();
@@ -107,9 +100,9 @@ public class IntakeSubsystems extends SubsystemBase {
         // Intake motor — only send on state change
         if (intakeState != lastIntakeState) {
             switch (intakeState) {
-                case INTAKING -> setIntakeVelocity(IntakeConstants.INTAKE_VELOCITY);
-                case EJECTING -> setIntakeVelocity(IntakeConstants.EJECT_VELOCITY);
-                case IDLE -> setIntakeVelocity(IntakeConstants.IDLE_VELOCITY);
+                case INTAKING -> setIntakePower(IntakeConstants.INTAKE_POWER);
+                case EJECTING -> setIntakePower(IntakeConstants.EJECT_POWER);
+                case IDLE     -> setIntakePower(0.0);
             }
             lastIntakeState = intakeState;
         }
@@ -175,13 +168,12 @@ public class IntakeSubsystems extends SubsystemBase {
     }
 
     // ===== HELPER METHODS =====
-    private void setIntakeVelocity(double velocityRPS) {
-        if (velocityRPS == 0) {
+    private void setIntakePower(double power) {
+        if (power == 0.0) {
             intakeMotor.setControl(neutralRequest);
         } else {
-            intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+            intakeMotor.setControl(intakeRequest.withOutput(power));
         }
-        //intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
     }
 
     public boolean isPivotAtTarget(double currentPosition) {

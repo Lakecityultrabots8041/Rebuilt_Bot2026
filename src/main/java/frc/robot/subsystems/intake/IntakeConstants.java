@@ -15,10 +15,11 @@ public class IntakeConstants {
     public static final int INTAKE_MOTOR = 3;
     public static final int PIVOT_MOTOR = 2;
 
-    // Intake roller speeds (rotations per second)
-    public static final double INTAKE_VELOCITY = 60.0;
-    public static final double EJECT_VELOCITY = -30.9;
-    public static final double IDLE_VELOCITY = 0.0;
+    // Intake roller power (0.0 to 1.0)
+    // DutyCycleOut — just spin and grab, no PID needed for a roller under variable load.
+    // Tune INTAKE_POWER first. If balls slip, raise it. If it's too aggressive, lower it.
+    public static final double INTAKE_POWER = 0.80;
+    public static final double EJECT_POWER  = -0.50; // Negative = reverse
 
     // Pivot PID and feedforward (tune on robot)
     public static final double kP = 12.0;
