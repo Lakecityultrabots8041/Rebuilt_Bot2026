@@ -14,7 +14,7 @@ public final class ShooterConstants {
     public static final int FLYWHEEL_MOTOR = 6;
 
     // ===== Shooter speed presets (RPS) =====
-    public static final double MAX_VELOCITY    = 45.0;
+    public static final double MAX_VELOCITY    = 50.0;
     public static final double REV_VELOCITY    = 30.0;
     public static final double EJECT_VELOCITY  = -25.0;
     public static final double IDLE_VELOCITY   =  0.0;
@@ -40,9 +40,9 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_SPEED_RATIO = 1.15;
 
     // ===== Shooter PID =====
-    public static final double kP = 3.0;
+    public static final double kP = 10.0;
     public static final double kV = 0.15;
-    public static final double kS = 0.25;
+    public static final double kS = 7.00;
 
     // ==== Ceiling PID =====
     public static final double CkP = 3.0;

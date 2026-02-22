@@ -271,7 +271,7 @@ public class ShooterSubsystem extends SubsystemBase {
             actFloor.setControl(neutralRequest);
             actCeiling.setControl(neutralRequest);
         } else {
-            actFloor.setControl(velocityRequest.withVelocity(velocityRPS));
+            actFloor.setControl(velocityRequest.withVelocity(-velocityRPS));
             actCeiling.setControl(velocityRequest.withVelocity(-velocityRPS));
         }
     }
