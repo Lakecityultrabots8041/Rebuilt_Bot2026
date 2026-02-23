@@ -8,6 +8,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -75,6 +76,10 @@ public class ShooterSubsystem extends SubsystemBase {
         // Feed rollers — DutyCycleOut, no PID needed
         var feedConfig = new TalonFXConfiguration();
         feedConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        feedConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        feedConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FEED_STATOR_CURRENT_LIMIT;
+        feedConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        feedConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FEED_SUPPLY_CURRENT_LIMIT;
         actFloor.getConfigurator().apply(feedConfig);
         actCeiling.getConfigurator().apply(feedConfig);
 
@@ -84,6 +89,10 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
         flywheelConfig.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
 
         // Register signals — only flywheel needs velocity tracking

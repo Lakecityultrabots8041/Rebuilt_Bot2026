@@ -36,6 +36,18 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_kV = 0.15;
     public static final double FLYWHEEL_kS = 0.25;
 
+    // ===== Current Limits =====
+    // Stator = motor output torque. Limits how hard the motor pushes.
+    // Supply = battery draw. Prevents brownouts and breaker trips.
+
+    // Flywheel needs high current during spin-up, then drops at steady state.
+    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 80.0;
+    public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60.0;
+
+    // Feed rollers don't need much torque. Limiting prevents jam damage.
+    public static final double FEED_STATOR_CURRENT_LIMIT = 40.0;
+    public static final double FEED_SUPPLY_CURRENT_LIMIT = 30.0;
+
     // ===== Tolerances =====
     public static final double FLYWHEEL_TOLERANCE_RPS = 2.0;  // How close is "close enough"
     public static final double READY_TIMEOUT_SECONDS  = 3.0;  // Give up waiting after this long

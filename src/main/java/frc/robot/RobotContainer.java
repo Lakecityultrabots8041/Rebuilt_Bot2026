@@ -192,7 +192,8 @@ public class RobotContainer {
     */                                                                                                                                    
         controller.leftTrigger().whileTrue(ShooterCommands.eject(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
-        controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
+        controller.b().whileTrue(ShooterCommands.pass(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
         // Left DPad to intake, right DPad to stop

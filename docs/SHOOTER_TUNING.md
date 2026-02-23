@@ -322,22 +322,44 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 
 ---
 
-## Current Limits (MISSING - ADD BEFORE COMPETITION)
+## Current Limits
 
-The shooter motors currently have NO current limits configured. This is a safety gap. Phoenix 6 defaults are 120A stator and 70A supply, which may be acceptable for flywheels but should be set explicitly.
+All shooter motors have current limits configured in `ShooterConstants.java`. These protect the motors, wiring, and battery.
 
-Recommended starting values for shooter motors:
+**Stator current** controls torque output of the motor. Limits how hard the motor pushes. If a ball jams or a motor stalls, stator current is what prevents damage.
 
-| Motor | Stator Limit | Supply Limit | Why |
-|---|---|---|---|
-| Flywheel | 80-120 A | 60 A | Flywheels need high current for spin-up but sustained draw causes brownouts |
-| Feed rollers | 40-60 A | 30-40 A | Rollers don't need high torque, limiting prevents jam damage |
+**Supply current** controls how much the motor draws from the battery. Prevents brownouts and breaker trips during a match.
 
-**Stator current** controls torque output of the motor. Limits how hard the motor pushes.
+### Flywheel
 
-**Supply current** controls how much the motor draws from the battery. Prevents brownouts and breaker trips.
+| Constant | Default | What it does |
+|---|---|---|
+| `FLYWHEEL_STATOR_CURRENT_LIMIT` | 80 A | Max torque during spin-up and operation |
+| `FLYWHEEL_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw, prevents brownouts |
 
-These need to be added in `ShooterSubsystem.java` motor configuration. Ask your mentor before running the shooter without explicit limits at competition.
+The flywheel draws high current during spin-up (reaching 80A briefly) then drops to 10-30A at steady state. If spin-up feels sluggish, raise stator to 100A. If you see brownouts when shooting, lower supply to 50A.
+
+Watch `Flywheel/Current` on SmartDashboard. At steady state (flywheel at target speed), sustained current over 40A means something is wrong, either the PID is fighting itself or there is mechanical resistance.
+
+### Feed Rollers
+
+| Constant | Default | What it does |
+|---|---|---|
+| `FEED_STATOR_CURRENT_LIMIT` | 40 A | Max torque, prevents jam damage |
+| `FEED_SUPPLY_CURRENT_LIMIT` | 30 A | Max battery draw |
+
+Feed rollers draw very little during normal operation (under 15A). The 40A stator limit is there so that if a ball jams, the motor current-limits instead of stripping gears or stalling hard. If balls stall in the feed path even after raising `FEED_POWER`, try raising stator to 60A.
+
+### How these compare to the rest of the robot
+
+| Mechanism | Stator Limit | Supply Limit |
+|---|---|---|
+| Shooter flywheel | 80 A | 60 A |
+| Shooter feed rollers | 40 A | 30 A |
+| Intake pivot | 60 A | 35 A |
+| Drivetrain (per module) | 80 A | 60 A |
+
+Phoenix 6 defaults without explicit limits are 120A stator and 70A supply. Our values are more conservative, which is the right direction for competition. Every motor on the robot now has explicit limits.
 
 ---
 

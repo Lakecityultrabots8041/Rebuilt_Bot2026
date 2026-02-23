@@ -352,7 +352,7 @@ KNOWN ISSUES (DO NOT IGNORE)
 
 - Climber subsystem stubbed out
 - VisionConstants camera mounting values (height 25.125in, angle 0) are placeholders, must be measured
-- Shooter motors have NO current limits configured (safety gap, add before competition)
+- Shooter current limits are conservative starting values, tune at competition if needed
 
 Do not assume these are production-ready.
 
