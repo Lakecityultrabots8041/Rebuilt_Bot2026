@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.IntakeSubsystems;
 
-public class IntakeCommands extends Command {
+public final class IntakeCommands {
 
     // ====== INTAKE WHEEL COMMANDS ======
     public static Command intake(IntakeSubsystems intakeSubsystems) {

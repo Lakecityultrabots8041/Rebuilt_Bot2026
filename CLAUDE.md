@@ -97,12 +97,14 @@ If unsure, ask.
 BUILD COMMANDS
 ===============================================================================
 
-./gradlew build  
-./gradlew deploy  
-./gradlew simulateJava  
-./gradlew test  
+./gradlew build
+./gradlew deploy
+./gradlew simulateJava
+./gradlew test
 
 On Windows use gradlew.bat if needed.
+
+Do NOT run gradle builds automatically. The user will build manually.
 
 ===============================================================================
 ARCHITECTURE
@@ -351,7 +353,6 @@ KNOWN ISSUES (DO NOT IGNORE)
 - Climber subsystem stubbed out
 - VisionConstants camera mounting values (height 25.125in, angle 0) are placeholders, must be measured
 - Shooter motors have NO current limits configured (safety gap, add before competition)
-- Robot.java metadata string stale
 
 Do not assume these are production-ready.
 
@@ -382,4 +383,4 @@ If not FRC:
 - Climber subsystem is stubbed out (empty files, commented out in RobotContainer)
 - `VisionConstants` camera mounting values (height 25.125in, angle 0) are placeholders, must be measured on robot
 - Shooter motors have NO current limits configured. Add stator and supply limits before competition.
-- `Logger.recordMetadata("ProjectName", "Elevator Simulation")` in Robot.java is stale
+- Fuel detection (FuelDetectionSubsystem, DriveToFuel, HAILO_TRAINING.md) removed, backed up externally. Restore if team makes states.

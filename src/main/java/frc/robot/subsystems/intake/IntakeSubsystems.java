@@ -130,33 +130,33 @@ public class IntakeSubsystems extends SubsystemBase {
 
     // ===== INTAKE COMMANDS =====
     public Command intake() {
-        return Commands.runOnce(() -> intakeState = IntakeState.INTAKING)
+        return runOnce(() -> intakeState = IntakeState.INTAKING)
             .withName("RunningIntakeMotor");
     }
 
     public Command eject() {
-        return Commands.runOnce(() -> intakeState = IntakeState.EJECTING)
+        return runOnce(() -> intakeState = IntakeState.EJECTING)
             .withName("ReversingIntakeMotor");
     }
 
     public Command idle() {
-        return Commands.runOnce(() -> intakeState = IntakeState.IDLE)
+        return runOnce(() -> intakeState = IntakeState.IDLE)
             .withName("StoppingIntakeMotor");
     }
 
     // ===== PIVOT COMMANDS =====
     public Command pivotToStow() {
-        return Commands.runOnce(() -> pivotState = PivotState.STOW)
+        return runOnce(() -> pivotState = PivotState.STOW)
             .withName("PivotToStow");
     }
 
     public Command pivotToIntake() {
-        return Commands.runOnce(() -> pivotState = PivotState.INTAKE)
+        return runOnce(() -> pivotState = PivotState.INTAKE)
             .withName("PivotToIntake");
     }
 
     public Command pivotToTravel() {
-        return Commands.runOnce(() -> pivotState = PivotState.TRAVEL)
+        return runOnce(() -> pivotState = PivotState.TRAVEL)
             .withName("PivotToTravel");
     }
 

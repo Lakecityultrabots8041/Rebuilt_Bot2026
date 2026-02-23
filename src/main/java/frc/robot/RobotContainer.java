@@ -190,7 +190,8 @@ public class RobotContainer {
                         shooterSubsystem.idle()                                                                                                           
         ) 
     */                                                                                                                                    
-        //controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
+        controller.leftTrigger().whileTrue(ShooterCommands.eject(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));
         controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
 
         // ----- INTAKE ----
