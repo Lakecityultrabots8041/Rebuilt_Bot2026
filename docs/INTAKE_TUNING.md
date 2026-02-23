@@ -14,6 +14,16 @@ Uses Motion Magic, which is a position controller that follows a smooth speed pr
 **Intake motor** (ID 3, CANivore "Jeffery"): the roller that pulls balls in.
 Uses `DutyCycleOut`, which is simple power with no PID. It just needs enough force to grab and pull a ball regardless of how hard the ball is pressing against it. Velocity PID fights variable load. Power control adapts to it.
 
+### What is Duty Cycle?
+
+Duty cycle is a number between -1.0 and 1.0 that means "this fraction of whatever the battery voltage is right now."
+
+- `DutyCycleOut(0.80)` means "apply 80% of battery voltage to the motor"
+- If the battery is at 12.5V, the motor gets `12.5 * 0.80 = 10.0V`
+- If the battery drops to 11.0V, the motor gets `11.0 * 0.80 = 8.8V`
+
+This is fine for rollers because they just need to spin and grab. A little slower at low battery doesn't matter. The intake roller and the shooter feed rollers both use duty cycle for this reason.
+
 ### The arm on this robot
 
 The arm is short, just long enough to reach past the bumpers to the balls. It is heavier than typical due to aluminum plates, compliant wheels, and backer bars. The backer bar physically rests on the bumper when the arm is at intake position. This means:
@@ -117,6 +127,55 @@ These gains work together to hold the arm in position and follow the Motion Magi
 | `kP` | 12.0 | Proportional. Corrects remaining position error at the target. |
 | `kI` | 0 | Integral. Leave at 0 unless arm consistently stops slightly short of target. |
 | `kD` | 0.2 | Derivative. Damps oscillation at the target. |
+
+### How the pivot PID math actually works
+
+The pivot uses `MotionMagicVoltage`, which is position control with a built-in smooth motion profile. Every loop, Phoenix 6 calculates output voltage using:
+
+```
+Output Voltage = kG * cos(position) + kS * sign(error) + kV * profile_velocity + kA * profile_acceleration + kP * position_error + kD * velocity_error
+```
+
+**What each gain does:**
+
+- **kG (4.25 volts):** Gravity compensation. The motor applies this voltage scaled by cosine of the arm angle to hold the arm against gravity. At horizontal (arm straight out), full kG is applied. At vertical (arm straight up or down), near zero is applied. This is why `Arm_Cosine` gravity type is set in constants.
+
+- **kS (2.0 volts):** Static friction override. A flat voltage added in the direction of motion to break past friction in gears, bearings, and the mechanism. Higher than the shooter's kS because the pivot has more mechanical resistance.
+
+- **kV (4.5 volts per rotation/sec):** Velocity feedforward. While the arm is moving, this provides the main effort proportional to how fast Motion Magic wants it to move. Keeps the arm tracking the smooth profile.
+
+- **kA (0.01 volts per rotation/sec^2):** Acceleration feedforward. Helps during speed changes. Small because the arm's inertia is low relative to the motor torque.
+
+- **kP (12.0 volts per rotation of error):** Position correction. If the arm is 0.1 rotations off target, kP adds `12.0 * 0.1 = 1.2V` of correction. This closes the gap at the end of a move.
+
+- **kD (0.2 volts per rotation/sec of velocity error):** Damping. Resists rapid changes to prevent bouncing at the target.
+
+**Units summary for MotionMagicVoltage (position control):**
+
+| Gain | Unit | Meaning |
+|---|---|---|
+| kG | Volts | Voltage to hold against gravity at horizontal |
+| kS | Volts | Voltage to overcome static friction |
+| kV | Volts / (rotations/sec) | Voltage per unit of target velocity |
+| kA | Volts / (rotations/sec^2) | Voltage per unit of target acceleration |
+| kP | Volts / rotation | Voltage per rotation of position error |
+| kD | Volts / (rotations/sec) | Voltage per unit of velocity error |
+
+**How to find kG by calculation:**
+
+kG = voltage needed to hold the arm horizontal under gravity. You can estimate this from motor specs and arm weight, but in practice it's easier to measure: disable all other gains, hold the arm horizontal, and increase kG until it holds without drifting. The `Arm_Cosine` setting automatically scales kG at other angles.
+
+**How to find kV by calculation:**
+
+kV = nominal voltage / free speed at the mechanism (in rotations per second)
+
+If you have a Kraken X60 (100 RPS free) with a 20:1 gear reduction:
+```
+Mechanism free speed = 100 / 20 = 5 rotations/sec
+kV = 12V / 5 rot/sec = 2.4 V/(rot/sec)
+```
+
+Our value of 4.5 is higher because the mechanism has additional friction and load beyond what the simple formula predicts. Use the formula as a starting point, then tune up.
 
 ### Tune in this order
 

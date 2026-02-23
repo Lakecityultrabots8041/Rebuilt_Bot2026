@@ -14,6 +14,16 @@ These are the active floor and ceiling that push the ball from the intake up int
 **Flywheel:** `flywheelMotor` (ID 6) on CANivore "Jeffery".
 This is what actually launches the ball. It uses `VelocityVoltage` (PID closed-loop) because the exit speed needs to be precise and consistent. Faster flywheel means more distance.
 
+### What is Duty Cycle?
+
+Duty cycle is a number between -1.0 and 1.0 that means "this fraction of whatever the battery voltage is right now."
+
+- `DutyCycleOut(0.80)` means "apply 80% of battery voltage to the motor"
+- If the battery is at 12.5V, the motor gets `12.5 * 0.80 = 10.0V`
+- If the battery drops to 11.0V during a match, the motor gets `11.0 * 0.80 = 8.8V`
+
+This is why feed rollers use duty cycle but the flywheel does not. Feed rollers just need to push, it doesn't matter if they slow down a little as the battery drains. The flywheel needs the exact same exit speed every shot, so it uses `VelocityVoltage` which compensates for battery voltage automatically.
+
 ### Why feed rollers don't use PID
 
 The feed rollers are under heavy, variable compression as the ball passes through. Velocity PID fights that load. It tries to maintain a target RPS but the mechanical resistance is constantly changing. That causes stalling, jerky behavior, and inconsistent feeding. `DutyCycleOut` just says "push at 80% power" regardless of load. If the ball compresses the rollers, they slow down and push harder. If load is light, they spin faster. Either way the ball moves through.
@@ -119,6 +129,60 @@ Too high: `Flywheel/Actual RPS` oscillates up and down around the target.
 Too low: flywheel sits a few RPS below target permanently.
 Typical range: 1.0 to 5.0
 
+### How the PID math actually works
+
+When the flywheel is running, Phoenix 6 calculates the motor output voltage every loop using this equation:
+
+```
+Output Voltage = kS * sign(target) + kV * target_RPS + kP * error_RPS
+```
+
+Where `error_RPS = target_RPS - actual_RPS`.
+
+**What each gain does in plain English:**
+
+- **kS (0.25 volts):** A flat voltage boost added whenever the motor is supposed to be spinning. Overcomes friction so the motor starts moving. The sign flips based on direction. You find this by slowly raising voltage from 0 until the motor barely moves.
+
+- **kV (0.15 volts per RPS):** The main effort. This is how many volts per RPS of target speed. If you command 100 RPS, kV contributes `0.15 * 100 = 15.0V`. This does most of the work.
+
+- **kP (3.0 volts per RPS of error):** Correction for whatever kS + kV didn't cover. If the flywheel is 2 RPS below target, kP adds `3.0 * 2 = 6.0V` of extra push.
+
+**How to calculate kV instead of guessing:**
+
+kV = nominal voltage / free speed in RPS at the mechanism
+
+For a Kraken X60 with no gear reduction:
+```
+kV = 12V / 100 RPS = 0.12 V/RPS
+```
+
+For a Falcon 500 with no gear reduction:
+```
+kV = 12V / 106.3 RPS = 0.113 V/RPS
+```
+
+If you have a 2:1 gear reduction (mechanism spins at half motor speed):
+```
+kV = 12V / 50 RPS = 0.24 V/RPS
+```
+
+Our current value of 0.15 is a tuned value, not a calculated one. Use the formula as a starting point, then adjust on the robot.
+
+**How to measure kS:**
+
+1. With the robot on blocks (wheels off ground or flywheel free to spin)
+2. Slowly increase voltage to the motor from 0
+3. The voltage where the motor just barely starts to move is your kS
+4. Typical range: 0.1 to 0.5V
+
+**Units summary for VelocityVoltage mode:**
+
+| Gain | Unit | Meaning |
+|---|---|---|
+| kP | Volts / RPS | How hard to push per RPS of error |
+| kV | Volts / RPS | How much base voltage per RPS of target |
+| kS | Volts | Flat voltage to overcome friction |
+
 ### SmartDashboard values to watch
 
 | Key | What to look for |
@@ -143,14 +207,9 @@ Once the flywheel reaches its target speed consistently, tune the speed presets 
 
 Start with a fixed position before trying to tune distance-based shots.
 
-### FLYWHEEL_SPEED_RATIO: vision tracking (Limelight auto-aim)
-
-In auto-aim mode, flywheel speed is calculated from the distance table and the ratio controls how the flywheel scales. This ratio exists for vision tracking only. Fixed presets use their own constants.
-
-If shots in auto-aim mode are consistently short at all distances, raise ratio slightly (try 1.20).
-If shots are consistently long, lower ratio (try 1.10).
-
 ### Distance table: auto-aim interpolation
+
+In auto-aim mode, flywheel speed comes from the distance table below. The code interpolates between entries automatically based on Limelight distance.
 
 ```java
 private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
@@ -260,6 +319,25 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 | Eject doesn't clear ball | Raise `EJECT_POWER` magnitude (try -0.70) |
 | Pass too short | Raise `FLYWHEEL_PASS_RPS` |
 | Pass too long | Lower `FLYWHEEL_PASS_RPS` |
+
+---
+
+## Current Limits (MISSING - ADD BEFORE COMPETITION)
+
+The shooter motors currently have NO current limits configured. This is a safety gap. Phoenix 6 defaults are 120A stator and 70A supply, which may be acceptable for flywheels but should be set explicitly.
+
+Recommended starting values for shooter motors:
+
+| Motor | Stator Limit | Supply Limit | Why |
+|---|---|---|---|
+| Flywheel | 80-120 A | 60 A | Flywheels need high current for spin-up but sustained draw causes brownouts |
+| Feed rollers | 40-60 A | 30-40 A | Rollers don't need high torque, limiting prevents jam damage |
+
+**Stator current** controls torque output of the motor. Limits how hard the motor pushes.
+
+**Supply current** controls how much the motor draws from the battery. Prevents brownouts and breaker trips.
+
+These need to be added in `ShooterSubsystem.java` motor configuration. Ask your mentor before running the shooter without explicit limits at competition.
 
 ---
 

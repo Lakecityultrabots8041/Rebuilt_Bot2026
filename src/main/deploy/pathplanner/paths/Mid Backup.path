@@ -48,7 +48,7 @@
   "folder": "Blue Side Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 89.70767713077143
+    "rotation": 89.70767713077144
   },
   "useDefaultConstraints": true
 }

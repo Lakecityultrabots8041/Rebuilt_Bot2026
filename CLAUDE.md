@@ -199,8 +199,11 @@ Default bus (""):
 - Pigeon 2
 
 CANivore ("Jeffery"):
-- Shooter motors (IDs 2, 3)
-- Intake motors (IDs 4, 5)
+- Intake pivot motor (ID 2)
+- Intake roller motor (ID 3)
+- Shooter feed floor roller (ID 5)
+- Shooter flywheel (ID 6)
+- Shooter feed ceiling roller (ID 7)
 
 When configuring motors:
 - Confirm motor type
@@ -346,9 +349,8 @@ KNOWN ISSUES (DO NOT IGNORE)
 ===============================================================================
 
 - Climber subsystem stubbed out
-- IntakeSubsystems.setVelocity() links intake + pivot incorrectly
-- Intake PID gains (0.1) placeholders
-- VisionConstants camera mounting placeholders
+- VisionConstants camera mounting values (height 25.125in, angle 0) are placeholders, must be measured
+- Shooter motors have NO current limits configured (safety gap, add before competition)
 - Robot.java metadata string stale
 
 Do not assume these are production-ready.
@@ -378,7 +380,6 @@ If not FRC:
 ## Known Issues
 
 - Climber subsystem is stubbed out (empty files, commented out in RobotContainer)
-- `IntakeSubsystems.setVelocity()` applies the same velocity to both intake and pivot motors — these should be independent
-- Intake PID gains are all `0.1` placeholders needing tuning
-- `VisionConstants` camera mounting values (height 12in, angle 45°) are placeholders
+- `VisionConstants` camera mounting values (height 25.125in, angle 0) are placeholders, must be measured on robot
+- Shooter motors have NO current limits configured. Add stator and supply limits before competition.
 - `Logger.recordMetadata("ProjectName", "Elevator Simulation")` in Robot.java is stale
