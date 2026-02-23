@@ -20,25 +20,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-    // Feed rollers — push the ball into the flywheel
+    // Feed rollers push the ball into the flywheel
     private final TalonFX actFloor;
     private final TalonFX actCeiling;
 
-    // Flywheel — spins the ball out of the shooter
+    // Flywheel launches the ball
     private final TalonFX flywheelMotor;
 
-    // Feed uses DutyCycleOut (simple % power — no PID needed for a feed roller)
+    // Feed uses DutyCycleOut (simple % power, no PID)
     private final DutyCycleOut feedRequest   = new DutyCycleOut(0);
-    // Flywheel uses VelocityVoltage (needs consistent exit speed for accurate shots)
+    // Flywheel uses VelocityVoltage (PID for consistent exit speed)
     private final VelocityVoltage flywheelRequest = new VelocityVoltage(0);
     private final NeutralOut neutralRequest  = new NeutralOut();
 
-    // Status signals — bulk refreshed once per loop to reduce CAN traffic
+    // Status signals, bulk refreshed once per loop
     private final StatusSignal<AngularVelocity> flywheelVelocitySig;
     private final StatusSignal<Voltage>         flywheelVoltageSig;
     private final StatusSignal<Current>         flywheelCurrentSig;
 
-    // Feed roller state — what the floor and ceiling motors are doing
     public enum FeedState {
         IDLE,     // Stopped
         FEEDING,  // Pushing ball toward flywheel
@@ -46,7 +45,6 @@ public class ShooterSubsystem extends SubsystemBase {
         PASSING   // Running at pass power
     }
 
-    // Flywheel state — what the flywheel motor is doing
     public enum FlywheelState {
         IDLE,           // Stopped
         REVVING,        // Pre-spinning before full speed
@@ -61,18 +59,18 @@ public class ShooterSubsystem extends SubsystemBase {
     private FlywheelState flywheelState     = FlywheelState.IDLE;
     private FlywheelState lastFlywheelState = null;
 
-    // Used only during VISION_TRACKING — updated every loop from Limelight distance
-    private double variableVelocityRPS = 0;
+    // Flywheel speed set by auto-aim, updated every loop from Limelight distance
+    private double autoAimSpeed = 0;
 
-    // For dashboard display
-    private double lastCommandedFlywheelRPS = 0;
+    // Last speed sent to the flywheel for dashboard display
+    private double flywheelTargetSpeed = 0;
 
     public ShooterSubsystem() {
         actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR,     ShooterConstants.CANIVORE);
         actCeiling    = new TalonFX(ShooterConstants.ACT_CEILING,   ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
 
-        // Feed rollers — DutyCycleOut, no PID needed
+        // Feed rollers: DutyCycleOut, no PID needed
         var feedConfig = new TalonFXConfiguration();
         feedConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         feedConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -82,7 +80,7 @@ public class ShooterSubsystem extends SubsystemBase {
         actFloor.getConfigurator().apply(feedConfig);
         actCeiling.getConfigurator().apply(feedConfig);
 
-        // Flywheel — VelocityVoltage with PID for consistent exit speed
+        // Flywheel: VelocityVoltage with PID for consistent exit speed
         var flywheelConfig = new TalonFXConfiguration();
         flywheelConfig.Slot0.kP = ShooterConstants.FLYWHEEL_kP;
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
@@ -94,7 +92,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
 
-        // Register signals — only flywheel needs velocity tracking
+        // Register flywheel signals for velocity tracking
         flywheelVelocitySig = flywheelMotor.getVelocity();
         flywheelVoltageSig  = flywheelMotor.getMotorVoltage();
         flywheelCurrentSig  = flywheelMotor.getStatorCurrent();
@@ -105,13 +103,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Non-blocking fetch — gets latest values without stalling the loop
+        // Non-blocking fetch of latest values
         BaseStatusSignal.waitForAll(0, flywheelVelocitySig, flywheelVoltageSig, flywheelCurrentSig);
 
-        // Flywheel — VISION_TRACKING updates every loop since speed changes with distance.
-        // All other states only update when the state changes, to reduce CAN traffic.
+        // VISION_TRACKING updates every loop. Other states only update on change.
         if (flywheelState == FlywheelState.VISION_TRACKING) {
-            setFlywheelVelocity(variableVelocityRPS);
+            setFlywheelVelocity(autoAimSpeed);
         } else if (flywheelState != lastFlywheelState) {
             switch (flywheelState) {
                 case IDLE    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_RPS);
@@ -123,7 +120,7 @@ public class ShooterSubsystem extends SubsystemBase {
             lastFlywheelState = flywheelState;
         }
 
-        // Feed rollers — run independently from flywheel, only update on state change
+        // Feed rollers only update on state change
         if (feedState != lastFeedState) {
             switch (feedState) {
                 case IDLE     -> setFeedPower(0.0);
@@ -138,7 +135,7 @@ public class ShooterSubsystem extends SubsystemBase {
         SmartDashboard.putString("Shooter/Feed State",      feedState.toString());
         SmartDashboard.putString("Shooter/Flywheel State",  flywheelState.toString());
         SmartDashboard.putNumber("Flywheel/Actual RPS",     flywheelVelocitySig.getValueAsDouble());
-        SmartDashboard.putNumber("Flywheel/Target RPS",     lastCommandedFlywheelRPS);
+        SmartDashboard.putNumber("Flywheel/Target RPS",     flywheelTargetSpeed);
         SmartDashboard.putNumber("Flywheel/Voltage",        flywheelVoltageSig.getValueAsDouble());
         SmartDashboard.putNumber("Flywheel/Current",        flywheelCurrentSig.getValueAsDouble());
         SmartDashboard.putBoolean("Shooter/Flywheel Ready", isFlywheelReady());
@@ -170,7 +167,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withName("StopFeed");
     }
 
-    /** Stop everything — feed and flywheel. */
+    /** Stop feed and flywheel. */
     public Command idleAll() {
         return runOnce(() -> {
             feedState     = FeedState.IDLE;
@@ -195,7 +192,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // ===== BACKWARD-COMPATIBLE METHODS =====
     // These keep RobotContainer and NamedCommands working without changes.
 
-    /** For teleop trigger — starts flywheel at full speed and feed simultaneously. */
+    /** Teleop trigger: starts flywheel and feed at once. */
     public Command shoot() {
         return runOnce(() -> {
             flywheelState = FlywheelState.READY;
@@ -214,17 +211,17 @@ public class ShooterSubsystem extends SubsystemBase {
      * Called each loop by auto-aim to set flywheel speed based on Limelight distance.
      * Feed rollers are controlled separately by the driver's trigger.
      */
-    public void setVariableVelocity(double velocityRPS) {
-        variableVelocityRPS = velocityRPS;
+    public void setAutoAimSpeed(double speed) {
+        autoAimSpeed = speed;
         if (flywheelState != FlywheelState.VISION_TRACKING) {
             flywheelState = FlywheelState.VISION_TRACKING;
         }
     }
 
     /** Called when auto-aim disengages. Returns flywheel to idle. */
-    public void clearVariableVelocity() {
+    public void clearAutoAimSpeed() {
         if (flywheelState == FlywheelState.VISION_TRACKING) {
-            variableVelocityRPS = 0;
+            autoAimSpeed = 0;
             flywheelState       = FlywheelState.IDLE;
             lastFlywheelState   = null;
         }
@@ -239,7 +236,7 @@ public class ShooterSubsystem extends SubsystemBase {
             case REVVING         -> ShooterConstants.FLYWHEEL_REV_RPS;
             case READY           -> ShooterConstants.FLYWHEEL_READY_RPS;
             case PASSING         -> ShooterConstants.FLYWHEEL_PASS_RPS;
-            case VISION_TRACKING -> variableVelocityRPS;
+            case VISION_TRACKING -> autoAimSpeed;
         };
         double actual = flywheelVelocitySig.getValueAsDouble();
         return Math.abs(actual - target) < ShooterConstants.FLYWHEEL_TOLERANCE_RPS;
@@ -271,12 +268,12 @@ public class ShooterSubsystem extends SubsystemBase {
             actCeiling.setControl(neutralRequest);
         } else {
             actFloor.setControl(feedRequest.withOutput(power));
-            actCeiling.setControl(feedRequest.withOutput(-power)); // Negated — ceiling faces floor, must spin opposite direction
+            actCeiling.setControl(feedRequest.withOutput(-power)); // Negated because ceiling faces floor
         }
     }
 
     private void setFlywheelVelocity(double rps) {
-        lastCommandedFlywheelRPS = rps;
+        flywheelTargetSpeed = rps;
         if (rps == 0.0) {
             flywheelMotor.setControl(neutralRequest);
         } else {

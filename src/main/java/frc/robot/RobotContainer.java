@@ -141,8 +141,8 @@ public class RobotContainer {
                     // When trigger is held, shooter is already firing — don't fight it.
                     double distance = limelight.getDistanceMeters();
                     if (distance > 0 && !controller.rightTrigger().getAsBoolean()) {
-                        shooterSubsystem.setVariableVelocity(
-                            ShooterConstants.getVelocityForDistance(distance));
+                        shooterSubsystem.setAutoAimSpeed(
+                            ShooterConstants.getSpeedForDistance(distance));
                     }
 
                     return drive.withVelocityX(velocityX)
@@ -151,7 +151,7 @@ public class RobotContainer {
                 } else {
                     autoAimSlew.reset(0);
                     autoAimPID.reset();
-                    shooterSubsystem.clearVariableVelocity();
+                    shooterSubsystem.clearAutoAimSpeed();
 
                     return drive.withVelocityX(velocityX)
                                 .withVelocityY(velocityY)

@@ -16,8 +16,7 @@ public class IntakeConstants {
     public static final int PIVOT_MOTOR = 2;
 
     // Intake roller power (0.0 to 1.0)
-    // DutyCycleOut — just spin and grab, no PID needed for a roller under variable load.
-    // Tune INTAKE_POWER first. If balls slip, raise it. If it's too aggressive, lower it.
+    // DutyCycleOut, no PID. If balls slip, raise it. If too aggressive, lower it.
     public static final double INTAKE_POWER = 0.80;
     public static final double EJECT_POWER  = -0.50; // Negative = reverse
 
@@ -49,15 +48,13 @@ public class IntakeConstants {
     public static final double PIVOT_TIMEOUT_SECONDS = 2.0;
 
     // Pivot current limits
-    // Stator controls how hard the motor pushes. Keeps it from grinding against the bumper hard stop.
-    // Supply limits current drawn from the battery.
+    // Stator = motor torque. Supply = battery draw.
     public static final double PIVOT_STATOR_CURRENT_LIMIT = 60.0;
     public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 35.0;
 
-    // Pivot soft limits (rotor rotations - tune after measuring real positions on the robot)
-    // Forward = toward intake (higher position number). Set just past INTAKE_POSITION so the
-    // motor stops commanding into the bumper hard stop.
-    // Reverse = toward stow. Set at STOW_POSITION so it can't go past where the encoder was seeded.
+    // Pivot soft limits (rotor rotations)
+    // Forward = toward intake. Set just past INTAKE_POSITION.
+    // Reverse = toward stow. Set at STOW_POSITION so it can't go past zero.
     public static final double SOFT_LIMIT_FORWARD = 5.5;
     public static final double SOFT_LIMIT_REVERSE = 0.0;
 }

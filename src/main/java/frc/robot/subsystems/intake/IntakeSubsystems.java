@@ -19,15 +19,13 @@ public class IntakeSubsystems extends SubsystemBase {
 
     private final TalonFX intakeMotor;
     private final TalonFX pivotMotor;
-    // Roller uses DutyCycleOut — no PID, just push power (same reason as shooter feed rollers)
+    // Roller uses DutyCycleOut (simple % power, no PID)
     private final DutyCycleOut intakeRequest    = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest;
     private final NeutralOut neutralRequest = new NeutralOut();
 
-    // Pre-registered signal — set once, refreshed non-blocking in periodic()
+    // Pivot position signal, refreshed non-blocking in periodic()
     private final StatusSignal<Angle> pivotPositionSig;
-
-
 
     private IntakeState intakeState = IntakeState.IDLE;
     private IntakeState lastIntakeState = null;
@@ -53,7 +51,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
         motionMagicRequest = new MotionMagicVoltage(0);
 
-        // Intake roller — DutyCycleOut, no PID config needed
+        // Intake roller config
         var intakeConfigs = new TalonFXConfiguration();
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
@@ -85,19 +83,18 @@ public class IntakeSubsystems extends SubsystemBase {
         intakeMotor.getConfigurator().apply(intakeConfigs);
         pivotMotor.getConfigurator().apply(pivotConfigs);
 
-        // Put the arm in starting config -> That way the pivot encoder is set to stow position everytime.
-        // The arm must be physically placed at stow before powering on (required for legal start config).
-        // This tells Motion Magic where the arm is so it can hold and move correctly from boot.
+        // Arm must be physically at stow before powering on.
+        // This tells the motor that the current position is stow (position 0).
         pivotMotor.setPosition(IntakeConstants.STOW_POSITION);
 
-        // Register pivot position signal once — 50 Hz keeps data fresh every 20 ms
+        // Pivot position updates at 50 Hz (every 20 ms)
         pivotPositionSig = pivotMotor.getPosition();
         pivotPositionSig.setUpdateFrequency(50);
     }
 
     @Override
     public void periodic() {
-        // Intake motor — only send on state change
+        // Intake motor only updates on state change
         if (intakeState != lastIntakeState) {
             switch (intakeState) {
                 case INTAKING -> setIntakePower(IntakeConstants.INTAKE_POWER);
@@ -107,18 +104,18 @@ public class IntakeSubsystems extends SubsystemBase {
             lastIntakeState = intakeState;
         }
 
-        // Pivot motor — Motion Magic positions, only send on state change
+        // Pivot motor only updates on state change
         if (pivotState != lastPivotState) {
             switch (pivotState) {
                 case STOW -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
                 case INTAKE -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
                 case TRAVEL -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
-                case IDLE -> {}
+                case IDLE -> pivotMotor.setControl(neutralRequest);
             }
             lastPivotState = pivotState;
         }
 
-        // Non-blocking fetch of latest cached pivot position
+        // Non-blocking fetch of pivot position
         BaseStatusSignal.waitForAll(0, pivotPositionSig);
         double currentPivotPosition = pivotPositionSig.getValueAsDouble();
         cachedPivotAtTarget = isPivotAtTarget(currentPivotPosition);
@@ -158,6 +155,12 @@ public class IntakeSubsystems extends SubsystemBase {
     public Command pivotToTravel() {
         return runOnce(() -> pivotState = PivotState.TRAVEL)
             .withName("PivotToTravel");
+    }
+
+    /** Release the pivot motor so the arm can bounce freely on the bumper. */
+    public Command pivotIdle() {
+        return runOnce(() -> pivotState = PivotState.IDLE)
+            .withName("PivotIdle");
     }
 
     // ===== WAIT COMMANDS =====
