@@ -15,11 +15,7 @@ public final class ShooterCommands {
         return shooter.revFlywheel();
     }
 
-    /**
-     * Flywheel to full speed + feed rollers on.
-     * Used for the teleop trigger — starts everything at once.
-     * For autos, use shootSequence() which waits for flywheel speed first.
-     */
+    /** Teleop trigger. Flywheel + feed start at the same time. For autos use shootSequence(). */
     public static Command shoot(ShooterSubsystem shooter) {
         return shooter.shoot();
     }
@@ -42,15 +38,14 @@ public final class ShooterCommands {
     // ===== SEQUENCES =====
 
     /**
-     * Full shoot sequence for autonomous:
+     * Auto shoot sequence:
      *   1. Spin flywheel to full speed
-     *   2. Wait until flywheel actually reaches that speed
-     *   3. Turn feed rollers on — ball enters flywheel and launches
+     *   2. Wait for it to get there
+     *   3. Feed rollers push ball into flywheel
      *   4. Wait for ball to clear
      *   5. Stop everything
      *
-     * The flywheel-first order is what makes shots consistent.
-     * If the ball enters before the flywheel is at speed, the shot will be short.
+     * Flywheel has to be at speed first or the shot will be short.
      */
     public static Command shootSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
@@ -63,10 +58,7 @@ public final class ShooterCommands {
          .withName("ShootSequence");
     }
 
-    /**
-     * Quick shoot — skips the rev wait.
-     * Only use this when the flywheel is already at speed.
-     */
+    /** Skips the flywheel wait. Only use when flywheel is already at speed. */
     public static Command quickShoot(ShooterSubsystem shooter) {
         return Commands.sequence(
             shooter.startFeeding(),
@@ -75,10 +67,7 @@ public final class ShooterCommands {
         ).withName("QuickShoot");
     }
 
-    /**
-     * Pass sequence — flywheel and feed to passing speed, wait, idle.
-     * Passing is lower precision than shooting so both start together.
-     */
+    /** Pass: flywheel and feed start together, wait, then stop. */
     public static Command passSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
             shooter.passAll(),
@@ -88,10 +77,7 @@ public final class ShooterCommands {
          .withName("PassSequence");
     }
 
-    /**
-     * Eject sequence — reverses feed rollers to clear a stuck ball.
-     * Flywheel stays off.
-     */
+    /** Reverse feed rollers to clear a stuck ball. Flywheel stays off. */
     public static Command ejectSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
             shooter.ejectFeed(),
@@ -100,10 +86,7 @@ public final class ShooterCommands {
         ).withName("EjectSequence");
     }
 
-    /**
-     * Smart shoot — if flywheel is already at speed, just feed.
-     * Otherwise does the full rev + wait + feed sequence.
-     */
+    /** If flywheel is at speed, just feed. Otherwise does the full shoot sequence. */
     public static Command smartShoot(ShooterSubsystem shooter) {
         return Commands.either(
             quickShoot(shooter),

@@ -9,6 +9,7 @@ import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystems;
+import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.commands.Limelight_Move;
@@ -52,6 +53,8 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
+
+    private final LEDSubsystem ledSubsystem;
 
     // Tracked commanded speeds for asymmetric slew (fast accel, controlled decel)
     private double currentDriveX = 0.0;
@@ -111,6 +114,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
         NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
         NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
+
+        // LEDs react to subsystem states automatically, no commands needed
+        ledSubsystem = new LEDSubsystem(
+            () -> shooterSubsystem.isFlywheelReady()
+                  && shooterSubsystem.getFeedState() == ShooterSubsystem.FeedState.FEEDING,
+            () -> autoAimEnabled && limelight.isTrackingHubTag(),
+            () -> autoAimEnabled,
+            () -> intakeSubsystem.getState() == IntakeSubsystems.IntakeState.INTAKING
+        );
 
         autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);
