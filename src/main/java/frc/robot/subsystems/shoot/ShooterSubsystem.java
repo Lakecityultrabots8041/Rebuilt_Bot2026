@@ -263,7 +263,7 @@ public class ShooterSubsystem extends SubsystemBase {
             actCeiling.setControl(neutralRequest);
         } else {
             actFloor.setControl(feedRequest.withOutput(power));
-            actCeiling.setControl(feedRequest.withOutput(power));
+            actCeiling.setControl(feedRequest.withOutput(-power)); // Negated — ceiling faces floor, must spin opposite direction
         }
     }
 
