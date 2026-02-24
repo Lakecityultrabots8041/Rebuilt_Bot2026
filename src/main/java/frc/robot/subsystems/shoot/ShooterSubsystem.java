@@ -23,6 +23,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // Feed rollers push the ball into the flywheel
     private final TalonFX actFloor;
     private final TalonFX actCeiling;
+    private final TalonFX actUpper; // Pulls ball from floor up into flywheel
 
     // Flywheel launches the ball
     private final TalonFX flywheelMotor;
@@ -68,6 +69,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem() {
         actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR,     ShooterConstants.CANIVORE);
         actCeiling    = new TalonFX(ShooterConstants.ACT_CEILING,   ShooterConstants.CANIVORE);
+        actUpper      = new TalonFX(ShooterConstants.ACT_UPPER,     ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
 
         // Feed rollers: DutyCycleOut, no PID needed
@@ -79,6 +81,7 @@ public class ShooterSubsystem extends SubsystemBase {
         feedConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FEED_SUPPLY_CURRENT_LIMIT;
         actFloor.getConfigurator().apply(feedConfig);
         actCeiling.getConfigurator().apply(feedConfig);
+        actUpper.getConfigurator().apply(feedConfig);
 
         // Flywheel: VelocityVoltage with PID for consistent exit speed
         var flywheelConfig = new TalonFXConfiguration();
@@ -266,9 +269,11 @@ public class ShooterSubsystem extends SubsystemBase {
         if (power == 0.0) {
             actFloor.setControl(neutralRequest);
             actCeiling.setControl(neutralRequest);
+            actUpper.setControl(neutralRequest);
         } else {
             actFloor.setControl(feedRequest.withOutput(power));
             actCeiling.setControl(feedRequest.withOutput(-power)); // Negated because ceiling faces floor
+            actUpper.setControl(feedRequest.withOutput(-power));   // Negated, pulls ball upward like ceiling
         }
     }
 

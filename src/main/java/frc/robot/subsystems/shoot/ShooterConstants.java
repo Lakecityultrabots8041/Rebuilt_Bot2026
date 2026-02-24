@@ -11,6 +11,7 @@ public final class ShooterConstants {
 
     public static final int ACT_FLOOR     = 5;
     public static final int ACT_CEILING   = 7;
+    public static final int ACT_UPPER     = 8; // Pulls ball from floor up into flywheel (2 belts, 3 wheels)
     public static final int FLYWHEEL_MOTOR = 6;
 
     // ===== Feed roller power (0.0 to 1.0) =====
@@ -42,9 +43,9 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 80.0;
     public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60.0;
 
-    // Feed rollers don't need much torque. Limiting prevents jam damage.
-    public static final double FEED_STATOR_CURRENT_LIMIT = 40.0;
-    public static final double FEED_SUPPLY_CURRENT_LIMIT = 30.0;
+    // Feed rollers. Motor 5 drives 4 belts to the flywheel, needs higher limits.
+    public static final double FEED_STATOR_CURRENT_LIMIT = 80.0;
+    public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
 
     // ===== Tolerances =====
     public static final double FLYWHEEL_TOLERANCE_RPS = 2.0;  // How close is "close enough"

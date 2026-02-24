@@ -44,7 +44,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.05)
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
@@ -183,8 +183,8 @@ public class RobotContainer {
 
         // Vision alignment: START=hub, Y=tower, X=outpost
         controller.start().whileTrue(createHubAlign());
-        controller.y().whileTrue(createTowerAlign());
-        controller.x().whileTrue(createOutpostAlign());
+        controller.back().whileTrue(createTowerAlign());
+        controller.y().whileTrue(createOutpostAlign());
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
@@ -208,9 +208,12 @@ public class RobotContainer {
             .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
-        // Left DPad to intake, right DPad to stop
-        controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
-        controller.povRight().onTrue(IntakeCommands.idle(intakeSubsystem));
+        // x to intake, a to stop
+        controller.x().whileTrue(IntakeCommands.intake(intakeSubsystem))
+            .onFalse(IntakeCommands.idle(intakeSubsystem));
+        
+        
+        //controller.a().onTrue(IntakeCommands.idle(intakeSubsystem));
 
         // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
         controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
