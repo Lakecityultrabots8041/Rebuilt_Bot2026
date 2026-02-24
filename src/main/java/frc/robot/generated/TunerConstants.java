@@ -24,6 +24,7 @@ public class TunerConstants {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
+    //TODO Please for the love of GOD lower the KP, I know it just makes a ratchety sound right now, but I feel like it will rip the motor in half
         .withKP(100).withKI(0).withKD(0.5)
         .withKS(0.1).withKV(2.66).withKA(0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
