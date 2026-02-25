@@ -12,6 +12,7 @@ import frc.robot.subsystems.intake.IntakeSubsystems;
 import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.commands.FollowTag_Demo;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.IntakeCommands;
@@ -219,6 +220,9 @@ public class RobotContainer {
         controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
         controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
+
+        // Demo: hold DPad Left to follow any visible AprilTag at safe distance
+        controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelight));
     }
 
     /**

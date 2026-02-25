@@ -224,8 +224,8 @@ The roller runs on `DutyCycleOut`. There are no PID gains to tune. You only need
 
 | Constant | Default | What it is |
 |---|---|---|
-| `INTAKE_POWER` | 0.80 | Power when pulling balls in (0.0 to 1.0) |
-| `EJECT_POWER` | -0.50 | Power when reversing to eject (negative = reverse) |
+| `INTAKE_POWER` | 1.0 | Power when pulling balls in (0.0 to 1.0) |
+| `EJECT_POWER` | -1.0 | Power when reversing to eject (negative = reverse) |
 
 ### How to tune INTAKE_POWER
 
@@ -242,8 +242,8 @@ If the ball stalls at high power, the problem is mechanical. Check for obstructi
 ### How to tune EJECT_POWER
 
 Command eject while a ball is in the intake. The ball should reverse out cleanly.
-If it barely moves, raise the magnitude (try -0.60).
-If it is too violent, lower the magnitude (try -0.40).
+If it barely moves, raise the magnitude (currently -1.0, already max).
+If it is too violent, lower the magnitude (try -0.70).
 
 ---
 
@@ -270,7 +270,16 @@ This should happen quickly. If the arm does not leave intake position, check tha
 
 ## Current Limits
 
-The pivot has current limits to protect the motor if the arm hits something.
+### Intake Roller (12:1 gearbox)
+
+| Constant | Default | What it does |
+|---|---|---|
+| `INTAKE_STATOR_CURRENT_LIMIT` | 40 A | Max torque. Conservative because 12:1 multiplies torque. |
+| `INTAKE_SUPPLY_CURRENT_LIMIT` | 30 A | Max battery draw. |
+
+If balls stall even at full power, try raising stator to 60A. If the roller motor gets hot, lower it.
+
+### Pivot
 
 | Constant | Default | What it does |
 |---|---|---|

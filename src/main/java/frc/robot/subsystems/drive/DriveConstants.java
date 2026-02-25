@@ -9,7 +9,6 @@ public final class DriveConstants {
     public static final double MAX_TELEOP_ACCEL = 8.0;
     public static final double MAX_TELEOP_DECEL = 4.0;
 
-
     
     // Applied in CommandSwerveDrivetrain, not TunerConstants — survives Tuner X regeneration.
     // See docs/DRIVE_TUNING.md for tuning guidance.

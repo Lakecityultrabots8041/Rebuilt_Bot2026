@@ -37,16 +37,8 @@ public final class ShooterCommands {
 
     // ===== SEQUENCES =====
 
-    /**
-     * Auto shoot sequence:
-     *   1. Spin flywheel to full speed
-     *   2. Wait for it to get there
-     *   3. Feed rollers push ball into flywheel
-     *   4. Wait for ball to clear
-     *   5. Stop everything
-     *
-     * Flywheel has to be at speed first or the shot will be short.
-     */
+    // Auto shoot: rev -> wait for speed -> feed -> wait for ball to clear -> stop.
+    // Flywheel has to be at speed first or the shot will be short.
     public static Command shootSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
             shooter.readyFlywheel(),

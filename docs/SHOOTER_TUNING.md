@@ -6,13 +6,13 @@ All tunable values live in: `src/main/java/frc/robot/subsystems/shoot/ShooterCon
 
 ## How the Mechanism Works
 
-The shooter has three motors, split into two jobs:
+The shooter has four motors, split into two jobs:
 
-**Feed rollers:** `actFloor` (ID 5) and `actCeiling` (ID 7) on CANivore "Jeffery".
-These are the active floor and ceiling that push the ball from the intake up into the flywheel. They run on `DutyCycleOut`, which is simple power with no PID. They do not affect how far the ball goes. They just need enough force to push the ball in consistently.
+**Feed rollers:** `actFloor` (ID 5), `actCeiling` (ID 7), and `actUpper` (ID 8) on CANivore "Jeffery".
+Floor and ceiling are direct drive. Upper has a 12:1 gearbox and drives 4 belts that pull the ball upward into the flywheel. All three run on `DutyCycleOut` (simple power, no PID). They don't affect how far the ball goes, just push it into the flywheel.
 
 **Flywheel:** `flywheelMotor` (ID 6) on CANivore "Jeffery".
-This is what actually launches the ball. It uses `VelocityVoltage` (PID closed-loop) because the exit speed needs to be precise and consistent. Faster flywheel means more distance.
+This launches the ball. Uses `VelocityVoltage` (PID closed-loop) because exit speed needs to be precise. Faster flywheel = more distance.
 
 ### What is Duty Cycle?
 
@@ -47,8 +47,8 @@ All of these are in `ShooterConstants.java`:
 
 | Constant | Default | What it controls |
 |---|---|---|
-| `FEED_POWER` | 0.80 | Power to run feed rollers when shooting (0.0 to 1.0) |
-| `EJECT_POWER` | -0.60 | Power when ejecting a stuck ball (negative = reverse) |
+| `FEED_POWER` | 1.0 | Power to run feed rollers when shooting (0.0 to 1.0) |
+| `EJECT_POWER` | -0.80 | Power when ejecting a stuck ball (negative = reverse) |
 | `PASS_POWER` | 0.60 | Power when passing |
 
 ### Flywheel Speed Presets
@@ -87,9 +87,9 @@ The goal: ball moves through the feed path smoothly and consistently without sta
 2. Watch the ball travel through the feed path
 3. If the ball stalls or barely moves, raise `FEED_POWER`
 4. If the ball slams through violently or the rollers sound strained, lower `FEED_POWER`
-5. Typical working range: 0.70 to 0.90
+5. Currently at 1.0 (full power). If that's too aggressive, lower it. Typical range: 0.70 to 1.0.
 
-Do NOT try to fix a stalling feed roller by tuning PID. There is no PID on these motors. If the ball stalls at `FEED_POWER = 0.90`, the problem is mechanical. Check compression, obstructions, and belt tension.
+Do NOT try to fix a stalling feed roller by tuning PID. There is no PID on these motors. If the ball stalls at full power, the problem is mechanical. Check compression, obstructions, and belt tension.
 
 ### Signs FEED_POWER is wrong
 
@@ -246,7 +246,7 @@ Passing is lower precision than shooting, so these don't need to be tuned as tig
 
 The eject command runs feed rollers in reverse to clear a stuck ball. Flywheel stays idle during eject.
 
-`EJECT_POWER = -0.60`. If the ball doesn't clear, raise the magnitude (try -0.70). If it's too violent, lower it.
+`EJECT_POWER = -0.80`. If the ball doesn't clear, raise the magnitude (try -0.90). If it's too violent, lower it.
 
 ---
 
@@ -316,7 +316,7 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 | Flywheel never hits "ready" in time | Raise `READY_TIMEOUT_SECONDS` or improve kV and kP |
 | Teleop shots inconsistent | Drivers need to pre-rev before pulling trigger |
 | Ball fired before flywheel at speed in auto | `READY_TIMEOUT_SECONDS` may have expired, check flywheel PID |
-| Eject doesn't clear ball | Raise `EJECT_POWER` magnitude (try -0.70) |
+| Eject doesn't clear ball | Raise `EJECT_POWER` magnitude (try -0.90) |
 | Pass too short | Raise `FLYWHEEL_PASS_RPS` |
 | Pass too long | Lower `FLYWHEEL_PASS_RPS` |
 
@@ -341,25 +341,33 @@ The flywheel draws high current during spin-up (reaching 80A briefly) then drops
 
 Watch `Flywheel/Current` on SmartDashboard. At steady state (flywheel at target speed), sustained current over 40A means something is wrong, either the PID is fighting itself or there is mechanical resistance.
 
-### Feed Rollers
+### Feed Rollers (Floor + Ceiling, direct drive)
 
 | Constant | Default | What it does |
 |---|---|---|
-| `FEED_STATOR_CURRENT_LIMIT` | 40 A | Max torque, prevents jam damage |
-| `FEED_SUPPLY_CURRENT_LIMIT` | 30 A | Max battery draw |
+| `FEED_STATOR_CURRENT_LIMIT` | 80 A | Max torque for floor and ceiling rollers |
+| `FEED_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw |
 
-Feed rollers draw very little during normal operation (under 15A). The 40A stator limit is there so that if a ball jams, the motor current-limits instead of stripping gears or stalling hard. If balls stall in the feed path even after raising `FEED_POWER`, try raising stator to 60A.
+### Upper Feed Roller (12:1 gearbox, 4 belts)
+
+| Constant | Default | What it does |
+|---|---|---|
+| `UPPER_STATOR_CURRENT_LIMIT` | 80 A | Max torque. Needs headroom to overcome gearbox + belt drag on startup. |
+| `UPPER_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw |
+
+The upper roller has a 12:1 gearbox driving 4 belts. It needs full current headroom to break through startup friction. If the motor struggles to start, raise stator. If it runs hot during sustained use, lower it.
 
 ### How these compare to the rest of the robot
 
 | Mechanism | Stator Limit | Supply Limit |
 |---|---|---|
 | Shooter flywheel | 80 A | 60 A |
-| Shooter feed rollers | 40 A | 30 A |
+| Shooter feed (floor + ceiling) | 80 A | 60 A |
+| Shooter feed (upper, 12:1) | 80 A | 60 A |
 | Intake pivot | 60 A | 35 A |
 | Drivetrain (per module) | 80 A | 60 A |
 
-Phoenix 6 defaults without explicit limits are 120A stator and 70A supply. Our values are more conservative, which is the right direction for competition. Every motor on the robot now has explicit limits.
+Every motor on the robot has explicit current limits. Phoenix 6 defaults without limits are 120A stator and 70A supply.
 
 ---
 

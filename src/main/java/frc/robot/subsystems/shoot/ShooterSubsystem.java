@@ -23,18 +23,16 @@ public class ShooterSubsystem extends SubsystemBase {
     // Feed rollers push the ball into the flywheel
     private final TalonFX actFloor;
     private final TalonFX actCeiling;
-    private final TalonFX actUpper; // Pulls ball from floor up into flywheel
+    private final TalonFX actUpper; // 12:1 gearbox, 4 belts
 
     // Flywheel launches the ball
     private final TalonFX flywheelMotor;
 
-    // Feed uses DutyCycleOut (simple % power, no PID)
-    private final DutyCycleOut feedRequest   = new DutyCycleOut(0);
-    // Flywheel uses VelocityVoltage (PID for consistent exit speed)
-    private final VelocityVoltage flywheelRequest = new VelocityVoltage(0);
+    private final DutyCycleOut feedRequest   = new DutyCycleOut(0);        // Feed: % power, no PID
+    private final VelocityVoltage flywheelRequest = new VelocityVoltage(0); // Flywheel: PID velocity
     private final NeutralOut neutralRequest  = new NeutralOut();
 
-    // Status signals, bulk refreshed once per loop
+    // Flywheel status signals, refreshed once per loop
     private final StatusSignal<AngularVelocity> flywheelVelocitySig;
     private final StatusSignal<Voltage>         flywheelVoltageSig;
     private final StatusSignal<Current>         flywheelCurrentSig;
@@ -60,11 +58,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private FlywheelState flywheelState     = FlywheelState.IDLE;
     private FlywheelState lastFlywheelState = null;
 
-    // Flywheel speed set by auto-aim, updated every loop from Limelight distance
-    private double autoAimSpeed = 0;
-
-    // Last speed sent to the flywheel for dashboard display
-    private double flywheelTargetSpeed = 0;
+    private double autoAimSpeed = 0;        // Set by auto-aim from Limelight distance
+    private double flywheelTargetSpeed = 0; // Last speed sent, for dashboard
 
     public ShooterSubsystem() {
         actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR,     ShooterConstants.CANIVORE);
@@ -72,7 +67,7 @@ public class ShooterSubsystem extends SubsystemBase {
         actUpper      = new TalonFX(ShooterConstants.ACT_UPPER,     ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
 
-        // Feed rollers (floor + ceiling): DutyCycleOut, no PID needed
+        // Floor + ceiling config (direct drive)
         var feedConfig = new TalonFXConfiguration();
         feedConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         feedConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -82,8 +77,7 @@ public class ShooterSubsystem extends SubsystemBase {
         actFloor.getConfigurator().apply(feedConfig);
         actCeiling.getConfigurator().apply(feedConfig);
 
-        // Upper feed roller (motor #8, 12:1 gearbox) - new motor, factory default
-        // first to clear any leftover config that could block output.
+        // Upper feed roller (12:1 gearbox, 4 belts)
         var upperConfig = new TalonFXConfiguration();
         upperConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         upperConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -92,7 +86,7 @@ public class ShooterSubsystem extends SubsystemBase {
         upperConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.UPPER_SUPPLY_CURRENT_LIMIT;
         actUpper.getConfigurator().apply(upperConfig);
 
-        // Flywheel: VelocityVoltage with PID for consistent exit speed
+        // Flywheel config (PID velocity control)
         var flywheelConfig = new TalonFXConfiguration();
         flywheelConfig.Slot0.kP = ShooterConstants.FLYWHEEL_kP;
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
@@ -104,7 +98,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
 
-        // Register flywheel signals for velocity tracking
+        // Flywheel signals for dashboard + ready checks
         flywheelVelocitySig = flywheelMotor.getVelocity();
         flywheelVoltageSig  = flywheelMotor.getMotorVoltage();
         flywheelCurrentSig  = flywheelMotor.getStatorCurrent();
@@ -115,7 +109,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Non-blocking fetch of latest values
+        // Grab latest flywheel data (non-blocking)
         BaseStatusSignal.waitForAll(0, flywheelVelocitySig, flywheelVoltageSig, flywheelCurrentSig);
 
         // VISION_TRACKING updates every loop. Other states only update on change.
@@ -201,10 +195,9 @@ public class ShooterSubsystem extends SubsystemBase {
         }).withName("PassAll");
     }
 
-    // ===== BACKWARD-COMPATIBLE METHODS =====
-    // These keep RobotContainer and NamedCommands working without changes.
+    // ===== ALIASES (used by RobotContainer + NamedCommands) =====
 
-    /** Teleop trigger: starts flywheel and feed at once. */
+    /** Teleop trigger: flywheel + feed start together. */
     public Command shoot() {
         return runOnce(() -> {
             flywheelState = FlywheelState.READY;
@@ -219,10 +212,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // ===== VISION TRACKING =====
 
-    /**
-     * Called each loop by auto-aim to set flywheel speed based on Limelight distance.
-     * Feed rollers are controlled separately by the driver's trigger.
-     */
+    /** Sets flywheel speed from Limelight distance. Called each loop by auto-aim. */
     public void setAutoAimSpeed(double speed) {
         autoAimSpeed = speed;
         if (flywheelState != FlywheelState.VISION_TRACKING) {
@@ -230,7 +220,7 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
-    /** Called when auto-aim disengages. Returns flywheel to idle. */
+    /** Auto-aim disengaged, back to idle. */
     public void clearAutoAimSpeed() {
         if (flywheelState == FlywheelState.VISION_TRACKING) {
             autoAimSpeed = 0;
@@ -254,7 +244,7 @@ public class ShooterSubsystem extends SubsystemBase {
         return Math.abs(actual - target) < ShooterConstants.FLYWHEEL_TOLERANCE_RPS;
     }
 
-    // Kept for backward compatibility with RobotContainer
+    // Aliases
     public boolean atTargetVelocity()        { return isFlywheelReady(); }
     public boolean atFlywheelTargetVelocity() { return isFlywheelReady(); }
 
@@ -265,7 +255,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withName("WaitForFlywheel");
     }
 
-    // Kept for backward compatibility with ShooterCommands
+    // Alias
     public Command waitUntilReady() { return waitUntilFlywheelReady(); }
 
     // ===== GETTERS =====

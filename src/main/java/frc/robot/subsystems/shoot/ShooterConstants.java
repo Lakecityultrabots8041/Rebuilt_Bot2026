@@ -11,7 +11,7 @@ public final class ShooterConstants {
 
     public static final int ACT_FLOOR     = 5;
     public static final int ACT_CEILING   = 7;
-    public static final int ACT_UPPER     = 8; // Pulls ball from floor up into flywheel (2 belts, 3 wheels)
+    public static final int ACT_UPPER     = 8; // 12:1 gearbox reduction motor
     public static final int FLYWHEEL_MOTOR = 6;
 
     // ===== Feed roller power (0.0 to 1.0) =====
