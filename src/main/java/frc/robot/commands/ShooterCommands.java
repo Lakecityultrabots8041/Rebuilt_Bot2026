@@ -17,17 +17,17 @@ public final class ShooterCommands {
 
     /** Teleop trigger. Flywheel + feed start at the same time. For autos use shootSequence(). */
     public static Command shoot(ShooterSubsystem shooter) {
-        return shooter.shoot();
+        return Commands.sequence(shooter.shoot(), shooter.startLo4d());
     }
 
     /** Stop everything. */
     public static Command idle(ShooterSubsystem shooter) {
-        return shooter.idleAll();
+        return Commands.sequence(shooter.idleAll(), shooter.stopLo4d());
     }
 
     /** Run feed rollers in reverse to clear a stuck ball. */
     public static Command eject(ShooterSubsystem shooter) {
-        return shooter.ejectFeed();
+        return Commands.sequence(shooter.ejectFeed(), shooter.ejectLo4d());
     }
 
     /** Flywheel and feed to passing speed/power. */
@@ -44,6 +44,7 @@ public final class ShooterCommands {
             shooter.readyFlywheel(),
             shooter.waitUntilFlywheelReady(),
             shooter.startFeeding(),
+            shooter.startLo4d(),
             Commands.waitSeconds(0.5),
             shooter.idleAll()
         ).withTimeout(4.0)
@@ -53,7 +54,9 @@ public final class ShooterCommands {
     /** Skips the flywheel wait. Only use when flywheel is already at speed. */
     public static Command quickShoot(ShooterSubsystem shooter) {
         return Commands.sequence(
+            shooter.readyFlywheel(),
             shooter.startFeeding(),
+            shooter.startLo4d(),
             Commands.waitSeconds(0.5),
             shooter.idleAll()
         ).withName("QuickShoot");
@@ -73,6 +76,7 @@ public final class ShooterCommands {
     public static Command ejectSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
             shooter.ejectFeed(),
+            shooter.ejectLo4d(),
             Commands.waitSeconds(0.75),
             shooter.idleAll()
         ).withName("EjectSequence");

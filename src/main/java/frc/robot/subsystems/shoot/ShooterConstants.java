@@ -11,15 +11,19 @@ public final class ShooterConstants {
 
     public static final int ACT_FLOOR     = 5;
     public static final int ACT_CEILING   = 7;
-    public static final int ACT_UPPER     = 8; // 12:1 gearbox reduction motor
+    public static final int Lo4d3r     = 8; // 12:1 gearbox reduction motor
     public static final int FLYWHEEL_MOTOR = 6;
 
-    // ===== Feed roller power (0.0 to 1.0) =====
+    // ===== Feed roller power (0.0 to 100.0) =====
     // DutyCycleOut, no PID. If the ball stalls, raise it. If it slams too hard, lower it.
     // Full power needed to push multiple balls through without jamming.
-    public static final double FEED_POWER  =  1.0;
-    public static final double EJECT_POWER = -0.80; // Negative = reverse
-    public static final double PASS_POWER  =  0.60;
+    public static final double FEED_POWER  =  50.0;
+    public static final double EJECT_POWER = -40.0; // Negative = reverse
+    public static final double PASS_POWER  =  50.0;
+
+    //===Lo4d3r power=====
+    public static final double LO4D3R_POWER = 80.0;
+    public static final double LO4D3R_EJECT_POWER = -50.0;
 
     // ===== Flywheel speed presets =====
     // RPS = Rotations Per Second. How fast the flywheel spins.

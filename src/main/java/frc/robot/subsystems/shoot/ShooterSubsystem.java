@@ -55,6 +55,9 @@ public class ShooterSubsystem extends SubsystemBase {
     private FeedState     feedState     = FeedState.IDLE;
     private FeedState     lastFeedState = null;
 
+    private FeedState lo4dState = FeedState.IDLE;
+    private FeedState lastLo4dState = null;
+
     private FlywheelState flywheelState     = FlywheelState.IDLE;
     private FlywheelState lastFlywheelState = null;
 
@@ -64,7 +67,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem() {
         actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR,     ShooterConstants.CANIVORE);
         actCeiling    = new TalonFX(ShooterConstants.ACT_CEILING,   ShooterConstants.CANIVORE);
-        actUpper      = new TalonFX(ShooterConstants.ACT_UPPER,     ShooterConstants.CANIVORE);
+        actUpper      = new TalonFX(ShooterConstants.Lo4d3r,     ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
 
         // Floor + ceiling config (direct drive)
@@ -128,7 +131,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         // Feed rollers only update on state change
         if (feedState != lastFeedState) {
-            switch (feedState) {
+            switch (feedState) { 
                 case IDLE     -> setFeedPower(0.0);
                 case FEEDING  -> setFeedPower(ShooterConstants.FEED_POWER);
                 case EJECTING -> setFeedPower(ShooterConstants.EJECT_POWER);
@@ -137,8 +140,19 @@ public class ShooterSubsystem extends SubsystemBase {
             lastFeedState = feedState;
         }
 
+        if (lo4dState != lastLo4dState) {
+            switch (lo4dState) {
+                case IDLE     -> setLo4dPower(0.0);
+                case FEEDING  -> setLo4dPower(ShooterConstants.LO4D3R_POWER);
+                case EJECTING -> setLo4dPower(ShooterConstants.LO4D3R_EJECT_POWER);
+                case PASSING  -> setLo4dPower(ShooterConstants.LO4D3R_POWER);
+            }
+            lastLo4dState = lo4dState;
+         }
+
         // Dashboard
         SmartDashboard.putString("Shooter/Feed State",      feedState.toString());
+        SmartDashboard.putString("Shooter/Lo4d State",      lo4dState.toString());
         SmartDashboard.putString("Shooter/Flywheel State",  flywheelState.toString());
         SmartDashboard.putNumber("Flywheel/Actual RPS",     flywheelVelocitySig.getValueAsDouble());
         SmartDashboard.putNumber("Flywheel/Target RPS",     flywheelTargetSpeed);
@@ -167,16 +181,27 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withName("StartFeeding");
     }
 
+    public Command startLo4d() {
+        return runOnce(() -> lo4dState = FeedState.FEEDING)
+                .withName("StartLo4d");
+    }
+
     /** Turn feed rollers off. Flywheel keeps spinning. */
     public Command stopFeed() {
         return runOnce(() -> feedState = FeedState.IDLE)
                 .withName("StopFeed");
     }
 
+    public Command stopLo4d() {
+        return runOnce(() -> lo4dState = FeedState.IDLE)
+                .withName("StopLo4d");
+    }
+
     /** Stop feed and flywheel. */
     public Command idleAll() {
         return runOnce(() -> {
             feedState     = FeedState.IDLE;
+            lo4dState     = FeedState.IDLE;
             flywheelState = FlywheelState.IDLE;
         }).withName("IdleAll");
     }
@@ -187,11 +212,18 @@ public class ShooterSubsystem extends SubsystemBase {
                 .withName("EjectFeed");
     }
 
+    public Command ejectLo4d() {
+        return runOnce(() -> lo4dState = FeedState.EJECTING)
+                .withName("EjectLo4d");
+    }
+
     /** Set flywheel and feed to passing speed/power. */
     public Command passAll() {
         return runOnce(() -> {
             flywheelState = FlywheelState.PASSING;
+            Commands.waitSeconds(0.5);
             feedState     = FeedState.PASSING;
+            lo4dState     = FeedState.PASSING;
         }).withName("PassAll");
     }
 
@@ -201,7 +233,9 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command shoot() {
         return runOnce(() -> {
             flywheelState = FlywheelState.READY;
+            Commands.waitSeconds(0.5);
             feedState     = FeedState.FEEDING;
+            lo4dState     = FeedState.FEEDING;
         }).withName("Shoot");
     }
 
@@ -268,11 +302,17 @@ public class ShooterSubsystem extends SubsystemBase {
         if (power == 0.0) {
             actFloor.setControl(neutralRequest);
             actCeiling.setControl(neutralRequest);
-            actUpper.setControl(neutralRequest);
         } else {
-            actFloor.setControl(feedRequest.withOutput(power));
+            actFloor.setControl(feedRequest.withOutput(-power));
             actCeiling.setControl(feedRequest.withOutput(-power)); // Negated because ceiling faces floor
-            actUpper.setControl(feedRequest.withOutput(-power));   // Negated, pulls ball upward like ceiling
+        }
+    }
+
+    private void setLo4dPower(double POWER) {
+        if (POWER == 0.0) {
+            actUpper.setControl(feedRequest.withOutput(-POWER));
+        } else {
+            actUpper.setControl(feedRequest.withOutput(-POWER));
         }
     }
 
