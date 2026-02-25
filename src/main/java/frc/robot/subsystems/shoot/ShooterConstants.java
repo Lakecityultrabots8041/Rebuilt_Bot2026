@@ -48,10 +48,10 @@ public final class ShooterConstants {
     public static final double FEED_STATOR_CURRENT_LIMIT = 80.0;
     public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
 
-    // Upper feed roller (12:1 gearbox). Lower limits because the gearbox
-    // multiplies torque 12x, stalls hit much harder on this motor.
-    public static final double UPPER_STATOR_CURRENT_LIMIT = 40.0;
-    public static final double UPPER_SUPPLY_CURRENT_LIMIT = 30.0;
+    // Upper feed roller (12:1 gearbox, 4 belts). Needs same current as
+    // floor/ceiling because the 4 belts add significant mechanical load.
+    public static final double UPPER_STATOR_CURRENT_LIMIT = 80.0;
+    public static final double UPPER_SUPPLY_CURRENT_LIMIT = 60.0;
 
     // ===== Tolerances =====
     public static final double FLYWHEEL_TOLERANCE_RPS = 2.0;  // How close is "close enough"
