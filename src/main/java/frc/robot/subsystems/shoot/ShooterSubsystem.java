@@ -72,7 +72,7 @@ public class ShooterSubsystem extends SubsystemBase {
         actUpper      = new TalonFX(ShooterConstants.ACT_UPPER,     ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
 
-        // Feed rollers: DutyCycleOut, no PID needed
+        // Feed rollers (floor + ceiling): DutyCycleOut, no PID needed
         var feedConfig = new TalonFXConfiguration();
         feedConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         feedConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -81,7 +81,16 @@ public class ShooterSubsystem extends SubsystemBase {
         feedConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FEED_SUPPLY_CURRENT_LIMIT;
         actFloor.getConfigurator().apply(feedConfig);
         actCeiling.getConfigurator().apply(feedConfig);
-        actUpper.getConfigurator().apply(feedConfig);
+
+        // Upper feed roller (motor #8, 12:1 gearbox) - new motor, factory default
+        // first to clear any leftover config that could block output.
+        var upperConfig = new TalonFXConfiguration();
+        upperConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        upperConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        upperConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.UPPER_STATOR_CURRENT_LIMIT;
+        upperConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        upperConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.UPPER_SUPPLY_CURRENT_LIMIT;
+        actUpper.getConfigurator().apply(upperConfig);
 
         // Flywheel: VelocityVoltage with PID for consistent exit speed
         var flywheelConfig = new TalonFXConfiguration();

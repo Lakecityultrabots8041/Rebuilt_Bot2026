@@ -206,6 +206,7 @@ CANivore ("Jeffery"):
 - Shooter feed floor roller (ID 5)
 - Shooter flywheel (ID 6)
 - Shooter feed ceiling roller (ID 7)
+- Shooter upper feed roller (ID 8, 12:1 gearbox)
 
 When configuring motors:
 - Confirm motor type

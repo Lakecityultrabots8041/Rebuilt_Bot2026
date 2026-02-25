@@ -51,9 +51,13 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
         motionMagicRequest = new MotionMagicVoltage(0);
 
-        // Intake roller config
+        // Intake roller config (12:1 gearbox)
         var intakeConfigs = new TalonFXConfiguration();
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        intakeConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+        intakeConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.INTAKE_STATOR_CURRENT_LIMIT;
+        intakeConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+        intakeConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.INTAKE_SUPPLY_CURRENT_LIMIT;
 
         var pivotConfigs = new TalonFXConfiguration();
         pivotConfigs.Slot0.kP = IntakeConstants.kP;

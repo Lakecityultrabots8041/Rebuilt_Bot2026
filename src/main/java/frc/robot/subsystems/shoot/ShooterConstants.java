@@ -16,8 +16,9 @@ public final class ShooterConstants {
 
     // ===== Feed roller power (0.0 to 1.0) =====
     // DutyCycleOut, no PID. If the ball stalls, raise it. If it slams too hard, lower it.
-    public static final double FEED_POWER  =  0.80;
-    public static final double EJECT_POWER = -0.60; // Negative = reverse
+    // Full power needed to push multiple balls through without jamming.
+    public static final double FEED_POWER  =  1.0;
+    public static final double EJECT_POWER = -0.80; // Negative = reverse
     public static final double PASS_POWER  =  0.60;
 
     // ===== Flywheel speed presets =====
@@ -43,9 +44,14 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 80.0;
     public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60.0;
 
-    // Feed rollers. Motor 5 drives 4 belts to the flywheel, needs higher limits.
+    // Feed rollers (floor and ceiling, no gearbox reduction).
     public static final double FEED_STATOR_CURRENT_LIMIT = 80.0;
     public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
+
+    // Upper feed roller (12:1 gearbox). Lower limits because the gearbox
+    // multiplies torque 12x, stalls hit much harder on this motor.
+    public static final double UPPER_STATOR_CURRENT_LIMIT = 40.0;
+    public static final double UPPER_SUPPLY_CURRENT_LIMIT = 30.0;
 
     // ===== Tolerances =====
     public static final double FLYWHEEL_TOLERANCE_RPS = 2.0;  // How close is "close enough"

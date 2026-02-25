@@ -17,8 +17,8 @@ public class IntakeConstants {
 
     // Intake roller power (0.0 to 1.0)
     // DutyCycleOut, no PID. If balls slip, raise it. If too aggressive, lower it.
-    public static final double INTAKE_POWER = 0.80;
-    public static final double EJECT_POWER  = -0.50; // Negative = reverse
+    public static final double INTAKE_POWER = 1.0;
+    public static final double EJECT_POWER  = -1.0; // Negative = reverse
 
     // Pivot PID and feedforward (tune on robot)
     public static final double kP = 12.0;
@@ -46,6 +46,12 @@ public class IntakeConstants {
 
     // How long to wait for the pivot to reach its target before giving up
     public static final double PIVOT_TIMEOUT_SECONDS = 2.0;
+
+    // Intake roller current limits (12:1 gearbox)
+    // Keep these conservative to protect the motor and gearbox.
+    // Stator = motor torque. Supply = battery draw.
+    public static final double INTAKE_STATOR_CURRENT_LIMIT = 40.0;
+    public static final double INTAKE_SUPPLY_CURRENT_LIMIT = 30.0;
 
     // Pivot current limits
     // Stator = motor torque. Supply = battery draw.
