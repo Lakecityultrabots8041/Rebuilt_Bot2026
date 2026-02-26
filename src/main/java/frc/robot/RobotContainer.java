@@ -9,8 +9,10 @@ import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystems;
+import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.commands.FollowTag_Demo;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.IntakeCommands;
@@ -43,7 +45,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
+            .withDeadband(MaxSpeed * 0.08).withRotationalDeadband(MaxAngularRate * 0.1)
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
@@ -52,6 +54,8 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
+
+    private final LEDSubsystem ledSubsystem;
 
     // Tracked commanded speeds for asymmetric slew (fast accel, controlled decel)
     private double currentDriveX = 0.0;
@@ -112,6 +116,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
         NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 
+        // LEDs react to subsystem states automatically, no commands needed
+        ledSubsystem = new LEDSubsystem(
+            () -> shooterSubsystem.isFlywheelReady()
+                  && shooterSubsystem.getFeedState() == ShooterSubsystem.FeedState.FEEDING,
+            () -> autoAimEnabled && limelight.isTrackingHubTag(),
+            () -> autoAimEnabled,
+            () -> intakeSubsystem.getState() == IntakeSubsystems.IntakeState.INTAKING
+        );
+
         autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
         SmartDashboard.putData("Auton Mode", autoChooser);
 
@@ -137,11 +150,12 @@ public class RobotContainer {
                          VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
                     double smoothOutput = autoAimSlew.calculate(clampedOutput);
 
-                    // Set shooter speed based on distance to target
+                    // Pre-spin shooter to distance-based velocity only when trigger is not held.
+                    // When trigger is held, shooter is already firing — don't fight it.
                     double distance = limelight.getDistanceMeters();
-                    if (distance > 0) {
-                        shooterSubsystem.setVariableVelocity(
-                            ShooterConstants.getVelocityForDistance(distance));
+                    if (distance > 0 && !controller.rightTrigger().getAsBoolean()) {
+                        shooterSubsystem.setAutoAimSpeed(
+                            ShooterConstants.getSpeedForDistance(distance));
                     }
 
                     return drive.withVelocityX(velocityX)
@@ -150,7 +164,7 @@ public class RobotContainer {
                 } else {
                     autoAimSlew.reset(0);
                     autoAimPID.reset();
-                    shooterSubsystem.clearVariableVelocity();
+                    shooterSubsystem.clearAutoAimSpeed();
 
                     return drive.withVelocityX(velocityX)
                                 .withVelocityY(velocityY)
@@ -170,23 +184,45 @@ public class RobotContainer {
 
         // Vision alignment: START=hub, Y=tower, X=outpost
         controller.start().whileTrue(createHubAlign());
-        controller.y().whileTrue(createTowerAlign());
-        controller.x().whileTrue(createOutpostAlign());
+        controller.back().whileTrue(createTowerAlign());
+        controller.y().whileTrue(createOutpostAlign());
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
-        controller.leftTrigger().whileTrue(ShooterCommands.ejectSequence(shooterSubsystem));
-        controller.b().whileTrue(ShooterCommands.passSequence(shooterSubsystem));
+
+        // Right Trigger plan if we want auto align on shoot, 
+        // Align to hub in parallel with spinning up, then confirm on target before firing                                                        
+       /*  controller.rightTrigger().whileTrue(                                                                                                      
+                Commands.sequence(                                                                                                                    
+                Commands.parallel(                                                                                                                
+                        createHubAlign(),                                                                                                             
+                        shooterSubsystem.shoot()                                                                                                      
+                        ),                                                                                                                                
+                        shooterSubsystem.waitUntilReady(),                                                                                                
+                        Commands.waitSeconds(0.5),                                                                                                        
+                        shooterSubsystem.idle()                                                                                                           
+        ) 
+    */                                                                                                                                    
+        controller.leftTrigger().whileTrue(ShooterCommands.eject(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));
+        controller.b().whileTrue(ShooterCommands.pass(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
-        // Left DPad to intake, right DPad to stop
-        controller.povLeft().onTrue(IntakeCommands.intake(intakeSubsystem));
-        controller.povRight().onTrue(IntakeCommands.idle(intakeSubsystem));
+        // x to intake, a to stop
+        controller.x().whileTrue(IntakeCommands.intake(intakeSubsystem))
+            .onFalse(IntakeCommands.idle(intakeSubsystem));
+        
+        
+        //controller.a().onTrue(IntakeCommands.idle(intakeSubsystem));
 
         // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
         controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
         controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
+
+        // Demo: hold DPad Left to follow any visible AprilTag at safe distance
+        controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelight));
     }
 
     /**

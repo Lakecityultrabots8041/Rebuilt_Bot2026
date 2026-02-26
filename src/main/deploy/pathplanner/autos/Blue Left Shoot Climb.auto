@@ -11,6 +11,18 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "AlignAndShoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "BBL to Climb"

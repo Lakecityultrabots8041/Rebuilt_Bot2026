@@ -15,15 +15,15 @@ public class IntakeConstants {
     public static final int INTAKE_MOTOR = 3;
     public static final int PIVOT_MOTOR = 2;
 
-    // Intake roller speeds (rotations per second)
-    public static final double INTAKE_VELOCITY = 50.0;
-    public static final double EJECT_VELOCITY = -30.9;
-    public static final double IDLE_VELOCITY = 0.0;
+    // Intake roller power (0.0 to 1.0)
+    // DutyCycleOut, no PID. If balls slip, raise it. If too aggressive, lower it.
+    public static final double INTAKE_POWER = 1.0;
+    public static final double EJECT_POWER  = -1.0; // Negative = reverse
 
     // Pivot PID and feedforward (tune on robot)
-    public static final double kP = 30;
+    public static final double kP = 12.0;
     public static final double kI = 0;
-    public static final double kD = 0.1;
+    public static final double kD = 0.2;
     public static final double kS = 2.0;
     public static final double kV = 4.5;
     public static final double kA = 0.01;
@@ -47,16 +47,20 @@ public class IntakeConstants {
     // How long to wait for the pivot to reach its target before giving up
     public static final double PIVOT_TIMEOUT_SECONDS = 2.0;
 
-    // Pivot current limits
-    // Stator controls how hard the motor pushes. Keeps it from grinding against the bumper hard stop.
-    // Supply limits current drawn from the battery.
-    public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0;
-    public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 30.0;
+    // Intake roller current limits (12:1 gearbox)
+    // Keep these conservative to protect the motor and gearbox.
+    // Stator = motor torque. Supply = battery draw.
+    public static final double INTAKE_STATOR_CURRENT_LIMIT = 40.0;
+    public static final double INTAKE_SUPPLY_CURRENT_LIMIT = 30.0;
 
-    // Pivot soft limits (rotor rotations - tune after measuring real positions on the robot)
-    // Forward = toward intake (higher position number). Set just past INTAKE_POSITION so the
-    // motor stops commanding into the bumper hard stop.
-    // Reverse = toward stow. Set at STOW_POSITION so it can't go past where the encoder was seeded.
+    // Pivot current limits
+    // Stator = motor torque. Supply = battery draw.
+    public static final double PIVOT_STATOR_CURRENT_LIMIT = 60.0;
+    public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 35.0;
+
+    // Pivot soft limits (rotor rotations)
+    // Forward = toward intake. Set just past INTAKE_POSITION.
+    // Reverse = toward stow. Set at STOW_POSITION so it can't go past zero.
     public static final double SOFT_LIMIT_FORWARD = 5.5;
     public static final double SOFT_LIMIT_REVERSE = 0.0;
 }

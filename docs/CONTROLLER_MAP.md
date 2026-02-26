@@ -5,8 +5,8 @@ Driver controller is port 0. Xbox controller. All bindings are in `RobotContaine
 
 ## Full Binding Table
 
-| Input | Action | Trigger Type |
-|---|---|---|
+| Input      | Action           | Trigger Type |
+|-------|--------|--------------|
 | Left Stick | Drive (forward/back/strafe) | Always active |
 | Right Stick X | Rotate | Always active (when auto-aim is off) |
 | Left Bumper | Toggle auto-aim on/off | Press once to toggle |

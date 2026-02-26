@@ -97,12 +97,14 @@ If unsure, ask.
 BUILD COMMANDS
 ===============================================================================
 
-./gradlew build  
-./gradlew deploy  
-./gradlew simulateJava  
-./gradlew test  
+./gradlew build
+./gradlew deploy
+./gradlew simulateJava
+./gradlew test
 
 On Windows use gradlew.bat if needed.
+
+Do NOT run gradle builds automatically. The user will build manually.
 
 ===============================================================================
 ARCHITECTURE
@@ -186,6 +188,9 @@ No magic numbers anywhere.
 
 Student readability is mandatory.
 
+Do NOT use em dashes (—) in any documentation or comments.
+Use commas or end the sentence.
+
 ===============================================================================
 CAN BUS LAYOUT
 ===============================================================================
@@ -196,8 +201,12 @@ Default bus (""):
 - Pigeon 2
 
 CANivore ("Jeffery"):
-- Shooter motors (IDs 2, 3)
-- Intake motors (IDs 4, 5)
+- Intake pivot motor (ID 2)
+- Intake roller motor (ID 3)
+- Shooter feed floor roller (ID 5)
+- Shooter flywheel (ID 6)
+- Shooter feed ceiling roller (ID 7)
+- Shooter upper feed roller (ID 8, 12:1 gearbox)
 
 When configuring motors:
 - Confirm motor type
@@ -343,10 +352,8 @@ KNOWN ISSUES (DO NOT IGNORE)
 ===============================================================================
 
 - Climber subsystem stubbed out
-- IntakeSubsystems.setVelocity() links intake + pivot incorrectly
-- Intake PID gains (0.1) placeholders
-- VisionConstants camera mounting placeholders
-- Robot.java metadata string stale
+- VisionConstants camera mounting values (height 25.125in, angle 0) are placeholders, must be measured
+- Shooter current limits are conservative starting values, tune at competition if needed
 
 Do not assume these are production-ready.
 
@@ -375,7 +382,6 @@ If not FRC:
 ## Known Issues
 
 - Climber subsystem is stubbed out (empty files, commented out in RobotContainer)
-- `IntakeSubsystems.setVelocity()` applies the same velocity to both intake and pivot motors — these should be independent
-- Intake PID gains are all `0.1` placeholders needing tuning
-- `VisionConstants` camera mounting values (height 12in, angle 45°) are placeholders
-- `Logger.recordMetadata("ProjectName", "Elevator Simulation")` in Robot.java is stale
+- `VisionConstants` camera mounting values (height 25.125in, angle 0) are placeholders, must be measured on robot
+- Shooter motors have NO current limits configured. Add stator and supply limits before competition.
+- Fuel detection (FuelDetectionSubsystem, DriveToFuel, HAILO_TRAINING.md) removed, backed up externally. Restore if team makes states.

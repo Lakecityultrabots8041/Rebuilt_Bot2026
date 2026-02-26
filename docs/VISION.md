@@ -326,11 +326,13 @@ The D term adds damping so it doesn't overshoot the target heading. The slew lim
 
 ### Camera Setup
 
-Measure these on the actual robot and update VisionConstants:
-- CAMERA_HEIGHT_METERS - lens height from floor
-- CAMERA_MOUNT_ANGLE_DEGREES - 0 = horizontal, positive = tilted up
+**Current values are PLACEHOLDERS, must be measured on the actual robot:**
+- `CAMERA_HEIGHT_METERS` = 25.125 inches (0.638m) - lens center height from floor
+- `CAMERA_MOUNT_ANGLE_DEGREES` = 0 - currently set to horizontal, should be 30-45 degrees tilted up
 
-Mount the Limelight as high as you can, angled up 30-45 degrees. Set pipeline 0 for AprilTags.
+Measure these on the actual robot and update VisionConstants. The height is measured from the floor to the center of the Limelight lens. The angle is 0 for horizontal, positive for tilted up.
+
+Mount the Limelight as high as you can, angled up 30-45 degrees. Set pipeline 0 for AprilTags. These values are used by the trig-based backup calculation and by simulation, not by MegaTag2 (which handles camera pose internally).
 
 ---
 

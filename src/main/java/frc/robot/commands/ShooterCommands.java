@@ -4,158 +4,90 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 
-public class ShooterCommands extends Command {
+public final class ShooterCommands {
 
-    private ShooterCommands() {
+    private ShooterCommands() {}
 
-    }
-    
     // ===== BASIC COMMANDS =====
-    
-    /**
-     * Rev up the shooter to prepare for shooting
-     */
+
+    /** Spin flywheel to pre-rev speed. */
     public static Command revUp(ShooterSubsystem shooter) {
-        return shooter.revUp();
-    }
-    
-    /**
-     * Set shooter to ready/shooting state
-     */
-    public static Command shoot(ShooterSubsystem shooter) {
-        return shooter.shoot();
-    }
-    
-    /**
-     * Stop the shooter motors
-     */
-    public static Command idle(ShooterSubsystem shooter) {
-        return shooter.idle();
-    }
-    
-    /**
-     * Reverse motors to eject stuck fuel
-     */
-    public static Command eject(ShooterSubsystem shooter) {
-        return shooter.eject();
+        return shooter.revFlywheel();
     }
 
-    /** Spin up to passing speed (higher velocity, flatter arc for long-distance shots). */
-    public static Command pass(ShooterSubsystem shooter) {
-        return shooter.pass();
+    /** Teleop trigger. Flywheel + feed start at the same time. For autos use shootSequence(). */
+    public static Command shoot(ShooterSubsystem shooter) {
+        return Commands.sequence(shooter.shoot(), shooter.startLo4d());
     }
-    
-    // ===== COMPOSITE COMMANDS =====
-    
-    /**
-     * Complete shooting sequence: rev up, wait for ready, shoot, then idle
-     */
+
+    /** Stop everything. */
+    public static Command idle(ShooterSubsystem shooter) {
+        return Commands.sequence(shooter.idleAll(), shooter.stopLo4d());
+    }
+
+    /** Run feed rollers in reverse to clear a stuck ball. */
+    public static Command eject(ShooterSubsystem shooter) {
+        return Commands.sequence(shooter.ejectFeed(), shooter.ejectLo4d());
+    }
+
+    /** Flywheel and feed to passing speed/power. */
+    public static Command pass(ShooterSubsystem shooter) {
+        return shooter.passAll();
+    }
+
+    // ===== SEQUENCES =====
+
+    // Auto shoot: rev -> wait for speed -> feed -> wait for ball to clear -> stop.
+    // Flywheel has to be at speed first or the shot will be short.
     public static Command shootSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
-            Commands.runOnce(() -> System.out.println("Starting shoot sequence")),
-            shooter.shoot(),           // Command max velocity immediately
-            shooter.waitUntilReady(),  // Wait until motors actually reach speed
-            Commands.waitSeconds(0.5), // Hold at speed while fuel fires
-            shooter.idle(),
-            Commands.runOnce(() -> System.out.println("Complete shoot sequence"))
-        ).withTimeout(3.0)
-         .withName("CompleteShootSequence");
+            shooter.readyFlywheel(),
+            shooter.waitUntilFlywheelReady(),
+            shooter.startFeeding(),
+            shooter.startLo4d(),
+            Commands.waitSeconds(0.5),
+            shooter.idleAll()
+        ).withTimeout(4.0)
+         .withName("ShootSequence");
     }
-    
-    /**
-     * Quick shoot - assumes shooter is already revved
-     */
+
+    /** Skips the flywheel wait. Only use when flywheel is already at speed. */
     public static Command quickShoot(ShooterSubsystem shooter) {
         return Commands.sequence(
-            shooter.shoot(),
+            shooter.readyFlywheel(),
+            shooter.startFeeding(),
+            shooter.startLo4d(),
             Commands.waitSeconds(0.5),
-            shooter.idle()
+            shooter.idleAll()
         ).withName("QuickShoot");
     }
-    
-    /**
-     * Passing sequence — spin to pass speed, wait for ready, fire, then idle.
-     * Tune PASS_VELOCITY and FLYWHEEL_PASS_VELOCITY in ShooterConstants.
-     * See docs/SHOOTER_TUNING.md for guidance.
-     */
+
+    /** Pass: flywheel and feed start together, wait, then stop. */
     public static Command passSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
-            Commands.runOnce(() -> System.out.println("Starting pass sequence")),
-            shooter.pass(),
-            shooter.waitUntilReady(),
-            Commands.waitSeconds(0.5),
-            shooter.idle(),
-            Commands.runOnce(() -> System.out.println("Pass complete"))
+            shooter.passAll(),
+            Commands.waitSeconds(1.0),
+            shooter.idleAll()
         ).withTimeout(3.0)
          .withName("PassSequence");
     }
 
-    /**
-     * Emergency eject sequence - eject for specified duration then idle
-     */
+    /** Reverse feed rollers to clear a stuck ball. Flywheel stays off. */
     public static Command ejectSequence(ShooterSubsystem shooter) {
         return Commands.sequence(
-            Commands.runOnce(() -> System.out.println("Starting Eject Sequence")),
-            shooter.eject(),
-            Commands.waitSeconds(0.5),
-            shooter.idle(),
-            Commands.runOnce(() -> System.out.println("Ending Eject Sequence"))
+            shooter.ejectFeed(),
+            shooter.ejectLo4d(),
+            Commands.waitSeconds(0.75),
+            shooter.idleAll()
         ).withName("EjectSequence");
     }
-    
-    /**
-     * Smart shoot - only revs if not already ready
-     */
+
+    /** If flywheel is at speed, just feed. Otherwise does the full shoot sequence. */
     public static Command smartShoot(ShooterSubsystem shooter) {
-    return Commands.either(
-        // If already ready, just shoot
-        quickShoot(shooter),
-        // Otherwise, do full sequence
-        shootSequence(shooter), 
-        // Condition: is shooter already at target velocity?
-        shooter::atTargetVelocity
-   ).withName("SmartShoot");
-}
-    /**
-     * Rev and hold - keeps shooter at ready state indefinitely
-     
-    public static Command revAndHold(ShooterSubsystem shooter) {
-        return Commands.sequence(
-            shooter.revUp(),
-            shooter.waitUntilReady()
-        ).andThen(Commands.run(() -> {}, shooter))  // Hold state
-        .withName("RevAndHold");
-    }*/
-    
-    /**
-     * Toggle shooter between idle and ready
-     */
-   /* public static Command toggle(ShooterSubsystem shooter) {
         return Commands.either(
-            shooter.idle(),
-            shooter.revUp(),
-            () -> shooter.getState() != ShooterSubsystem.ShooterState.IDLE
-        ).withName("ToggleShooter");
-    }*/
-
-   
-   
-   /*  private Command alignAndShoot() {
-        return Commands.sequence(
-            alignToTag.until(() -> limelight.isAligned() && limelight.atTargetDistance)
-                .withTimeout(3.0)
-
-        new ParallelCommandGroup(
-                alignToTag,
-                shooterSubsystem.revUpAndWait()
-            ).withTimeout(3.0),
-
-            Commands.parallel(
-                alignToTag,
-                ShooterCommands.quickShoot(shooterSubsystem)
-            )
-        ).withName("Align and Shoot");
-    }*/
-
-   
+            quickShoot(shooter),
+            shootSequence(shooter),
+            shooter::isFlywheelReady
+        ).withName("SmartShoot");
+    }
 }

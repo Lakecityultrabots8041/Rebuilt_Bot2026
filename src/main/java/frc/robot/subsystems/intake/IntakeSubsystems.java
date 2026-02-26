@@ -1,11 +1,15 @@
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.NeutralOut;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,13 +19,18 @@ public class IntakeSubsystems extends SubsystemBase {
 
     private final TalonFX intakeMotor;
     private final TalonFX pivotMotor;
-    private final VelocityTorqueCurrentFOC velocityRequest;
+    // Roller uses DutyCycleOut (simple % power, no PID)
+    private final DutyCycleOut intakeRequest    = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest;
+    private final NeutralOut neutralRequest = new NeutralOut();
+
+    // Pivot position signal, refreshed non-blocking in periodic()
+    private final StatusSignal<Angle> pivotPositionSig;
 
     private IntakeState intakeState = IntakeState.IDLE;
     private IntakeState lastIntakeState = null;
     private PivotState pivotState = PivotState.STOW;
-    private PivotState lastPivotState = null;
+    private PivotState lastPivotState = PivotState.STOW;
     private boolean cachedPivotAtTarget = false;
 
     public enum PivotState {
@@ -40,14 +49,15 @@ public class IntakeSubsystems extends SubsystemBase {
     public IntakeSubsystems() {
         intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE);
         pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
-        velocityRequest = new VelocityTorqueCurrentFOC(0);
         motionMagicRequest = new MotionMagicVoltage(0);
 
+        // Intake roller config (12:1 gearbox)
         var intakeConfigs = new TalonFXConfiguration();
-        intakeConfigs.Slot0.kP = 0.1;
-        intakeConfigs.Slot0.kV = 0.1;
-        intakeConfigs.Slot0.kS = 0.1;
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        intakeConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+        intakeConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.INTAKE_STATOR_CURRENT_LIMIT;
+        intakeConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+        intakeConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.INTAKE_SUPPLY_CURRENT_LIMIT;
 
         var pivotConfigs = new TalonFXConfiguration();
         pivotConfigs.Slot0.kP = IntakeConstants.kP;
@@ -77,37 +87,41 @@ public class IntakeSubsystems extends SubsystemBase {
         intakeMotor.getConfigurator().apply(intakeConfigs);
         pivotMotor.getConfigurator().apply(pivotConfigs);
 
-        // Put the arm in starting config -> That way the pivot encoder is set to stow position everytime.
-        // The arm must be physically placed at stow before powering on (required for legal start config).
-        // This tells Motion Magic where the arm is so it can hold and move correctly from boot.
+        // Arm must be physically at stow before powering on.
+        // This tells the motor that the current position is stow (position 0).
         pivotMotor.setPosition(IntakeConstants.STOW_POSITION);
+
+        // Pivot position updates at 50 Hz (every 20 ms)
+        pivotPositionSig = pivotMotor.getPosition();
+        pivotPositionSig.setUpdateFrequency(50);
     }
 
     @Override
     public void periodic() {
-        // Intake motor — only send on state change
+        // Intake motor only updates on state change
         if (intakeState != lastIntakeState) {
             switch (intakeState) {
-                case INTAKING -> setIntakeVelocity(IntakeConstants.INTAKE_VELOCITY);
-                case EJECTING -> setIntakeVelocity(IntakeConstants.EJECT_VELOCITY);
-                case IDLE -> setIntakeVelocity(IntakeConstants.IDLE_VELOCITY);
+                case INTAKING -> setIntakePower(IntakeConstants.INTAKE_POWER);
+                case EJECTING -> setIntakePower(IntakeConstants.EJECT_POWER);
+                case IDLE     -> setIntakePower(0.0);
             }
             lastIntakeState = intakeState;
         }
 
-        // Pivot motor — Motion Magic positions, only send on state change
+        // Pivot motor only updates on state change
         if (pivotState != lastPivotState) {
             switch (pivotState) {
                 case STOW -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
                 case INTAKE -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
                 case TRAVEL -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
-                case IDLE -> {}
+                case IDLE -> pivotMotor.setControl(neutralRequest);
             }
             lastPivotState = pivotState;
         }
 
-        // Telemetry — read position once, use for both display and target check
-        double currentPivotPosition = pivotMotor.getPosition().getValueAsDouble();
+        // Non-blocking fetch of pivot position
+        BaseStatusSignal.waitForAll(0, pivotPositionSig);
+        double currentPivotPosition = pivotPositionSig.getValueAsDouble();
         cachedPivotAtTarget = isPivotAtTarget(currentPivotPosition);
         SmartDashboard.putString("Intake/State", intakeState.toString());
         SmartDashboard.putString("Intake/Pivot State", pivotState.toString());
@@ -117,46 +131,56 @@ public class IntakeSubsystems extends SubsystemBase {
 
     // ===== INTAKE COMMANDS =====
     public Command intake() {
-        return Commands.runOnce(() -> intakeState = IntakeState.INTAKING)
+        return runOnce(() -> intakeState = IntakeState.INTAKING)
             .withName("RunningIntakeMotor");
     }
 
     public Command eject() {
-        return Commands.runOnce(() -> intakeState = IntakeState.EJECTING)
+        return runOnce(() -> intakeState = IntakeState.EJECTING)
             .withName("ReversingIntakeMotor");
     }
 
     public Command idle() {
-        return Commands.runOnce(() -> intakeState = IntakeState.IDLE)
+        return runOnce(() -> intakeState = IntakeState.IDLE)
             .withName("StoppingIntakeMotor");
     }
 
     // ===== PIVOT COMMANDS =====
     public Command pivotToStow() {
-        return Commands.runOnce(() -> pivotState = PivotState.STOW)
+        return runOnce(() -> pivotState = PivotState.STOW)
             .withName("PivotToStow");
     }
 
     public Command pivotToIntake() {
-        return Commands.runOnce(() -> pivotState = PivotState.INTAKE)
+        return runOnce(() -> pivotState = PivotState.INTAKE)
             .withName("PivotToIntake");
     }
 
     public Command pivotToTravel() {
-        return Commands.runOnce(() -> pivotState = PivotState.TRAVEL)
+        return runOnce(() -> pivotState = PivotState.TRAVEL)
             .withName("PivotToTravel");
+    }
+
+    /** Release the pivot motor so the arm can bounce freely on the bumper. */
+    public Command pivotIdle() {
+        return runOnce(() -> pivotState = PivotState.IDLE)
+            .withName("PivotIdle");
     }
 
     // ===== WAIT COMMANDS =====
     public Command waitUntilPivotAtTarget() {
-        return Commands.waitUntil(() -> isPivotAtTarget(pivotMotor.getPosition().getValueAsDouble()))
+        return Commands.waitUntil(() -> isPivotAtTarget(pivotPositionSig.getValueAsDouble()))
             .withTimeout(IntakeConstants.PIVOT_TIMEOUT_SECONDS)
             .withName("WaitForPivot");
     }
 
     // ===== HELPER METHODS =====
-    private void setIntakeVelocity(double velocityRPS) {
-        intakeMotor.setControl(velocityRequest.withVelocity(velocityRPS));
+    private void setIntakePower(double power) {
+        if (power == 0.0) {
+            intakeMotor.setControl(neutralRequest);
+        } else {
+            intakeMotor.setControl(intakeRequest.withOutput(power));
+        }
     }
 
     public boolean isPivotAtTarget(double currentPosition) {
