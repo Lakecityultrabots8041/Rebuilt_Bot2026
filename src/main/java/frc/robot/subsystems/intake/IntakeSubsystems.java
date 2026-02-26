@@ -94,6 +94,12 @@ public class IntakeSubsystems extends SubsystemBase {
         // Pivot position updates at 50 Hz (every 20 ms)
         pivotPositionSig = pivotMotor.getPosition();
         pivotPositionSig.setUpdateFrequency(50);
+
+        // Disable unused status frames to reduce CAN traffic.
+        // Pivot keeps its position signal at 50 Hz, everything else gets disabled.
+        // Intake roller has no signals we read, so all frames get disabled.
+        pivotMotor.optimizeBusUtilization();
+        intakeMotor.optimizeBusUtilization();
     }
 
     @Override

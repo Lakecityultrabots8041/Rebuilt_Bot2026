@@ -108,6 +108,14 @@ public class ShooterSubsystem extends SubsystemBase {
 
         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelVelocitySig);
         BaseStatusSignal.setUpdateFrequencyForAll(50,  flywheelVoltageSig, flywheelCurrentSig);
+
+        // Disable unused status frames to reduce CAN traffic.
+        // Only the signals we subscribed to above stay at their set rates.
+        // Motors we never read signals from get ALL frames disabled.
+        flywheelMotor.optimizeBusUtilization();
+        actFloor.optimizeBusUtilization();
+        actCeiling.optimizeBusUtilization();
+        actUpper.optimizeBusUtilization();
     }
 
     @Override

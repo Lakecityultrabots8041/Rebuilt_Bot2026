@@ -14,16 +14,16 @@ public final class ShooterConstants {
     public static final int Lo4d3r     = 8; // 12:1 gearbox reduction motor
     public static final int FLYWHEEL_MOTOR = 6;
 
-    // ===== Feed roller power (0.0 to 100.0) =====
-    // DutyCycleOut, no PID. If the ball stalls, raise it. If it slams too hard, lower it.
-    // Full power needed to push multiple balls through without jamming.
-    public static final double FEED_POWER  =  50.0;
-    public static final double EJECT_POWER = -40.0; // Negative = reverse
-    public static final double PASS_POWER  =  50.0;
+    // ===== Feed roller power (-1.0 to 1.0) =====
+    // DutyCycleOut uses -1.0 to 1.0 scale. 0.5 = 50% power, 1.0 = 100% power.
+    // If the ball stalls, raise it. If it slams too hard, lower it.
+    public static final double FEED_POWER  =  0.50;
+    public static final double EJECT_POWER = -0.40; // Negative = reverse
+    public static final double PASS_POWER  =  0.50;
 
-    //===Lo4d3r power=====
-    public static final double LO4D3R_POWER = 80.0;
-    public static final double LO4D3R_EJECT_POWER = -50.0;
+    // ===== Lo4d3r power =====
+    public static final double LO4D3R_POWER = 0.80;
+    public static final double LO4D3R_EJECT_POWER = -0.50;
 
     // ===== Flywheel speed presets =====
     // RPS = Rotations Per Second. How fast the flywheel spins.
@@ -45,16 +45,19 @@ public final class ShooterConstants {
     // Stator = motor torque. Supply = battery draw.
 
     // Flywheel draws high current during spin-up, then drops at steady state.
-    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 80.0;
+    // Stator maxed to 120A for full torque during spin-up.
+    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 120.0;
     public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60.0;
 
     // Feed rollers (floor and ceiling, no gearbox reduction).
-    public static final double FEED_STATOR_CURRENT_LIMIT = 80.0;
+    // Stator maxed to 120A so they never stall pushing balls through.
+    public static final double FEED_STATOR_CURRENT_LIMIT = 120.0;
     public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
 
-    // Upper feed roller (12:1 gearbox, 4 belts). Needs same current as
-    // floor/ceiling because the 4 belts add significant mechanical load.
-    public static final double UPPER_STATOR_CURRENT_LIMIT = 80.0;
+    // Upper feed roller (12:1 gearbox, 4 belts). Needs high current
+    // because the 4 belts add significant mechanical load.
+    // Stator maxed to 120A for the same reason.
+    public static final double UPPER_STATOR_CURRENT_LIMIT = 120.0;
     public static final double UPPER_SUPPLY_CURRENT_LIMIT = 60.0;
 
     // ===== Tolerances =====
