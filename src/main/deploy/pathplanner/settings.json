@@ -3,12 +3,12 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Red Side Paths",
-    "Blue Side Paths"
+    "Captian Pick Paths",
+    "Eli's Paths",
+    "1st Pick Paths"
   ],
   "autoFolders": [
-    "Red Side Autons",
-    "Blue Side Autons"
+    "Captian pick Autons"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,

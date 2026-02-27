@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.022,
-        "y": 3.16
+        "x": 0.4421112696148347,
+        "y": 0.6256633380884444
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9048035714285714,
-        "y": 3.2575714285714286
+        "x": 1.3219400855920111,
+        "y": 1.7642653352353794
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Intake Balls"
     },
     {
       "anchor": {
-        "x": 1.7104464285714283,
-        "y": 3.322
+        "x": 2.758131241084165,
+        "y": 3.9767760342368046
       },
       "prevControl": {
-        "x": 2.5688571428571425,
-        "y": 3.2251785714285712
+        "x": 1.9947503566333806,
+        "y": 2.864051355206848
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Blue Side Paths",
+  "folder": "Captian Pick Paths",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": 33.179
+    "velocity": 0,
+    "rotation": -90.64374571417535
   },
   "useDefaultConstraints": true
 }

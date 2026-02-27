@@ -7,43 +7,38 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid Backup"
+            "pathName": "Mid to Outpost"
           }
         },
         {
-          "type": "wait",
+          "type": "sequential",
           "data": {
-            "waitTime": 1.5
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Pivot To Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Start Intake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "MB Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "End Intake"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Pivot to Intake"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 9.0
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "MB Intake to Shoot"
+            "pathName": "Intake Balls at Outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost to Shoot"
           }
         },
         {
@@ -56,6 +51,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Blue Side Autons",
+  "folder": "Captian pick Autons",
   "choreoAuto": false
 }

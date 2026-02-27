@@ -54,6 +54,7 @@ public class RobotContainer {
     private final LimelightSubsystem limelight = new LimelightSubsystem();
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
+    private final Limelight_Move alignCommand = new Limelight_Move(drivetrain, limelight, null);
 
     private final LEDSubsystem ledSubsystem;
 
@@ -90,6 +91,16 @@ public class RobotContainer {
         return new Limelight_Move(drivetrain, limelight, VisionConstants::getHubTags);
     }
 
+    private Limelight_Move createAutoTowerAlign() {
+        System.out.println("Aligning to tower...");
+        return new Limelight_Move(drivetrain, limelight, VisionConstants::getTowerTags);
+    }
+
+    private Limelight_Move createAutoOutpostAlign() {
+        System.out.println("Aligning to outpost...");
+        return new Limelight_Move(drivetrain, limelight, VisionConstants::getOutpostTags);
+    }
+
     public RobotContainer() {
         limelight.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
         limelight.setVisionMeasurementConsumer(
@@ -106,6 +117,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+
+
         // =====Intake Commands=====
         NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
@@ -115,6 +128,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
         NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
         NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
+
+        // =====Vision Commands=====
+        NamedCommands.registerCommand("Align To Hub", createAutoHubAlign());
+        NamedCommands.registerCommand("Align To Tower", createAutoTowerAlign());
+        NamedCommands.registerCommand("Align To Outpost", createAutoOutpostAlign());
 
         // LEDs react to subsystem states automatically, no commands needed
         ledSubsystem = new LEDSubsystem(

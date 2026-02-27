@@ -16,6 +16,7 @@ public final class ShooterConstants {
 
     // ===== Feed roller power (-1.0 to 1.0) =====
     // DutyCycleOut uses -1.0 to 1.0 scale. 0.5 = 50% power, 1.0 = 100% power.
+    //I told you it was between -1 and 1.
     // If the ball stalls, raise it. If it slams too hard, lower it.
     public static final double FEED_POWER  =  0.50;
     public static final double EJECT_POWER = -0.40; // Negative = reverse
@@ -68,7 +69,7 @@ public final class ShooterConstants {
     // Flywheel speed is adjusted based on distance from the target (from Limelight).
     // Feed rollers always use FEED_POWER regardless of distance.
     private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
-    private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
+    private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90, 105};
 
     /** Returns flywheel speed (RPS) for a given distance in meters. */
     public static double getSpeedForDistance(double meters) {

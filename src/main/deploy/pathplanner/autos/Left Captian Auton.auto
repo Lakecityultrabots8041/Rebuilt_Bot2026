@@ -5,15 +5,27 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Pivot To Travel"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Blue Bump Right"
+            "pathName": "Left to Outpost"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 5.0
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost to Shoot"
           }
         },
         {
@@ -21,23 +33,11 @@
           "data": {
             "name": "AlignAndShoot"
           }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "BBR to Climb"
-          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Blue Side Autons",
+  "folder": "Captian pick Autons",
   "choreoAuto": false
 }

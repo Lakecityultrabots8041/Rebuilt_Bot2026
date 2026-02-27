@@ -9,7 +9,7 @@
       "prevControl": null,
       "nextControl": {
         "x": 1.2274158214506716,
-        "y": 0.8532670833665682
+        "y": 0.8532670833665681
       },
       "isLocked": false,
       "linkedName": null
@@ -45,10 +45,10 @@
     "rotation": -90.17153978677626
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Eli's Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -91.26671691597306
+    "rotation": -91.26671691597308
   },
   "useDefaultConstraints": true
 }
