@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.4087874465049923,
-        "y": 0.6386019971469341
+        "x": 2.5769900142653355,
+        "y": 0.6256633380884444
       },
       "prevControl": {
-        "x": 2.8228245363766047,
-        "y": 2.152425106990014
+        "x": 2.9910271041369483,
+        "y": 2.1394864479315245
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -91.4320961841646
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Captian Pick Paths",

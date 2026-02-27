@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4087874465049923,
-        "y": 0.6386019971469341
+        "x": 2.5769900142653355,
+        "y": 0.6256633380884444
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8136091298145498,
-        "y": 0.6256633380884467
+        "x": 1.981811697574893,
+        "y": 0.612724679029957
       },
       "isLocked": false,
       "linkedName": "Mid to Outpost"
@@ -48,7 +48,7 @@
   "folder": "Captian Pick Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -91.4320961841646
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

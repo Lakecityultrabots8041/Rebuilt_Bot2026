@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.534450784593438,
-        "y": 2.566462196861627
+        "x": 3.508573466476462,
+        "y": 0.6256633380884444
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.210984308131241,
-        "y": 2.035977175463623
+        "x": 2.9133951497860195,
+        "y": 0.612724679029957
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5769900142653355,
+        "x": 0.4421112696148347,
         "y": 0.6256633380884444
       },
       "prevControl": {
-        "x": 2.9910271041369483,
-        "y": 1.233780313837375
+        "x": 0.6921112696148347,
+        "y": 0.6256633380884444
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Mid to Outpost"
+      "linkedName": "Intake Balls"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -90.64374571417535
   },
   "reversed": false,
   "folder": "Captian Pick Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.55090397921857
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }
