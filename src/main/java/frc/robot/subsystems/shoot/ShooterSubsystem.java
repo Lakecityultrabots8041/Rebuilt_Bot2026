@@ -67,7 +67,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem() {
         actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR,     ShooterConstants.CANIVORE);
         actCeiling    = new TalonFX(ShooterConstants.ACT_CEILING,   ShooterConstants.CANIVORE);
-        actUpper      = new TalonFX(ShooterConstants.Lo4d3r,     ShooterConstants.CANIVORE);
+        actUpper      = new TalonFX(ShooterConstants.LO4D3R,     ShooterConstants.CANIVORE);
         flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
 
         // Floor + ceiling config (direct drive)
