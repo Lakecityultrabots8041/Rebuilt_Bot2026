@@ -244,15 +244,18 @@ Pose estimation required.
 VISION INTEGRATION
 ===============================================================================
 
-Limelight 4  
-NetworkTables key: "limelight-april"
+Two Limelight 4 cameras:
+- Shooter camera: "limelight-april" (faces shooter side)
+- Intake camera: "limelight-intake" (faces intake side)
+
+LimelightSubsystem is parameterized by camera name and facing direction.
+Two instances created in RobotContainer: limelightShooter and limelightIntake.
+Both fuse poses into the CTRE swerve Kalman filter independently.
 
 Vision subsystem:
 - Encapsulates ALL NetworkTables access
-- Supports full simulation
+- Supports full simulation (rear camera gets 180-degree FOV offset)
 - Injects pose supplier/consumer via RobotContainer
-
-Vision fused into CTRE swerve Kalman filter.
 
 Never:
 - Access NetworkTables outside vision subsystem
@@ -300,7 +303,8 @@ CTRE SignalLogger:
 
 SmartDashboard publishes:
 - Shooter/State
-- Limelight/Has Target
+- limelight-april/Has Target (shooter camera)
+- limelight-intake/Has Target (intake camera)
 - Vision/Status
 
 Avoid console spam during matches.
@@ -352,8 +356,8 @@ KNOWN ISSUES (DO NOT IGNORE)
 ===============================================================================
 
 - Climber subsystem stubbed out
-- VisionConstants camera mounting values (height 25.125in, angle 0) are placeholders, must be measured
-- Shooter current limits are conservative starting values, tune at competition if needed
+- VisionConstants camera mounting values for both cameras (height 25.125in, angle 0) are placeholders, must be measured
+- Shooter stator current limits are at Phoenix 6 defaults (120A), should be lowered to ~80A before competition
 
 Do not assume these are production-ready.
 
@@ -382,6 +386,6 @@ If not FRC:
 ## Known Issues
 
 - Climber subsystem is stubbed out (empty files, commented out in RobotContainer)
-- `VisionConstants` camera mounting values (height 25.125in, angle 0) are placeholders, must be measured on robot
-- Shooter motors have NO current limits configured. Add stator and supply limits before competition.
+- `VisionConstants` camera mounting values for both cameras (height 25.125in, angle 0) are placeholders, must be measured on robot
+- Shooter stator current limits are at Phoenix 6 defaults (120A). Lower to ~80A before competition.
 - Fuel detection (FuelDetectionSubsystem, DriveToFuel, HAILO_TRAINING.md) removed, backed up externally. Restore if team makes states.

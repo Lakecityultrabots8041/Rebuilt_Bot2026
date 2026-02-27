@@ -51,7 +51,10 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final LimelightSubsystem limelight = new LimelightSubsystem();
+    // Shooter camera ("limelight-april"), faces the shooter side. Used for alignment and auto-aim.
+    private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-april", false);
+    // Intake camera ("limelight-intake"), faces the intake side. Provides rear vision and pose fusion.
+    private final LimelightSubsystem limelightIntake = new LimelightSubsystem("limelight-intake", true);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
 
@@ -69,35 +72,56 @@ public class RobotContainer {
 
     private final SendableChooser<Command> autoChooser;
 
-    // Command factories — each call returns a new instance
+    // Command factories -- each call returns a new instance.
+    // All alignment currently uses the shooter camera.
     private Limelight_Move createHubAlign() {
-        return new Limelight_Move(drivetrain, limelight,
+        return new Limelight_Move(drivetrain, limelightShooter,
             VisionConstants::getHubTags, () -> -controller.getLeftX());
     }
 
     private Limelight_Move createTowerAlign() {
-        return new Limelight_Move(drivetrain, limelight,
+        return new Limelight_Move(drivetrain, limelightShooter,
             VisionConstants::getTowerTags, () -> -controller.getLeftX());
     }
 
     private Limelight_Move createOutpostAlign() {
-        return new Limelight_Move(drivetrain, limelight,
+        return new Limelight_Move(drivetrain, limelightShooter,
             VisionConstants::getOutpostTags, () -> -controller.getLeftX());
     }
 
+    // Auto (no driver input) factories for PathPlanner named commands
     private Limelight_Move createAutoHubAlign() {
-        System.out.println("Aligning to hub...");
-        return new Limelight_Move(drivetrain, limelight, VisionConstants::getHubTags);
+        return new Limelight_Move(drivetrain, limelightShooter, VisionConstants::getHubTags);
+    }
+
+    private Limelight_Move createAutoOutpostAlign() {
+        return new Limelight_Move(drivetrain, limelightShooter, VisionConstants::getOutpostTags);
+    }
+
+    private Limelight_Move createAutoTowerAlign() {
+        return new Limelight_Move(drivetrain, limelightShooter, VisionConstants::getTowerTags);
+    }
+
+    private Limelight_Move createAutoTrenchAlign() {
+        return new Limelight_Move(drivetrain, limelightShooter, VisionConstants::getTrenchTags);
     }
 
     public RobotContainer() {
-        limelight.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
-        limelight.setVisionMeasurementConsumer(
+        // Both cameras fuse poses into the drivetrain Kalman filter for better localization
+        limelightShooter.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
+        limelightShooter.setVisionMeasurementConsumer(
+            (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
+
+        limelightIntake.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
+        limelightIntake.setVisionMeasurementConsumer(
             (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
         autoAimPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        // PathPlanner named commands
+        // PathPlanner named commands - vision alignment
         NamedCommands.registerCommand("Align Hub", createAutoHubAlign());
+        NamedCommands.registerCommand("Align Outpost", createAutoOutpostAlign());
+        NamedCommands.registerCommand("Align Tower", createAutoTowerAlign());
+        NamedCommands.registerCommand("Align Trench", createAutoTrenchAlign());
 
         // =====Shooter Name Commands=====
         NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
@@ -106,6 +130,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
         NamedCommands.registerCommand("AlignAndShoot",
             Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+        NamedCommands.registerCommand("AlignOutpostAndShoot",
+            Commands.sequence(createAutoOutpostAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+        NamedCommands.registerCommand("AlignTowerAndShoot",
+            Commands.sequence(createAutoTowerAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         // =====Intake Commands=====
         NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
@@ -120,7 +148,7 @@ public class RobotContainer {
         ledSubsystem = new LEDSubsystem(
             () -> shooterSubsystem.isFlywheelReady()
                   && shooterSubsystem.getFeedState() == ShooterSubsystem.FeedState.FEEDING,
-            () -> autoAimEnabled && limelight.isTrackingHubTag(),
+            () -> autoAimEnabled && limelightShooter.isTrackingHubTag(),
             () -> autoAimEnabled,
             () -> intakeSubsystem.getState() == IntakeSubsystems.IntakeState.INTAKING
         );
@@ -140,9 +168,9 @@ public class RobotContainer {
                 double velocityX = currentDriveX;
                 double velocityY = currentDriveY;
 
-                if (autoAimEnabled && limelight.isTrackingHubTag()) {
+                if (autoAimEnabled && limelightShooter.isTrackingHubTag()) {
                     double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
-                    double targetHeading = currentHeading - Math.toRadians(limelight.getHorizontalOffset());
+                    double targetHeading = currentHeading - Math.toRadians(limelightShooter.getHorizontalOffset());
 
                     double rawOutput = autoAimPID.calculate(currentHeading, targetHeading);
                     double clampedOutput = MathUtil.clamp(rawOutput,
@@ -152,7 +180,7 @@ public class RobotContainer {
 
                     // Pre-spin shooter to distance-based velocity only when trigger is not held.
                     // When trigger is held, shooter is already firing — don't fight it.
-                    double distance = limelight.getDistanceMeters();
+                    double distance = limelightShooter.getDistanceMeters();
                     if (distance > 0 && !controller.rightTrigger().getAsBoolean()) {
                         shooterSubsystem.setAutoAimSpeed(
                             ShooterConstants.getSpeedForDistance(distance));
@@ -222,7 +250,7 @@ public class RobotContainer {
         controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
 
         // Demo: hold DPad Left to follow any visible AprilTag at safe distance
-        controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelight));
+        controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));
     }
 
     /**
@@ -241,7 +269,7 @@ public class RobotContainer {
 
     public void updateDriverDashboard() {
         boolean shooterReady = shooterSubsystem.atTargetVelocity() && shooterSubsystem.atFlywheelTargetVelocity();
-        boolean visionLocked = autoAimEnabled && limelight.isTrackingHubTag();
+        boolean visionLocked = autoAimEnabled && limelightShooter.isTrackingHubTag();
         boolean intakeDown   = intakeSubsystem.getPivotState() == IntakeSubsystems.PivotState.INTAKE
                                && intakeSubsystem.isPivotAtTarget();
 
@@ -252,7 +280,8 @@ public class RobotContainer {
         SmartDashboard.putBoolean("Driver/Intake Down",    intakeDown);
     }
 
-    public LimelightSubsystem getLimelight() { return limelight; }
+    public LimelightSubsystem getLimelightShooter() { return limelightShooter; }
+    public LimelightSubsystem getLimelightIntake() { return limelightIntake; }
     public ShooterSubsystem getShooter() { return shooterSubsystem; }
     public IntakeSubsystems getIntake() { return intakeSubsystem; }
 

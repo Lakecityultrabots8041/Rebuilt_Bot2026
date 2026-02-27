@@ -9,9 +9,9 @@ public final class ShooterConstants {
     public static final String CANIVORE_NAME = "Jeffery";
     public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
 
-    public static final int ACT_FLOOR     = 5;
-    public static final int ACT_CEILING   = 7;
-    public static final int Lo4d3r     = 8; // 12:1 gearbox reduction motor
+    public static final int ACT_FLOOR = 5;
+    public static final int ACT_CEILING = 7;
+    public static final int LO4D3R = 8; // 12:1 gearbox reduction motor
     public static final int FLYWHEEL_MOTOR = 6;
 
     // ===== Feed roller power (-1.0 to 1.0) =====

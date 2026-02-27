@@ -229,7 +229,6 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command passAll() {
         return runOnce(() -> {
             flywheelState = FlywheelState.PASSING;
-            Commands.waitSeconds(0.5);
             feedState     = FeedState.PASSING;
             lo4dState     = FeedState.PASSING;
         }).withName("PassAll");
@@ -241,7 +240,6 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command shoot() {
         return runOnce(() -> {
             flywheelState = FlywheelState.READY;
-            Commands.waitSeconds(0.5);
             feedState     = FeedState.FEEDING;
             lo4dState     = FeedState.FEEDING;
         }).withName("Shoot");
@@ -316,11 +314,11 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
-    private void setLo4dPower(double POWER) {
-        if (POWER == 0.0) {
-            actUpper.setControl(feedRequest.withOutput(-POWER));
+    private void setLo4dPower(double power) {
+        if (power == 0.0) {
+            actUpper.setControl(neutralRequest);
         } else {
-            actUpper.setControl(feedRequest.withOutput(-POWER));
+            actUpper.setControl(feedRequest.withOutput(-power));
         }
     }
 

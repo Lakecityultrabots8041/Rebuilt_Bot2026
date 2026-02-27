@@ -285,7 +285,9 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 | `Shoot` | Flywheel to READY and feed on simultaneously |
 | `Idle Shooter` | Everything off |
 | `Pass` | Flywheel and feed to pass speeds simultaneously |
-| `AlignAndShoot` | Limelight hub align, then full shoot sequence |
+| `AlignAndShoot` | Hub align (shooter camera), then full shoot sequence |
+| `AlignOutpostAndShoot` | Outpost align (shooter camera), then full shoot sequence |
+| `AlignTowerAndShoot` | Tower align (shooter camera), then full shoot sequence |
 
 ---
 
@@ -330,14 +332,14 @@ All shooter motors have current limits configured in `ShooterConstants.java`. Th
 
 **Supply current** controls how much the motor draws from the battery. Prevents brownouts and breaker trips during a match.
 
+**WARNING:** The stator limits are currently at 120A, which is the Phoenix 6 default. These should be lowered before competition. 80A stator is a good starting point for most mechanisms. If spin-up feels sluggish at 80A, raise it back. If you see brownouts, lower supply current.
+
 ### Flywheel
 
 | Constant | Default | What it does |
 |---|---|---|
-| `FLYWHEEL_STATOR_CURRENT_LIMIT` | 80 A | Max torque during spin-up and operation |
+| `FLYWHEEL_STATOR_CURRENT_LIMIT` | 120 A | Max torque during spin-up and operation. **Lower to 80A before comp.** |
 | `FLYWHEEL_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw, prevents brownouts |
-
-The flywheel draws high current during spin-up (reaching 80A briefly) then drops to 10-30A at steady state. If spin-up feels sluggish, raise stator to 100A. If you see brownouts when shooting, lower supply to 50A.
 
 Watch `Flywheel/Current` on SmartDashboard. At steady state (flywheel at target speed), sustained current over 40A means something is wrong, either the PID is fighting itself or there is mechanical resistance.
 
@@ -345,29 +347,27 @@ Watch `Flywheel/Current` on SmartDashboard. At steady state (flywheel at target 
 
 | Constant | Default | What it does |
 |---|---|---|
-| `FEED_STATOR_CURRENT_LIMIT` | 80 A | Max torque for floor and ceiling rollers |
+| `FEED_STATOR_CURRENT_LIMIT` | 120 A | Max torque for floor and ceiling rollers. **Lower to 80A before comp.** |
 | `FEED_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw |
 
 ### Upper Feed Roller (12:1 gearbox, 4 belts)
 
 | Constant | Default | What it does |
 |---|---|---|
-| `UPPER_STATOR_CURRENT_LIMIT` | 80 A | Max torque. Needs headroom to overcome gearbox + belt drag on startup. |
+| `UPPER_STATOR_CURRENT_LIMIT` | 120 A | Max torque. **Lower to 80A before comp.** Needs headroom to overcome gearbox + belt drag on startup. |
 | `UPPER_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw |
 
-The upper roller has a 12:1 gearbox driving 4 belts. It needs full current headroom to break through startup friction. If the motor struggles to start, raise stator. If it runs hot during sustained use, lower it.
+The upper roller has a 12:1 gearbox driving 4 belts. It needs current headroom to break through startup friction. If the motor struggles to start at 80A, raise stator back up. If it runs hot during sustained use, lower it.
 
 ### How these compare to the rest of the robot
 
-| Mechanism | Stator Limit | Supply Limit |
-|---|---|---|
-| Shooter flywheel | 80 A | 60 A |
-| Shooter feed (floor + ceiling) | 80 A | 60 A |
-| Shooter feed (upper, 12:1) | 80 A | 60 A |
-| Intake pivot | 60 A | 35 A |
-| Drivetrain (per module) | 80 A | 60 A |
-
-Every motor on the robot has explicit current limits. Phoenix 6 defaults without limits are 120A stator and 70A supply.
+| Mechanism | Stator Limit | Supply Limit | Notes |
+|---|---|---|---|
+| Shooter flywheel | 120 A | 60 A | Lower stator before comp |
+| Shooter feed (floor + ceiling) | 120 A | 60 A | Lower stator before comp |
+| Shooter feed (upper, 12:1) | 120 A | 60 A | Lower stator before comp |
+| Intake pivot | 60 A | 35 A | Already tuned |
+| Drivetrain (per module) | 80 A | 60 A | Set by TunerConstants |
 
 ---
 
