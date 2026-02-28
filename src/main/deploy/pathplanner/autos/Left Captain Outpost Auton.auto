@@ -7,19 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid Backup"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Pivot To Intake"
+            "pathName": "Left to Trench"
           }
         },
         {
@@ -31,31 +19,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MB Intake"
+            "pathName": "Intake Fuel at Outpost"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "End Intake"
+            "name": "Idle Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "MB Intake to Shoot"
+            "pathName": "Outpost to Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "AlignAndShoot"
+            "name": "AlignHubAndShoot"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Blue Side Autons",
+  "folder": "Captian Outpost Autons",
   "choreoAuto": false
 }

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.01555357142857,
-        "y": 4.018803571428571
+        "x": 3.509,
+        "y": 4.029
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.809178571428571,
-        "y": 3.9864107142857144
+        "x": 3.650898716119829,
+        "y": 5.9952068473609135
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 14.08046875,
-        "y": 4.018803571428571
+        "x": 0.4421112696148356,
+        "y": 7.120870185449359
       },
       "prevControl": {
-        "x": 13.238254464285713,
-        "y": 4.018803571428571
+        "x": 2.2794008559201138,
+        "y": 7.431398002853067
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Red Mid Backup"
+      "linkedName": "Start of Intake Depot"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Red Side Paths",
+  "folder": "Captian Depot Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

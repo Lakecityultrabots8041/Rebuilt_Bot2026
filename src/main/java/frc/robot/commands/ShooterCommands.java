@@ -11,8 +11,8 @@ public final class ShooterCommands {
     // ===== BASIC COMMANDS =====
 
     /** Spin flywheel to pre-rev speed. */
-    public static Command revUp(ShooterSubsystem shooter) {
-        return shooter.revFlywheel();
+    public static Command revUpFlywheel(ShooterSubsystem shooter) {
+       return Commands.sequence(shooter.revFlywheel(), shooter.waitUntilFlywheelReady());
     }
 
     /** Teleop trigger. Flywheel + feed start at the same time. For autos use shootSequence(). */

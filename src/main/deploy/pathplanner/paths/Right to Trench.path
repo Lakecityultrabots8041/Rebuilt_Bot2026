@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.49386590584366286,
-        "y": 0.6515406562055444
+        "x": 3.547,
+        "y": 5.516
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0335663338037167,
-        "y": 0.9491298145507643
+        "x": 2.097870185449358,
+        "y": 4.843189728958631
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.4993580599092833,
-        "y": 3.8085734664765862
+        "x": 2.4993580599144076,
+        "y": 0.6256633380884444
       },
       "prevControl": {
-        "x": 1.7747931526339622,
-        "y": 2.0747931526392103
+        "x": 1.075679029957203,
+        "y": 1.440462196861627
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -90.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Captian Outpost paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -90.0

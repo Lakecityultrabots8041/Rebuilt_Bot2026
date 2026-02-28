@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.647214285714286,
-        "y": 4.844821428571429
+        "x": 3.547,
+        "y": 5.516
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.00951388888889,
-        "y": 4.286944444444445
+        "x": 2.7193152639087015,
+        "y": 6.616262482168331
       },
       "isLocked": false,
-      "linkedName": "RedBumpRight"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 14.991517857142858,
-        "y": 4.26175
+        "x": 0.4550499286733236,
+        "y": 7.10793152639087
       },
       "prevControl": {
-        "x": 13.686805555555555,
-        "y": 4.8538194444444445
+        "x": 1.9559343794579167,
+        "y": 6.991483594864479
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Test"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Red Side Paths",
+  "folder": "Captian Depot Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -149.26451229807992
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

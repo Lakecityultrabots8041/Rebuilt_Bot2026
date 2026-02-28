@@ -124,12 +124,13 @@ public class RobotContainer {
         NamedCommands.registerCommand("Align Trench", createAutoTrenchAlign());
 
         // =====Shooter Name Commands=====
-        NamedCommands.registerCommand("Rev Shooter", ShooterCommands.revUp(shooterSubsystem));
+        NamedCommands.registerCommand("Rev Flywheel", ShooterCommands.revUpFlywheel(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
         NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
-        NamedCommands.registerCommand("AlignAndShoot",
-            Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
+        NamedCommands.registerCommand("Quick Shoot", ShooterCommands.quickShoot(shooterSubsystem));
+        NamedCommands.registerCommand("AlignHubAndShoot",
+            Commands.sequence(createAutoHubAlign().andThen(ShooterCommands.quickShoot(shooterSubsystem))));
         NamedCommands.registerCommand("AlignOutpostAndShoot",
             Commands.sequence(createAutoOutpostAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         NamedCommands.registerCommand("AlignTowerAndShoot",
@@ -153,7 +154,7 @@ public class RobotContainer {
             () -> intakeSubsystem.getState() == IntakeSubsystems.IntakeState.INTAKING
         );
 
-        autoChooser = AutoBuilder.buildAutoChooser("Blue Mid Backup Auto");
+        autoChooser = AutoBuilder.buildAutoChooser("SimplePath Auton");
         SmartDashboard.putData("Auton Mode", autoChooser);
 
         configureBindings();

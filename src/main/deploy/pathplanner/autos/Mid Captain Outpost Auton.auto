@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Mid to Trench"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Start Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Intake Fuel at Outpost"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Idle Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost to Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignHubAndShoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Captian Outpost Autons",
+  "choreoAuto": false
+}

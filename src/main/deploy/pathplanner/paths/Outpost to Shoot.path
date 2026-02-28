@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.9089821428571425,
-        "y": 4.1969642857142855
+        "x": 0.4421112696148347,
+        "y": 0.6256633380884444
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2519633838383846,
-        "y": 3.697165404040404
+        "x": 1.3219400855920111,
+        "y": 1.7642653352353794
       },
       "isLocked": false,
-      "linkedName": "MB Intake To Shoot"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.6106502525252533,
-        "y": 3.3135227272727277
+        "x": 2.758131241084165,
+        "y": 3.9767760342368046
       },
       "prevControl": {
-        "x": 2.051553030303031,
-        "y": 3.5368371212121215
+        "x": 1.9947503566333806,
+        "y": 2.864051355206848
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,19 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Rev Flywheel",
+      "waypointRelativePos": 0.35565052231719163,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Rev Flywheel"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -42,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -89.4437477729194
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Blue Side Paths",
+  "folder": "Captian Outpost paths",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": 0.0
+    "velocity": 0,
+    "rotation": -90.64374571417535
   },
   "useDefaultConstraints": true
 }
