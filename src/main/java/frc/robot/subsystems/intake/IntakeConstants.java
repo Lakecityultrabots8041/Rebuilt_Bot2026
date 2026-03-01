@@ -1,15 +1,10 @@
 package frc.robot.subsystems.intake;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 
 public class IntakeConstants {
 
     private IntakeConstants() {}
-
-    // ===== CAN Bus =====
-    public static final String CANIVORE_NAME = "Jeffery";
-    public static final CANBus CANIVORE = new CANBus(CANIVORE_NAME);
 
     // ===== CAN IDs =====
     public static final int INTAKE_MOTOR = 3;

@@ -17,7 +17,11 @@ public final class ShooterCommands {
 
     /** Teleop trigger. Flywheel + feed start at the same time. For autos use shootSequence(). */
     public static Command shoot(ShooterSubsystem shooter) {
-        return Commands.sequence(shooter.shoot(), shooter.startLo4d());
+        return Commands.sequence(shooter.shoot());
+    }
+
+    public static Command testShot(ShooterSubsystem shooter) {
+        return Commands.sequence(shooter.testDelayedShot());
     }
 
     /** Stop everything. */

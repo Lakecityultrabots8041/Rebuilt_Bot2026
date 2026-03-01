@@ -47,8 +47,8 @@ public class IntakeSubsystems extends SubsystemBase {
     }
 
     public IntakeSubsystems() {
-        intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR, IntakeConstants.CANIVORE);
-        pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR, IntakeConstants.CANIVORE);
+        intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR);
+        pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR);
         motionMagicRequest = new MotionMagicVoltage(0);
 
         // Intake roller config (12:1 gearbox)

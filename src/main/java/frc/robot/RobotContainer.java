@@ -216,8 +216,15 @@ public class RobotContainer {
         controller.back().whileTrue(createTowerAlign());
         controller.y().whileTrue(createOutpostAlign());
 
+        //TODO If wrong change back to normal
+        if (controller.povRight().getAsBoolean() == true) {
+            controller.rightTrigger().whileTrue(ShooterCommands.testShot(shooterSubsystem))
+                .onFalse(ShooterCommands.idle(shooterSubsystem));
+        } else {
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
+        }
+        
 
         // Right Trigger plan if we want auto align on shoot, 
         // Align to hub in parallel with spinning up, then confirm on target before firing                                                        
