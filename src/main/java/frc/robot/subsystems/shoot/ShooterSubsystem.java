@@ -341,7 +341,7 @@ public class ShooterSubsystem extends SubsystemBase {
         if (power == 0.0) {
             actUpper.setControl(neutralRequest);
         } else {
-            actUpper.setControl(feedRequest.withOutput(-power));
+            actUpper.setControl(feedRequest.withOutput(power));
         }
     }
 
