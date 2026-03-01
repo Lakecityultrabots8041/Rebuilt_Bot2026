@@ -44,6 +44,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Captian Depot Autons",
+  "folder": "Captian Autons",
   "choreoAuto": false
 }

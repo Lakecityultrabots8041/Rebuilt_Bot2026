@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 3.509,
-        "y": 4.028530670470756
+        "y": 4.029
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.6809258202567756,
-        "y": 2.1136091298145514
+        "x": 3.259023131298455,
+        "y": 4.025599247999256
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.4993580599144076,
-        "y": 0.6256633380884444
+        "x": 2.4613059033989266,
+        "y": 4.029
       },
       "prevControl": {
-        "x": 2.9004564907275316,
-        "y": 2.566462196861627
+        "x": 2.737137745974955,
+        "y": 4.010661896243291
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,19 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Rev Flywheel",
+      "waypointRelativePos": 0.033333333333333326,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Rev Flywheel"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -42,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.64374571417535
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Outpost paths",
+  "folder": "Shooting Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.64374571417535
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

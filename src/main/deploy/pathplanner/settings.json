@@ -3,13 +3,13 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Captian Depot Paths",
-    "Captian Outpost paths"
+    "Depot Paths",
+    "Shooting Paths",
+    "Outpost paths"
   ],
   "autoFolders": [
-    "Captian Depot Autons",
-    "Captian Outpost Autons",
-    "1st Pick Autons"
+    "1st Pick Autons",
+    "Captian Autons"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,

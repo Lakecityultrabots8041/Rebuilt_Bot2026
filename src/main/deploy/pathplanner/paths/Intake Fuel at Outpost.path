@@ -45,7 +45,7 @@
     "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Captian Outpost paths",
+  "folder": "Outpost paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -90.64374571417535

@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "Mid to Depot"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Start Intake"
@@ -13,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Trench to Outpost"
+            "pathName": "Intake Depot"
           }
         },
         {
@@ -25,7 +31,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Outpost to Shoot"
+            "pathName": "Depot to Shoot"
           }
         },
         {
@@ -38,6 +44,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Captian Outpost Autons",
+  "folder": "Captian Autons",
   "choreoAuto": false
 }
