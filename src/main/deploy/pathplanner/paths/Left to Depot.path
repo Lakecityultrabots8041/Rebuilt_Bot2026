@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 0.4421112696148356,
-        "y": 7.120870185449359
+        "x": 0.4421112696148347,
+        "y": 7.17262482168331
       },
       "prevControl": {
-        "x": 3.288616262482167,
-        "y": 7.84543509272468
+        "x": 3.288616262482166,
+        "y": 7.89718972895863
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Captian Depot Paths",
+  "folder": "Depot Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

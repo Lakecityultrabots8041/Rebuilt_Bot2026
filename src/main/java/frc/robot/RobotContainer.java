@@ -147,8 +147,6 @@ public class RobotContainer {
 
         // LEDs react to subsystem states automatically, no commands needed
         ledSubsystem = new LEDSubsystem(
-            () -> shooterSubsystem.isFlywheelReady()
-                  && shooterSubsystem.getFeedState() == ShooterSubsystem.FeedState.FEEDING,
             () -> autoAimEnabled && limelightShooter.isTrackingHubTag(),
             () -> autoAimEnabled,
             () -> intakeSubsystem.getState() == IntakeSubsystems.IntakeState.INTAKING

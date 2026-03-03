@@ -70,15 +70,21 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+        //FIXME this might genuinely break a motor, so please find an alternative to useing this
+        pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false;
+        pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false;
+
         pivotConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.PIVOT_STATOR_CURRENT_LIMIT;
         pivotConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.PIVOT_SUPPLY_CURRENT_LIMIT;
 
+        /*
         pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = IntakeConstants.SOFT_LIMIT_FORWARD;
         pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = IntakeConstants.SOFT_LIMIT_REVERSE;
+        */
 
         pivotConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.CRUISE_VELOCITY;
         pivotConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.ACCELERATION;

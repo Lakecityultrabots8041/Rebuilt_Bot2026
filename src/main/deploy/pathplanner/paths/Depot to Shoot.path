@@ -52,7 +52,7 @@
     "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Captian Depot Paths",
+  "folder": "Depot Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0
