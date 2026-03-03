@@ -18,14 +18,14 @@ Tune acceleration freely. Tune deceleration carefully. Too high of a decel value
 ### Timing Reference at Full Speed (3.79 m/s)
 
 | Value | 0 to full speed | Full speed to stop |
-|---|---|---|
-| 3.0 | 1.53 s | 1.53 s |
-| 4.0 | 1.15 s | 1.15 s |
-| 5.0 | 0.92 s | 0.92 s |
-| 6.0 | 0.76 s | 0.76 s |
-| 8.0 | 0.57 s | 0.57 s |
-| 10.0 | 0.46 s | 0.46 s |
-| 12.0 | 0.38 s | 0.38 s |
+|-------|-----------------|---------------------|
+| 3.0   | 1.53 s          | 1.53 s              |
+| 4.0   | 1.15 s          | 1.15 s              |
+| 5.0   | 0.92 s          | 0.92 s              |
+| 6.0   | 0.76 s          | 0.76 s              |
+| 8.0   | 0.57 s          | 0.57 s              |
+| 10.0  | 0.46 s          | 0.46 s              |
+| 12.0  | 0.38 s          | 0.38 s              |
 
 ### Recommended Tuning Process
 
@@ -141,10 +141,10 @@ new SwerveRequest.FieldCentric()
     .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 ```
 
-| Deadband | Value | What it means |
-|---|---|---|
-| Linear | 5% of max speed (~0.19 m/s) | Joystick must move past 5% before robot translates |
-| Rotational | 10% of max angular rate (~0.47 rad/s) | Joystick must move past 10% before robot rotates |
+| Deadband   | Value                                | What it means                                      |
+|------------|--------------------------------------|----------------------------------------------------|
+| Linear     | 5% of max speed (~0.19 m/s)         | Joystick must move past 5% before robot translates |
+| Rotational | 10% of max angular rate (~0.47 rad/s) | Joystick must move past 10% before robot rotates   |
 
 Rotational deadband is intentionally larger than linear. Small accidental rotational inputs are more disruptive than small translational ones, so a wider deadband filters them out.
 
@@ -166,14 +166,14 @@ These control how aggressively each swerve module snaps to its target angle. The
 
 ### Current values
 
-| Gain | Value | Role |
-|---|---|---|
-| kP | 100 | Corrects angle error. Volts per rotation of error. |
-| kI | 0 | Not used. |
-| kD | 0.5 | Damps oscillation at the target angle. |
-| kS | 0.1 | Overcomes friction to start turning the module. |
-| kV | 2.66 | Main effort while the module is rotating. |
-| kA | 0 | Not used. |
+| Gain | Value | Role                                               |
+|------|-------|----------------------------------------------------|
+| kP   | 100   | Corrects angle error. Volts per rotation of error. |
+| kI   | 0     | Not used.                                          |
+| kD   | 0.5   | Damps oscillation at the target angle.             |
+| kS   | 0.1   | Overcomes friction to start turning the module.    |
+| kV   | 2.66  | Main effort while the module is rotating.          |
+| kA   | 0     | Not used.                                          |
 
 ### The clanking / ratcheting sound at slow turns
 
@@ -208,13 +208,13 @@ These are feedforward gains and generally don't need to change unless you swap m
 
 ### Quick reference
 
-| Symptom | What to change |
-|---|---|
-| Clanking at slow turns | Lower steer kP (try 80, then 60) |
-| Modules oscillate visibly at rest | Lower steer kP or raise steer kD |
-| Modules sluggish during fast maneuvers | Raise steer kP back up |
-| Modules overshoot target angle | Raise steer kD |
-| Modules hesitate before turning | Raise steer kS |
+| Symptom                                | What to change                   |
+|----------------------------------------|----------------------------------|
+| Clanking at slow turns                 | Lower steer kP (try 80, then 60)|
+| Modules oscillate visibly at rest      | Lower steer kP or raise steer kD|
+| Modules sluggish during fast maneuvers | Raise steer kP back up          |
+| Modules overshoot target angle         | Raise steer kD                  |
+| Modules hesitate before turning        | Raise steer kS                  |
 
 ---
 

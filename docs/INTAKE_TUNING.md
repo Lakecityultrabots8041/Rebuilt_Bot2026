@@ -8,10 +8,10 @@ All tunable values live in: `src/main/java/frc/robot/subsystems/intake/IntakeCon
 
 The intake has two motors with completely different jobs:
 
-**Pivot motor** (ID 2, CANivore "Jeffery"): the arm that swings out and back.
+**Pivot motor** (CAN ID 2): the arm that swings out and back.
 Uses Motion Magic, which is a position controller that follows a smooth speed profile. You tell it where to go and it figures out how to get there at a controlled rate. This motor needs PID because it has to hit specific positions accurately.
 
-**Intake motor** (ID 3, CANivore "Jeffery"): the roller that pulls balls in.
+**Intake motor** (CAN ID 3): the roller that pulls balls in.
 Uses `DutyCycleOut`, which is simple power with no PID. It just needs enough force to grab and pull a ball regardless of how hard the ball is pressing against it. Velocity PID fights variable load. Power control adapts to it.
 
 ### What is Duty Cycle?
@@ -34,11 +34,11 @@ The arm is short, just long enough to reach past the bumpers to the balls. It is
 
 ### Three arm positions
 
-| State | What it means |
-|---|---|
-| `STOW` | Arm inside the robot frame, legal starting position |
+| State    | What it means                                                                       |
+|----------|-------------------------------------------------------------------------------------|
+| `STOW`   | Arm inside the robot frame, legal starting position                                 |
 | `INTAKE` | Arm extended out over the bumper, backer bar resting on bumper, roller at ball height |
-| `TRAVEL` | Arm held partway up, used as a safe position between intake and stow |
+| `TRAVEL` | Arm held partway up, used as a safe position between intake and stow                |
 
 ### On power-on
 
@@ -58,7 +58,7 @@ The code sets the pivot encoder to `STOW_POSITION = 0.0` and immediately command
 
 If the arm moves the wrong direction when commanded, set `pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive` in the pivot config block inside `IntakeSubsystems.java`.
 
-If the arm drifts after stopping, brake mode may not have applied. Confirm motor ID matches physical hardware and the CAN bus name is "Jeffery".
+If the arm drifts after stopping, brake mode may not have applied. Confirm motor ID matches physical hardware and the CAN bus is correct.
 
 If position reads something other than 0.0 on boot, the arm was not at stow when powered on. Power off, physically place arm at stow, power back on.
 
@@ -68,11 +68,11 @@ If position reads something other than 0.0 on boot, the arm was not at stow when
 
 The defaults in IntakeConstants are placeholders. You must measure the real values on the robot.
 
-| Constant | Default | What it is |
-|---|---|---|
-| `STOW_POSITION` | 0.0 | Always 0.0. The encoder is seeded to this on boot. |
-| `INTAKE_POSITION` | 5.0 | Encoder reading when arm is resting on bumper at intake height |
-| `TRAVEL_POSITION` | 3.5 | Encoder reading at the safe in-between position |
+| Constant          | Default | What it is                                                    |
+|-------------------|---------|---------------------------------------------------------------|
+| `STOW_POSITION`   | 0.0     | Always 0.0. The encoder is seeded to this on boot.            |
+| `INTAKE_POSITION` | 5.0     | Encoder reading when arm is resting on bumper at intake height |
+| `TRAVEL_POSITION` | 3.5     | Encoder reading at the safe in-between position               |
 
 ### How to measure INTAKE_POSITION
 
@@ -96,11 +96,11 @@ Once you have the real `INTAKE_POSITION`, set `SOFT_LIMIT_FORWARD` to about `INT
 
 Motion Magic controls how fast and how smoothly the arm moves. These three values shape the motion profile:
 
-| Constant | Default | What it controls |
-|---|---|---|
-| `CRUISE_VELOCITY` | 15 | Max speed during travel (rotations/sec) |
-| `ACCELERATION` | 20 | How fast it ramps up to cruise speed (rot/sec2) |
-| `JERK` | 20 | How smoothly acceleration changes. Lower means silkier start and stop. |
+| Constant          | Default | What it controls                                                      |
+|-------------------|---------|-----------------------------------------------------------------------|
+| `CRUISE_VELOCITY` | 15      | Max speed during travel (rotations/sec)                               |
+| `ACCELERATION`    | 20      | How fast it ramps up to cruise speed (rot/sec2)                       |
+| `JERK`            | 20      | How smoothly acceleration changes. Lower means silkier start and stop.|
 
 You want the arm to deploy fast. Tune in this order:
 
@@ -118,15 +118,15 @@ Watch `Intake/Pivot At Target` on SmartDashboard. It should go `true` after each
 
 These gains work together to hold the arm in position and follow the Motion Magic profile accurately.
 
-| Gain | Default | Role |
-|---|---|---|
-| `kG` | 4.25 | Gravity compensation. Holds the arm up against gravity at any angle. |
-| `kS` | 2.0 | Static friction. Overcomes the initial resistance before the arm starts moving. |
-| `kV` | 4.5 | Velocity feedforward. Main effort while the arm is in motion. |
-| `kA` | 0.01 | Acceleration feedforward. Helps during fast changes in speed. |
-| `kP` | 12.0 | Proportional. Corrects remaining position error at the target. |
-| `kI` | 0 | Integral. Leave at 0 unless arm consistently stops slightly short of target. |
-| `kD` | 0.2 | Derivative. Damps oscillation at the target. |
+| Gain | Default | Role                                                                            |
+|------|---------|-------------------------------------------------------------------------------------|
+| `kG` | 4.25    | Gravity compensation. Holds the arm up against gravity at any angle.               |
+| `kS` | 2.0     | Static friction. Overcomes the initial resistance before the arm starts moving.    |
+| `kV` | 4.5     | Velocity feedforward. Main effort while the arm is in motion.                      |
+| `kA` | 0.01    | Acceleration feedforward. Helps during fast changes in speed.                      |
+| `kP` | 12.0    | Proportional. Corrects remaining position error at the target.                     |
+| `kI` | 0       | Integral. Leave at 0 unless arm consistently stops slightly short of target.       |
+| `kD` | 0.2     | Derivative. Damps oscillation at the target.                                       |
 
 ### How the pivot PID math actually works
 
@@ -152,14 +152,14 @@ Output Voltage = kG * cos(position) + kS * sign(error) + kV * profile_velocity +
 
 **Units summary for MotionMagicVoltage (position control):**
 
-| Gain | Unit | Meaning |
-|---|---|---|
-| kG | Volts | Voltage to hold against gravity at horizontal |
-| kS | Volts | Voltage to overcome static friction |
-| kV | Volts / (rotations/sec) | Voltage per unit of target velocity |
-| kA | Volts / (rotations/sec^2) | Voltage per unit of target acceleration |
-| kP | Volts / rotation | Voltage per rotation of position error |
-| kD | Volts / (rotations/sec) | Voltage per unit of velocity error |
+| Gain | Unit                      | Meaning                                  |
+|------|---------------------------|------------------------------------------|
+| kG   | Volts                     | Voltage to hold against gravity at horizontal |
+| kS   | Volts                     | Voltage to overcome static friction      |
+| kV   | Volts / (rotations/sec)   | Voltage per unit of target velocity      |
+| kA   | Volts / (rotations/sec^2) | Voltage per unit of target acceleration  |
+| kP   | Volts / rotation          | Voltage per rotation of position error   |
+| kD   | Volts / (rotations/sec)   | Voltage per unit of velocity error       |
 
 **How to find kG by calculation:**
 
@@ -210,11 +210,11 @@ If the arm bounces at the target after arriving, raise kD. It does not change ho
 
 ### SmartDashboard values to watch
 
-| Key | What to look for |
-|---|---|
-| `Intake/Pivot Position` | Should match the target position when arm is at rest |
-| `Intake/Pivot At Target` | Should go `true` after each move and stay `true` |
-| `Intake/Pivot State` | Confirms the state machine commanded the right position |
+| Key                      | What to look for                                        |
+|--------------------------|---------------------------------------------------------|
+| `Intake/Pivot Position`  | Should match the target position when arm is at rest    |
+| `Intake/Pivot At Target` | Should go `true` after each move and stay `true`        |
+| `Intake/Pivot State`     | Confirms the state machine commanded the right position |
 
 ---
 
@@ -222,10 +222,10 @@ If the arm bounces at the target after arriving, raise kD. It does not change ho
 
 The roller runs on `DutyCycleOut`. There are no PID gains to tune. You only need to set the right power level.
 
-| Constant | Default | What it is |
-|---|---|---|
-| `INTAKE_POWER` | 1.0 | Power when pulling balls in (0.0 to 1.0) |
-| `EJECT_POWER` | -1.0 | Power when reversing to eject (negative = reverse) |
+| Constant       | Default | What it is                                         |
+|----------------|---------|----------------------------------------------------|
+| `INTAKE_POWER` | 1.0     | Power when pulling balls in (0.0 to 1.0)           |
+| `EJECT_POWER`  | -1.0    | Power when reversing to eject (negative = reverse) |
 
 ### How to tune INTAKE_POWER
 
@@ -272,19 +272,19 @@ This should happen quickly. If the arm does not leave intake position, check tha
 
 ### Intake Roller (12:1 gearbox)
 
-| Constant | Default | What it does |
-|---|---|---|
-| `INTAKE_STATOR_CURRENT_LIMIT` | 40 A | Max torque. Conservative because 12:1 multiplies torque. |
-| `INTAKE_SUPPLY_CURRENT_LIMIT` | 30 A | Max battery draw. |
+| Constant                      | Default | What it does                                              |
+|-------------------------------|---------|-----------------------------------------------------------|
+| `INTAKE_STATOR_CURRENT_LIMIT` | 40 A    | Max torque. Conservative because 12:1 multiplies torque.  |
+| `INTAKE_SUPPLY_CURRENT_LIMIT` | 30 A    | Max battery draw.                                         |
 
 If balls stall even at full power, try raising stator to 60A. If the roller motor gets hot, lower it.
 
 ### Pivot
 
-| Constant | Default | What it does |
-|---|---|---|
-| `PIVOT_STATOR_CURRENT_LIMIT` | 60 A | Max torque the motor produces. Prevents grinding against the bumper. |
-| `PIVOT_SUPPLY_CURRENT_LIMIT` | 35 A | Max current drawn from the battery. |
+| Constant                     | Default | What it does                                                        |
+|------------------------------|---------|---------------------------------------------------------------------|
+| `PIVOT_STATOR_CURRENT_LIMIT` | 60 A    | Max torque the motor produces. Prevents grinding against the bumper.|
+| `PIVOT_SUPPLY_CURRENT_LIMIT` | 35 A    | Max current drawn from the battery.                                 |
 
 If the arm feels weak and stalls before reaching target, raise stator limit in small steps (try 70A).
 If you see brownouts while moving the arm, lower supply limit.
@@ -296,10 +296,10 @@ If the arm slams into the hard stop and strains, the soft limit may be too high 
 
 Soft limits stop the motor from commanding the arm past the physical range.
 
-| Constant | Default | What it does |
-|---|---|---|
-| `SOFT_LIMIT_FORWARD` | 5.5 | Motor won't command past this toward intake. Set about 0.5 above INTAKE_POSITION. |
-| `SOFT_LIMIT_REVERSE` | 0.0 | Motor won't command below this toward stow. Matches STOW_POSITION. |
+| Constant             | Default | What it does                                                                      |
+|----------------------|---------|-----------------------------------------------------------------------------------|
+| `SOFT_LIMIT_FORWARD` | 5.5     | Motor won't command past this toward intake. Set about 0.5 above INTAKE_POSITION. |
+| `SOFT_LIMIT_REVERSE` | 0.0     | Motor won't command below this toward stow. Matches STOW_POSITION.                |
 
 After measuring the real `INTAKE_POSITION`, set `SOFT_LIMIT_FORWARD = INTAKE_POSITION + 0.5`. If you can hear the motor straining at the intake position, lower this value until the straining stops.
 
@@ -323,25 +323,25 @@ After measuring the real `INTAKE_POSITION`, set `SOFT_LIMIT_FORWARD = INTAKE_POS
 
 ## Quick Reference: What to Change for Each Problem
 
-| Problem | What to change |
-|---|---|
-| Arm moves wrong direction | Add or remove inversion in pivot config in `IntakeSubsystems.java` |
-| Arm drifts down when holding position | Raise `kG` |
-| Arm creeps up when holding position | Lower `kG` |
-| Arm stalls or slows going back to stow | Raise `kG`. Motor is fighting gravity on a heavy arm. |
-| Arm hesitates before starting to move | Raise `kS` |
-| Arm too slow deploying | Raise `CRUISE_VELOCITY` |
-| Arm overshoots and bounces at target | Lower `kP` or lower `CRUISE_VELOCITY` |
-| Arm stops short of target | Raise `kP` |
-| Arm oscillates at target | Lower `kP`, raise `kD` |
-| `Intake/Pivot At Target` never goes true | Arm not reaching position. Check kP, kG, and position values. |
-| Roller not pulling balls in | Raise `INTAKE_POWER` |
-| Roller sounds strained or ball jams | Lower `INTAKE_POWER`, check mechanical compression |
-| Arm grinding into bumper hard stop | Lower `SOFT_LIMIT_FORWARD` |
-| Roller starts before arm arrives in sequence | Pivot too slow or `PIVOT_TIMEOUT_SECONDS` too short |
-| Brownouts during arm movement | Lower `PIVOT_SUPPLY_CURRENT_LIMIT` |
-| Arm feels weak, can't hold position | Raise `PIVOT_STATOR_CURRENT_LIMIT` |
-| Position off after power-on | Arm was not at stow on boot. Power off, reposition, reboot. |
+| Problem                                      | What to change                                                     |
+|----------------------------------------------|--------------------------------------------------------------------|
+| Arm moves wrong direction                    | Add or remove inversion in pivot config in `IntakeSubsystems.java` |
+| Arm drifts down when holding position        | Raise `kG`                                                         |
+| Arm creeps up when holding position          | Lower `kG`                                                         |
+| Arm stalls or slows going back to stow       | Raise `kG`. Motor is fighting gravity on a heavy arm.              |
+| Arm hesitates before starting to move        | Raise `kS`                                                         |
+| Arm too slow deploying                       | Raise `CRUISE_VELOCITY`                                            |
+| Arm overshoots and bounces at target         | Lower `kP` or lower `CRUISE_VELOCITY`                              |
+| Arm stops short of target                    | Raise `kP`                                                         |
+| Arm oscillates at target                     | Lower `kP`, raise `kD`                                             |
+| `Intake/Pivot At Target` never goes true     | Arm not reaching position. Check kP, kG, and position values.      |
+| Roller not pulling balls in                  | Raise `INTAKE_POWER`                                               |
+| Roller sounds strained or ball jams          | Lower `INTAKE_POWER`, check mechanical compression                 |
+| Arm grinding into bumper hard stop           | Lower `SOFT_LIMIT_FORWARD`                                         |
+| Roller starts before arm arrives in sequence | Pivot too slow or `PIVOT_TIMEOUT_SECONDS` too short                |
+| Brownouts during arm movement                | Lower `PIVOT_SUPPLY_CURRENT_LIMIT`                                 |
+| Arm feels weak, can't hold position          | Raise `PIVOT_STATOR_CURRENT_LIMIT`                                 |
+| Position off after power-on                  | Arm was not at stow on boot. Power off, reposition, reboot.       |
 
 ---
 

@@ -8,10 +8,10 @@ All tunable values live in: `src/main/java/frc/robot/subsystems/shoot/ShooterCon
 
 The shooter has four motors, split into two jobs:
 
-**Feed rollers:** `actFloor` (ID 5), `actCeiling` (ID 7), and `actUpper` (ID 8) on CANivore "Jeffery".
+**Feed rollers:** `actFloor` (CAN ID 5), `actCeiling` (CAN ID 7), and `actUpper` (CAN ID 8).
 Floor and ceiling are direct drive. Upper has a 12:1 gearbox and drives 4 belts that pull the ball upward into the flywheel. All three run on `DutyCycleOut` (simple power, no PID). They don't affect how far the ball goes, just push it into the flywheel.
 
-**Flywheel:** `flywheelMotor` (ID 6) on CANivore "Jeffery".
+**Flywheel:** `flywheelMotor` (CAN ID 6).
 This launches the ball. Uses `VelocityVoltage` (PID closed-loop) because exit speed needs to be precise. Faster flywheel = more distance.
 
 ### What is Duty Cycle?
@@ -45,35 +45,35 @@ All of these are in `ShooterConstants.java`:
 
 ### Feed Roller Power
 
-| Constant | Default | What it controls |
-|---|---|---|
-| `FEED_POWER` | 1.0 | Power to run feed rollers when shooting (0.0 to 1.0) |
-| `EJECT_POWER` | -0.80 | Power when ejecting a stuck ball (negative = reverse) |
-| `PASS_POWER` | 0.60 | Power when passing |
+| Constant      | Default | What it controls                                      |
+|---------------|---------|-------------------------------------------------------|
+| `FEED_POWER`  | 1.0     | Power to run feed rollers when shooting (0.0 to 1.0)  |
+| `EJECT_POWER` | -0.80   | Power when ejecting a stuck ball (negative = reverse)  |
+| `PASS_POWER`  | 0.60    | Power when passing                                     |
 
 ### Flywheel Speed Presets
 
-| Constant | Default | What it controls |
-|---|---|---|
-| `FLYWHEEL_READY_RPS` | 105.0 | Full shooting speed |
-| `FLYWHEEL_REV_RPS` | 75.0 | Pre-spin speed before going to full power |
-| `FLYWHEEL_PASS_RPS` | 65.0 | Passing speed |
-| `FLYWHEEL_IDLE_RPS` | 0.0 | Stopped |
+| Constant             | Default | What it controls                          |
+|----------------------|---------|-------------------------------------------|
+| `FLYWHEEL_READY_RPS` | 105.0   | Full shooting speed                       |
+| `FLYWHEEL_REV_RPS`   | 75.0    | Pre-spin speed before going to full power |
+| `FLYWHEEL_PASS_RPS`  | 65.0    | Passing speed                             |
+| `FLYWHEEL_IDLE_RPS`  | 0.0     | Stopped                                   |
 
 ### Flywheel PID
 
-| Constant | Default | Role |
-|---|---|---|
-| `FLYWHEEL_kP` | 3.0 | Proportional, corrects velocity error at speed |
-| `FLYWHEEL_kV` | 0.15 | Velocity feedforward, main effort while spinning |
-| `FLYWHEEL_kS` | 0.25 | Static feedforward, overcomes friction to start |
+| Constant      | Default | Role                                              |
+|---------------|---------|---------------------------------------------------|
+| `FLYWHEEL_kP` | 3.0     | Proportional, corrects velocity error at speed    |
+| `FLYWHEEL_kV` | 0.15    | Velocity feedforward, main effort while spinning  |
+| `FLYWHEEL_kS` | 0.25    | Static feedforward, overcomes friction to start   |
 
 ### Tolerances
 
-| Constant | Default | What it controls |
-|---|---|---|
-| `FLYWHEEL_TOLERANCE_RPS` | 2.0 | How close flywheel must be to target to count as "ready" |
-| `READY_TIMEOUT_SECONDS` | 3.0 | Gives up waiting for flywheel after this long |
+| Constant                 | Default | What it controls                                         |
+|--------------------------|---------|----------------------------------------------------------|
+| `FLYWHEEL_TOLERANCE_RPS` | 2.0     | How close flywheel must be to target to count as "ready" |
+| `READY_TIMEOUT_SECONDS`  | 3.0     | Gives up waiting for flywheel after this long            |
 
 ---
 
@@ -93,12 +93,12 @@ Do NOT try to fix a stalling feed roller by tuning PID. There is no PID on these
 
 ### Signs FEED_POWER is wrong
 
-| Symptom | Adjustment |
-|---|---|
-| Ball stalls halfway through | Raise FEED_POWER |
-| Ball makes grinding or straining sound | Lower FEED_POWER |
-| Ball gets stuck and motors stall | Check mechanical clearance first, then raise FEED_POWER |
-| Ball shoots out erratically before hitting flywheel | Lower FEED_POWER |
+| Symptom                                              | Adjustment                                              |
+|------------------------------------------------------|---------------------------------------------------------|
+| Ball stalls halfway through                          | Raise FEED_POWER                                        |
+| Ball makes grinding or straining sound               | Lower FEED_POWER                                        |
+| Ball gets stuck and motors stall                     | Check mechanical clearance first, then raise FEED_POWER |
+| Ball shoots out erratically before hitting flywheel  | Lower FEED_POWER                                        |
 
 ---
 
@@ -177,20 +177,20 @@ Our current value of 0.15 is a tuned value, not a calculated one. Use the formul
 
 **Units summary for VelocityVoltage mode:**
 
-| Gain | Unit | Meaning |
-|---|---|---|
-| kP | Volts / RPS | How hard to push per RPS of error |
-| kV | Volts / RPS | How much base voltage per RPS of target |
-| kS | Volts | Flat voltage to overcome friction |
+| Gain | Unit        | Meaning                                 |
+|------|-------------|-----------------------------------------|
+| kP   | Volts / RPS | How hard to push per RPS of error       |
+| kV   | Volts / RPS | How much base voltage per RPS of target |
+| kS   | Volts       | Flat voltage to overcome friction       |
 
 ### SmartDashboard values to watch
 
-| Key | What to look for |
-|---|---|
-| `Flywheel/Actual RPS` | Should match Target RPS within 2 RPS at steady state |
-| `Flywheel/Target RPS` | Should show the preset value for the current state |
-| `Flywheel/Current` | Should drop after spin-up. Sustained current over 60A means gains are too aggressive. |
-| `Shooter/Flywheel Ready` | Should go true within 2 to 3 seconds of commanding |
+| Key                       | What to look for                                                                      |
+|---------------------------|----------------------------------------------------------------------------------------|
+| `Flywheel/Actual RPS`    | Should match Target RPS within 2 RPS at steady state                                  |
+| `Flywheel/Target RPS`    | Should show the preset value for the current state                                     |
+| `Flywheel/Current`       | Should drop after spin-up. Sustained current over 60A means gains are too aggressive.  |
+| `Shooter/Flywheel Ready` | Should go true within 2 to 3 seconds of commanding                                    |
 
 ---
 
@@ -233,10 +233,10 @@ If you never shoot from certain distances, you can remove those rows. The table 
 
 Passing uses `FLYWHEEL_PASS_RPS` for the flywheel and `PASS_POWER` for the feed rollers. Feed power during a pass is lower than during a shot because you are not slamming the ball into a high-speed flywheel.
 
-| Constant | Default | Direction |
-|---|---|---|
-| `FLYWHEEL_PASS_RPS` | 65.0 | Up for more range, down if overshooting |
-| `PASS_POWER` | 0.60 | Up if ball stalls during a pass, down if too aggressive |
+| Constant             | Default | Direction                                               |
+|----------------------|---------|---------------------------------------------------------|
+| `FLYWHEEL_PASS_RPS`  | 65.0    | Up for more range, down if overshooting                 |
+| `PASS_POWER`         | 0.60    | Up if ball stalls during a pass, down if too aggressive |
 
 Passing is lower precision than shooting, so these don't need to be tuned as tightly.
 
@@ -279,15 +279,15 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 
 ## Named Commands (PathPlanner)
 
-| Name | What it does |
-|---|---|
-| `Rev Shooter` | Spins flywheel to FLYWHEEL_REV_RPS (pre-spin) |
-| `Shoot` | Flywheel to READY and feed on simultaneously |
-| `Idle Shooter` | Everything off |
-| `Pass` | Flywheel and feed to pass speeds simultaneously |
-| `AlignAndShoot` | Hub align (shooter camera), then full shoot sequence |
+| Name                   | What it does                                             |
+|------------------------|----------------------------------------------------------|
+| `Rev Shooter`          | Spins flywheel to FLYWHEEL_REV_RPS (pre-spin)            |
+| `Shoot`                | Flywheel to READY and feed on simultaneously             |
+| `Idle Shooter`         | Everything off                                           |
+| `Pass`                 | Flywheel and feed to pass speeds simultaneously          |
+| `AlignAndShoot`        | Hub align (shooter camera), then full shoot sequence     |
 | `AlignOutpostAndShoot` | Outpost align (shooter camera), then full shoot sequence |
-| `AlignTowerAndShoot` | Tower align (shooter camera), then full shoot sequence |
+| `AlignTowerAndShoot`   | Tower align (shooter camera), then full shoot sequence   |
 
 ---
 
@@ -305,22 +305,22 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 
 ## Quick Reference: What to Change for Each Problem
 
-| Problem | What to change |
-|---|---|
-| Ball stalls in feed path | Raise `FEED_POWER` |
-| Feed rollers sound like they're straining | Lower `FEED_POWER` or check mechanical compression |
-| Shot too short (fixed position) | Raise `FLYWHEEL_READY_RPS` |
-| Shot too long (fixed position) | Lower `FLYWHEEL_READY_RPS` |
-| Shot too short at one auto-aim distance | Raise that distance's RPS in `VELOCITY_TABLE_RPS` |
-| Flywheel runs below target consistently | Raise `FLYWHEEL_kV` |
-| Flywheel oscillates around target | Lower `FLYWHEEL_kP` |
-| Flywheel slow to start from rest | Raise `FLYWHEEL_kS` |
-| Flywheel never hits "ready" in time | Raise `READY_TIMEOUT_SECONDS` or improve kV and kP |
-| Teleop shots inconsistent | Drivers need to pre-rev before pulling trigger |
-| Ball fired before flywheel at speed in auto | `READY_TIMEOUT_SECONDS` may have expired, check flywheel PID |
-| Eject doesn't clear ball | Raise `EJECT_POWER` magnitude (try -0.90) |
-| Pass too short | Raise `FLYWHEEL_PASS_RPS` |
-| Pass too long | Lower `FLYWHEEL_PASS_RPS` |
+| Problem                                           | What to change                                                    |
+|---------------------------------------------------|-------------------------------------------------------------------|
+| Ball stalls in feed path                          | Raise `FEED_POWER`                                               |
+| Feed rollers sound like they're straining         | Lower `FEED_POWER` or check mechanical compression               |
+| Shot too short (fixed position)                   | Raise `FLYWHEEL_READY_RPS`                                       |
+| Shot too long (fixed position)                    | Lower `FLYWHEEL_READY_RPS`                                       |
+| Shot too short at one auto-aim distance           | Raise that distance's RPS in `VELOCITY_TABLE_RPS`                |
+| Flywheel runs below target consistently           | Raise `FLYWHEEL_kV`                                              |
+| Flywheel oscillates around target                 | Lower `FLYWHEEL_kP`                                              |
+| Flywheel slow to start from rest                  | Raise `FLYWHEEL_kS`                                              |
+| Flywheel never hits "ready" in time               | Raise `READY_TIMEOUT_SECONDS` or improve kV and kP               |
+| Teleop shots inconsistent                         | Drivers need to pre-rev before pulling trigger                    |
+| Ball fired before flywheel at speed in auto       | `READY_TIMEOUT_SECONDS` may have expired, check flywheel PID     |
+| Eject doesn't clear ball                          | Raise `EJECT_POWER` magnitude (try -0.90)                        |
+| Pass too short                                    | Raise `FLYWHEEL_PASS_RPS`                                        |
+| Pass too long                                     | Lower `FLYWHEEL_PASS_RPS`                                        |
 
 ---
 
@@ -336,38 +336,38 @@ All shooter motors have current limits configured in `ShooterConstants.java`. Th
 
 ### Flywheel
 
-| Constant | Default | What it does |
-|---|---|---|
-| `FLYWHEEL_STATOR_CURRENT_LIMIT` | 120 A | Max torque during spin-up and operation. **Lower to 80A before comp.** |
-| `FLYWHEEL_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw, prevents brownouts |
+| Constant                         | Default | What it does                                                          |
+|----------------------------------|---------|-----------------------------------------------------------------------|
+| `FLYWHEEL_STATOR_CURRENT_LIMIT` | 120 A   | Max torque during spin-up and operation. **Lower to 80A before comp.**|
+| `FLYWHEEL_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw, prevents brownouts                                  |
 
 Watch `Flywheel/Current` on SmartDashboard. At steady state (flywheel at target speed), sustained current over 40A means something is wrong, either the PID is fighting itself or there is mechanical resistance.
 
 ### Feed Rollers (Floor + Ceiling, direct drive)
 
-| Constant | Default | What it does |
-|---|---|---|
-| `FEED_STATOR_CURRENT_LIMIT` | 120 A | Max torque for floor and ceiling rollers. **Lower to 80A before comp.** |
-| `FEED_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw |
+| Constant                     | Default | What it does                                                            |
+|------------------------------|---------|-------------------------------------------------------------------------|
+| `FEED_STATOR_CURRENT_LIMIT` | 120 A   | Max torque for floor and ceiling rollers. **Lower to 80A before comp.**|
+| `FEED_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw                                                        |
 
 ### Upper Feed Roller (12:1 gearbox, 4 belts)
 
-| Constant | Default | What it does |
-|---|---|---|
-| `UPPER_STATOR_CURRENT_LIMIT` | 120 A | Max torque. **Lower to 80A before comp.** Needs headroom to overcome gearbox + belt drag on startup. |
-| `UPPER_SUPPLY_CURRENT_LIMIT` | 60 A | Max battery draw |
+| Constant                      | Default | What it does                                                                                         |
+|-------------------------------|---------|------------------------------------------------------------------------------------------------------|
+| `UPPER_STATOR_CURRENT_LIMIT` | 120 A   | Max torque. **Lower to 80A before comp.** Needs headroom to overcome gearbox + belt drag on startup.|
+| `UPPER_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw                                                                                     |
 
 The upper roller has a 12:1 gearbox driving 4 belts. It needs current headroom to break through startup friction. If the motor struggles to start at 80A, raise stator back up. If it runs hot during sustained use, lower it.
 
 ### How these compare to the rest of the robot
 
-| Mechanism | Stator Limit | Supply Limit | Notes |
-|---|---|---|---|
-| Shooter flywheel | 120 A | 60 A | Lower stator before comp |
-| Shooter feed (floor + ceiling) | 120 A | 60 A | Lower stator before comp |
-| Shooter feed (upper, 12:1) | 120 A | 60 A | Lower stator before comp |
-| Intake pivot | 60 A | 35 A | Already tuned |
-| Drivetrain (per module) | 80 A | 60 A | Set by TunerConstants |
+| Mechanism                      | Stator Limit | Supply Limit | Notes                    |
+|--------------------------------|--------------|--------------|--------------------------|
+| Shooter flywheel               | 120 A        | 60 A         | Lower stator before comp |
+| Shooter feed (floor + ceiling) | 120 A        | 60 A         | Lower stator before comp |
+| Shooter feed (upper, 12:1)     | 120 A        | 60 A         | Lower stator before comp |
+| Intake pivot                   | 60 A         | 35 A         | Already tuned            |
+| Drivetrain (per module)        | 80 A         | 60 A         | Set by TunerConstants    |
 
 ---
 

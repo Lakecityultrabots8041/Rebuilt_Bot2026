@@ -6,23 +6,23 @@ Driver controller is port 0. Xbox controller. All bindings are in `RobotContaine
 
 ## Full Binding Table
 
-| Input | Action | Trigger Type |
-|-------|--------|--------------|
-| Left Stick | Drive (forward/back/strafe) | Always active |
-| Right Stick X | Rotate | Always active (when auto-aim is off) |
-| Left Bumper | Toggle auto-aim on/off | Press once to toggle |
-| Right Bumper | Reset field-centric heading | Press once |
-| Left Trigger | Shooter eject | Hold, idles on release |
-| Right Trigger | Shoot | Hold, idles on release |
-| START | Align to hub | Hold |
-| BACK | Align to tower | Hold |
-| Y | Align to outpost | Hold |
-| X | Intake roller | Hold, idles on release |
-| B | Passing shot | Hold, idles on release |
-| A | Pivot to travel position | Press once |
-| D-Up | Pivot to stow | Press once |
-| D-Down | Pivot to intake position | Press once |
-| D-Left | Follow tag demo | Hold |
+| Input         | Action                      | Trigger Type                        |
+|---------------|-----------------------------|-------------------------------------|
+| Left Stick    | Drive (forward/back/strafe) | Always active                       |
+| Right Stick X | Rotate                      | Always active (when auto-aim is off)|
+| Left Bumper   | Toggle auto-aim on/off      | Press once to toggle                |
+| Right Bumper  | Reset field-centric heading | Press once                          |
+| Left Trigger  | Shooter eject               | Hold, idles on release              |
+| Right Trigger | Shoot                       | Hold, idles on release              |
+| START         | Align to hub                | Hold                                |
+| BACK          | Align to tower              | Hold                                |
+| Y             | Align to outpost            | Hold                                |
+| X             | Intake roller               | Hold, idles on release              |
+| B             | Passing shot                | Hold, idles on release              |
+| A             | Pivot to travel position    | Press once                          |
+| D-Up          | Pivot to stow               | Press once                          |
+| D-Down        | Pivot to intake position    | Press once                          |
+| D-Left        | Follow tag demo             | Hold                                |
 
 ### Currently unbound (available)
 - D-Right

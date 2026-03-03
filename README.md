@@ -14,16 +14,16 @@ Java, WPILib command-based framework, AdvantageKit logging, Phoenix 6 swerve dri
 
 ## Hardware Overview
 
-| Component  | Details                                                                      |
-|------------|------------------------------------------------------------------------------|
-| Controller | RoboRIO 2.0                                                                  |
-| Drivetrain | CTRE Phoenix 6 swerve (4 TalonFX drive + 4 TalonFX steer + 4 CANcoders)     |
-| IMU        | Pigeon 2                                                                     |
+| Component  | Details                                                                               |
+|------------|---------------------------------------------------------------------------------------|
+| Controller | RoboRIO 2.0                                                                           |
+| Drivetrain | CTRE Phoenix 6 swerve (4 TalonFX drive + 4 TalonFX steer + 4 CANcoders)               |
+| IMU        | Pigeon 2                                                                              |
 | Vision     | 2x Limelight 4 (`limelight-april` on shooter side, `limelight-intake` on intake side) |
-| LEDs       | REV Blinkin on PWM port 0                                                    |
-| CAN Buses  | Default bus (swerve, CANcoders, Pigeon) and CANivore "Jeffery" (intake, shooter) |
+| LEDs       | REV Blinkin on PWM port 0                                                             |
+| CAN Buses  | Two buses, one for swerve and one for intake/shooter                                  |
 
-### Motor Map (CANivore "Jeffery")
+### Motor Map
 
 | Motor                       | CAN ID | Use                                              |
 |-----------------------------|--------|--------------------------------------------------|
@@ -32,21 +32,21 @@ Java, WPILib command-based framework, AdvantageKit logging, Phoenix 6 swerve dri
 | Shooter floor feed          | 5      | Feeds ball into flywheel                         |
 | Shooter flywheel 1          | 6      | Velocity PID for shooting                        |
 | Shooter ceiling feed        | 7      | Feeds ball into flywheel                         |
-| Shooter upper feed (Lo4d3r) | 8      | 12:1 gearbox, 4 belts                           |
+| Shooter upper feed (Lo4d3r) | 8      | 12:1 gearbox, 4 belts                            |
 
 ## Subsystems
 
 ### Swerve Drivetrain
-Phoenix 6 swerve with CTRE Tuner X generated constants. Field-centric drive with asymmetric slew rate limiting (fast acceleration, gentler deceleration to prevent tip-overs). Both Limelights fuse MegaTag2 pose estimates into the swerve Kalman filter each loop.
+Phoenix 6 swerve with CTRE Tuner X generated constants. Field-centric drive with asymmetric slew rate limiting (fast acceleration, gentler deceleration to prevent tip-overs). Both Limelights fuse MegaTag2 pose estimates into the swerve Kalman filter each loop. See [Drive Tuning](docs/DRIVE_TUNING.md) for PID and slew tuning.
 
 ### Shooter
-Two independent state machines (flywheel + feed rollers) that only send motor commands on state changes to reduce CAN traffic. The flywheel runs velocity PID and supports a vision tracking mode that adjusts speed based on distance to the hub.
+Two independent state machines (flywheel + feed rollers) that only send motor commands on state changes to reduce CAN traffic. The flywheel runs velocity PID and supports a vision tracking mode that adjusts speed based on distance to the hub. See [Shooter Tuning](docs/SHOOTER_TUNING.md) for PID and distance table tuning.
 
 ### Intake
-Pivot arm with MotionMagic profiling and cosine gravity compensation. Three positions: stow, travel, and intake (fully deployed). Roller runs at full power for intake/eject.
+Pivot arm with MotionMagic profiling and cosine gravity compensation. Three positions: stow, travel, and intake (fully deployed). Roller runs at full power for intake/eject. See [Intake Tuning](docs/INTAKE_TUNING.md) for MotionMagic and position tuning.
 
 ### Vision (Limelight)
-Two Limelight 4 cameras, each in their own `LimelightSubsystem` instance. Handles AprilTag detection, distance calculation, and pose fusion. Full simulation support with fake tag detection from field layout. Powers the auto-aim and vision alignment commands.
+Two Limelight 4 cameras, each in their own `LimelightSubsystem` instance. Handles AprilTag detection, distance calculation, and pose fusion. Full simulation support with fake tag detection from field layout. Powers the auto-aim and vision alignment commands. See [Vision System](docs/VISION.md) for the full breakdown.
 
 ### LEDs
 REV Blinkin controller with a priority-based state waterfall: vision aligned (green) > auto-aim active (yellow) > intaking (orange) > autonomous (rainbow) > disabled (alliance breath) > idle (fire effect).

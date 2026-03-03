@@ -20,10 +20,10 @@ Hardware: two Limelight 4 cameras, CTRE Phoenix 6 swerve, RoboRIO 2.0.
 
 ### Two Camera Setup
 
-| Camera | NetworkTables Name | Location | Faces | Used For |
-|--------|-------------------|----------|-------|----------|
-| Shooter camera | `limelight-april` | Near the shooter | Shooter side | Hub/outpost/trench alignment, auto-aim |
-| Intake camera | `limelight-intake` | Near the intake | Intake side | Pose fusion, future intake-side alignment |
+| Camera         | NetworkTables Name  | Location         | Faces        | Used For                                  |
+|----------------|---------------------|------------------|--------------|-------------------------------------------|
+| Shooter camera | `limelight-april`   | Near the shooter | Shooter side | Hub/outpost/trench alignment, auto-aim    |
+| Intake camera  | `limelight-intake`  | Near the intake  | Intake side  | Pose fusion, future intake-side alignment |
 
 Both cameras run independently. Both fuse their pose estimates into the drivetrain Kalman filter every loop, which means better localization from two different vantage points. The intake camera does not currently run any alignment commands, but the code supports it if needed later.
 
@@ -39,10 +39,10 @@ Both cameras run independently. Both fuse their pose estimates into the drivetra
 
 The hub is what we shoot fuel into. It is a 47in x 47in structure centered 158.6in from the alliance wall. The opening is 72in off the carpet.
 
-| Alliance | Tag IDs |
-|----------|---------|
-| Blue | 2, 3, 4, 5, 8, 9, 10, 11 |
-| Red | 18, 19, 20, 21, 24, 25, 26, 27 |
+| Alliance | Tag IDs                        |
+|----------|--------------------------------|
+| Blue     | 2, 3, 4, 5, 8, 9, 10, 11      |
+| Red      | 18, 19, 20, 21, 24, 25, 26, 27 |
 
 Tag centers sit at 44.25in (1.124m) off the floor.
 
@@ -55,8 +55,8 @@ Towers are for climbing. 49.25in wide, 45in deep, 78.25in tall. Three rungs:
 
 | Alliance | Tag IDs |
 |----------|---------|
-| Blue | 15, 16 |
-| Red | 31, 32 |
+| Blue     | 15, 16  |
+| Red      | 31, 32  |
 
 Tag centers at 21.75in (0.5525m) off the floor.
 
@@ -66,8 +66,8 @@ Outposts are where the human player hands off fuel. The opening is 31.8in wide x
 
 | Alliance | Tag IDs |
 |----------|---------|
-| Blue | 13, 14 |
-| Red | 29, 30 |
+| Blue     | 13, 14  |
+| Red      | 29, 30  |
 
 Tag centers at 21.75in (0.5525m) off the floor.
 
@@ -75,10 +75,10 @@ Tag centers at 21.75in (0.5525m) off the floor.
 
 Each trench has one tag facing the alliance zone and one facing the neutral zone. The trench clearance is 50.34in wide x 22.25in tall.
 
-| Alliance | Tag IDs |
-|----------|---------|
-| Blue | 1, 6, 7, 12 |
-| Red | 17, 22, 23, 28 |
+| Alliance | Tag IDs        |
+|----------|----------------|
+| Blue     | 1, 6, 7, 12    |
+| Red      | 17, 22, 23, 28 |
 
 Tag centers at 35in (0.889m) off the floor.
 
@@ -349,12 +349,12 @@ The sim is not pixel-perfect but it lets you test alignment logic, alliance sele
 
 Each tag type has a target stop distance in VisionConstants (the `APRILTAG_DISTANCES` array, indexed by tag ID):
 
-| Structure | Distance | Why |
-|-----------|----------|-----|
-| Hub | 97in (~2.46m) | Shooting range, tune for your shooter |
-| Tower | 18in (~0.46m) | Close approach for climbing, near bumper contact |
-| Outpost | 14in (~0.36m) | Very close for human player handoff |
-| Trench | 48in (~1.22m) | Center under the trench arm |
+| Structure | Distance      | Why                                              |
+|-----------|---------------|--------------------------------------------------|
+| Hub       | 97in (~2.46m) | Shooting range, tune for your shooter            |
+| Tower     | 18in (~0.46m) | Close approach for climbing, near bumper contact |
+| Outpost   | 14in (~0.36m) | Very close for human player handoff              |
+| Trench    | 48in (~1.22m) | Center under the trench arm                      |
 
 These are starting points. Tune them on the real field based on shooter performance and mechanism reach. Tower and outpost distances are intentionally close because the robot needs to be right up against those structures.
 
@@ -364,11 +364,11 @@ These are starting points. Tune them on the real field based on shooter performa
 
 ### Gains
 
-| Constant | Default | Too low | Too high |
-|----------|---------|---------|----------|
-| ROTATION_GAIN | 0.03 | Slow lazy turning | Oscillates side to side |
-| FORWARD_GAIN | 0.8 | Takes forever to reach distance | Overshoots and bounces |
-| AUTO_STRAFE_GAIN | 0.5 | Does not correct lateral drift | Sideways oscillation |
+| Constant         | Default | Too low                        | Too high                |
+|------------------|---------|--------------------------------|-------------------------|
+| ROTATION_GAIN    | 0.03    | Slow lazy turning              | Oscillates side to side |
+| FORWARD_GAIN     | 0.8     | Takes forever to reach distance | Overshoots and bounces  |
+| AUTO_STRAFE_GAIN | 0.5     | Does not correct lateral drift | Sideways oscillation    |
 
 ### Speed Limits
 
@@ -392,10 +392,10 @@ The D term adds damping so it does not overshoot the target heading. The slew li
 
 **Both cameras have placeholder mounting values that must be measured on the actual robot:**
 
-| Camera | Height | Angle | Constant Prefix |
-|--------|--------|-------|-----------------|
-| Shooter ("limelight-april") | 25.125in (placeholder) | 0 deg (placeholder) | `FRONT_CAMERA_` |
-| Intake ("limelight-intake") | 25.125in (placeholder) | 0 deg (placeholder) | `REAR_CAMERA_` |
+| Camera                      | Height                 | Angle                | Constant Prefix |
+|-----------------------------|------------------------|----------------------|-----------------|
+| Shooter ("limelight-april") | 25.125in (placeholder) | 0 deg (placeholder)  | `FRONT_CAMERA_` |
+| Intake ("limelight-intake") | 25.125in (placeholder) | 0 deg (placeholder)  | `REAR_CAMERA_`  |
 
 Measure from the floor to the center of each Limelight lens. The angle is 0 for horizontal, positive for tilted up. Mount cameras as high as you can, angled up 30-45 degrees. Set pipeline 0 for AprilTags.
 
@@ -405,14 +405,14 @@ These values are used by the trig-based backup calculation and by simulation, no
 
 ## Controller Bindings (Vision Related)
 
-| Button | Action |
-|--------|--------|
-| Left Bumper | Toggle auto-aim |
+| Button       | Action                      |
+|--------------|-----------------------------|
+| Left Bumper  | Toggle auto-aim             |
 | Right Bumper | Reset field-centric heading |
-| START | Align to hub (hold) |
-| BACK | Align to tower (hold) |
-| Y | Align to outpost (hold) |
-| D-Left | Follow any tag demo (hold) |
+| START        | Align to hub (hold)         |
+| BACK         | Align to tower (hold)       |
+| Y            | Align to outpost (hold)     |
+| D-Left       | Follow any tag demo (hold)  |
 
 See `docs/CONTROLLER_MAP.md` for the full binding table.
 
@@ -422,37 +422,37 @@ See `docs/CONTROLLER_MAP.md` for the full binding table.
 
 ### Standalone Alignment (robot drives to target, finishes when aligned)
 
-| Name | Camera | Tag Group |
-|------|--------|-----------|
-| `Align Hub` | Shooter | Alliance hub tags |
-| `Align Outpost` | Shooter | Alliance outpost tags |
-| `Align Tower` | Shooter | Alliance tower tags |
-| `Align Trench` | Shooter | Alliance trench tags |
+| Name             | Camera  | Tag Group             |
+|------------------|---------|-----------------------|
+| `Align Hub`      | Shooter | Alliance hub tags     |
+| `Align Outpost`  | Shooter | Alliance outpost tags |
+| `Align Tower`    | Shooter | Alliance tower tags   |
+| `Align Trench`   | Shooter | Alliance trench tags  |
 
 ### Align-Then-Shoot Combos (align, then full shoot sequence)
 
-| Name | What it does |
-|------|-------------|
-| `AlignAndShoot` | Hub align, then shoot sequence |
+| Name                   | What it does                       |
+|------------------------|------------------------------------|
+| `AlignAndShoot`        | Hub align, then shoot sequence     |
 | `AlignOutpostAndShoot` | Outpost align, then shoot sequence |
-| `AlignTowerAndShoot` | Tower align, then shoot sequence |
+| `AlignTowerAndShoot`   | Tower align, then shoot sequence   |
 
 ### Shooter and Intake Commands
 
-| Name | What it does |
-|------|-------------|
-| `Rev Shooter` | Pre-spin flywheel |
-| `Shoot` | Flywheel + feed on |
-| `Idle Shooter` | Everything off |
-| `Pass` | Pass speed sequence |
-| `Intake` | Intake roller on |
-| `Eject` | Intake eject |
-| `Idle Intake` | Intake roller off |
-| `Pivot To Stow` | Arm to stow position |
-| `Pivot To Intake` | Arm to intake position |
-| `Pivot To Travel` | Arm to travel position |
-| `Start Intake` | Deploy arm, then start roller |
-| `End Intake` | Stop roller, travel position |
+| Name              | What it does                  |
+|-------------------|-------------------------------|
+| `Rev Shooter`     | Pre-spin flywheel             |
+| `Shoot`           | Flywheel + feed on            |
+| `Idle Shooter`    | Everything off                |
+| `Pass`            | Pass speed sequence           |
+| `Intake`          | Intake roller on              |
+| `Eject`           | Intake eject                  |
+| `Idle Intake`     | Intake roller off             |
+| `Pivot To Stow`   | Arm to stow position          |
+| `Pivot To Intake`  | Arm to intake position         |
+| `Pivot To Travel`  | Arm to travel position         |
+| `Start Intake`    | Deploy arm, then start roller |
+| `End Intake`      | Stop roller, travel position  |
 
 Use these in PathPlanner autos. Typical pattern: drive near a target with a path, run an alignment or intake named command, continue with the next path.
 

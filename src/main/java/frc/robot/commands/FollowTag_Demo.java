@@ -18,12 +18,11 @@ import static edu.wpi.first.units.Units.*;
  * Bind to a held button (whileTrue) so the robot stops when the button is released.
  * NOT for competition use, demo/outreach only.
  */
+
 public class FollowTag_Demo extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final LimelightSubsystem limelight;
-
-    // --- Tuning knobs (all in one spot for easy tweaking) ---
 
     /** Target following distance in meters (~4 feet). */
     private static final double TARGET_DISTANCE_METERS = 1.2;
