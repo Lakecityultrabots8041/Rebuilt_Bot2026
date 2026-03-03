@@ -5,33 +5,39 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Start Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Blue Bump Left"
+            "pathName": "Trench to Outpost"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "AlignAndShoot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 5.0
+            "name": "Idle Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "BBL to Climb"
+            "pathName": "Outpost to Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignHubAndShoot"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Blue Side Autons",
+  "folder": "Captian Outpost Autons",
   "choreoAuto": false
 }

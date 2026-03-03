@@ -36,6 +36,11 @@ public class Limelight_Move extends Command {
     // Preallocated to avoid per-loop heap allocations
     private final ChassisSpeeds reusableSpeeds = new ChassisSpeeds();
 
+    // +1.0 for front camera, -1.0 for rear camera.
+    // Flips forward/strafe/rotation so the robot drives toward the tag
+    // the rear camera sees (drives backward).
+    private final double directionMultiplier;
+
     private final Timer timer;
     private int alignedCount = 0;
     private double targetDistanceMeters;
@@ -53,6 +58,7 @@ public class Limelight_Move extends Command {
         this.limelight = limelight;
         this.tagGroupSupplier = tagGroupSupplier;
         this.driverStrafeSupplier = driverStrafeSupplier;
+        this.directionMultiplier = limelight.isRearFacing() ? -1.0 : 1.0;
 
         maxSpeedMps = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
         maxAngularRateRps = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
@@ -111,13 +117,13 @@ public class Limelight_Move extends Command {
         double rotationOutput = -horizontalErrorDeg * VisionConstants.ROTATION_GAIN;
         rotationOutput = MathUtil.clamp(rotationOutput,
             -VisionConstants.MAX_ROTATION_SPEED, VisionConstants.MAX_ROTATION_SPEED);
-        double rotationVelocityRps = rotationOutput * maxAngularRateRps;
+        double rotationVelocityRps = rotationOutput * maxAngularRateRps * directionMultiplier;
 
         // Forward/back
         double forwardOutput = distanceErrorMeters * VisionConstants.FORWARD_GAIN;
         forwardOutput = MathUtil.clamp(forwardOutput,
             -VisionConstants.MAX_FORWARD_SPEED, VisionConstants.MAX_FORWARD_SPEED);
-        double forwardVelocityMps = forwardOutput * maxSpeedMps;
+        double forwardVelocityMps = forwardOutput * maxSpeedMps * directionMultiplier;
 
         // Strafe — driver input in teleop, auto-correction in auto
         double driverStrafe = driverStrafeSupplier.getAsDouble();
@@ -127,12 +133,13 @@ public class Limelight_Move extends Command {
         double lateralOffsetMeters = limelight.getLateralOffsetMeters();
 
         if (Math.abs(driverStrafe) > 0.0) {
-            strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE;
+            strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE
+                * directionMultiplier;
         } else {
             double strafeOutput = lateralOffsetMeters * VisionConstants.AUTO_STRAFE_GAIN;
             strafeOutput = MathUtil.clamp(strafeOutput,
                 -VisionConstants.MAX_AUTO_STRAFE_SPEED, VisionConstants.MAX_AUTO_STRAFE_SPEED);
-            strafeVelocityMps = strafeOutput * maxSpeedMps;
+            strafeVelocityMps = strafeOutput * maxSpeedMps * directionMultiplier;
         }
 
         reusableSpeeds.vxMetersPerSecond = forwardVelocityMps;

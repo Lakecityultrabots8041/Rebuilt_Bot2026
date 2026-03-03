@@ -3,6 +3,8 @@ package frc.robot.subsystems.shoot;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -13,8 +15,10 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -27,6 +31,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Flywheel launches the ball
     private final TalonFX flywheelMotor;
+    private final TalonFX flywheelMotor2;
 
     private final DutyCycleOut feedRequest   = new DutyCycleOut(0);        // Feed: % power, no PID
     private final VelocityVoltage flywheelRequest = new VelocityVoltage(0); // Flywheel: PID velocity
@@ -65,10 +70,11 @@ public class ShooterSubsystem extends SubsystemBase {
     private double flywheelTargetSpeed = 0; // Last speed sent, for dashboard
 
     public ShooterSubsystem() {
-        actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR,     ShooterConstants.CANIVORE);
-        actCeiling    = new TalonFX(ShooterConstants.ACT_CEILING,   ShooterConstants.CANIVORE);
-        actUpper      = new TalonFX(ShooterConstants.Lo4d3r,     ShooterConstants.CANIVORE);
-        flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR, ShooterConstants.CANIVORE);
+        actFloor      = new TalonFX(ShooterConstants.ACT_FLOOR);
+        actCeiling    = new TalonFX(ShooterConstants.ACT_CEILING);
+        actUpper      = new TalonFX(ShooterConstants.LO4D3R);
+        flywheelMotor = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR);
+        flywheelMotor2 = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR2);
 
         // Floor + ceiling config (direct drive)
         var feedConfig = new TalonFXConfiguration();
@@ -95,11 +101,12 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
         flywheelConfig.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
-        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
+        //flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        //flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
+        //flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        //flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
+        flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
         // Flywheel signals for dashboard + ready checks
         flywheelVelocitySig = flywheelMotor.getVelocity();
@@ -108,6 +115,15 @@ public class ShooterSubsystem extends SubsystemBase {
 
         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelVelocitySig);
         BaseStatusSignal.setUpdateFrequencyForAll(50,  flywheelVoltageSig, flywheelCurrentSig);
+
+        // Disable unused status frames to reduce CAN traffic.
+        // Only the signals we subscribed to above stay at their set rates.
+        // Motors we never read signals from get ALL frames disabled.
+        flywheelMotor.optimizeBusUtilization();
+        flywheelMotor2.optimizeBusUtilization();
+        actFloor.optimizeBusUtilization();
+        actCeiling.optimizeBusUtilization();
+        actUpper.optimizeBusUtilization();
     }
 
     @Override
@@ -221,7 +237,6 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command passAll() {
         return runOnce(() -> {
             flywheelState = FlywheelState.PASSING;
-            Commands.waitSeconds(0.5);
             feedState     = FeedState.PASSING;
             lo4dState     = FeedState.PASSING;
         }).withName("PassAll");
@@ -233,10 +248,24 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command shoot() {
         return runOnce(() -> {
             flywheelState = FlywheelState.READY;
-            Commands.waitSeconds(0.5);
             feedState     = FeedState.FEEDING;
             lo4dState     = FeedState.FEEDING;
         }).withName("Shoot");
+    }
+
+
+    //Claude gave me the skeleton of this bit of code.
+    public Command testDelayedShot() {
+        return new SequentialCommandGroup(
+            runOnce(()-> {
+                flywheelState = FlywheelState.READY;
+            }),
+            new WaitCommand(1.5),
+            runOnce(()->{
+                feedState = FeedState.FEEDING;
+                lo4dState = FeedState.FEEDING;
+            })
+        ).withName("Please for the love of god work");
     }
 
     public Command revUp()  { return revFlywheel(); }
@@ -308,11 +337,11 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
-    private void setLo4dPower(double POWER) {
-        if (POWER == 0.0) {
-            actUpper.setControl(feedRequest.withOutput(-POWER));
+    private void setLo4dPower(double power) {
+        if (power == 0.0) {
+            actUpper.setControl(neutralRequest);
         } else {
-            actUpper.setControl(feedRequest.withOutput(-POWER));
+            actUpper.setControl(feedRequest.withOutput(power));
         }
     }
 
@@ -320,8 +349,10 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelTargetSpeed = rps;
         if (rps == 0.0) {
             flywheelMotor.setControl(neutralRequest);
+            flywheelMotor2.setControl(neutralRequest);
         } else {
             flywheelMotor.setControl(flywheelRequest.withVelocity(rps));
+            flywheelMotor2.setControl(flywheelRequest.withVelocity(rps));
         }
     }
 }

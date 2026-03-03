@@ -5,12 +5,6 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "Blue Bump Right"
-          }
-        },
-        {
           "type": "wait",
           "data": {
             "waitTime": 5.0
@@ -19,25 +13,37 @@
         {
           "type": "named",
           "data": {
-            "name": "AlignAndShoot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
+            "name": "Start Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "BBR to Climb"
+            "pathName": "Trench to Outpost"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Idle Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost to Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignHubAndShoot"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Blue Side Autons",
+  "folder": "1st Pick Autons",
   "choreoAuto": false
 }

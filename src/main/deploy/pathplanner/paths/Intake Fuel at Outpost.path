@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.49571428571428544,
-        "y": 4.925803571428571
+        "x": 2.4993580599144076,
+        "y": 0.6256633380884444
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4957142857142856,
-        "y": 4.925803571428571
+        "x": 1.904179743223965,
+        "y": 0.612724679029957
       },
       "isLocked": false,
-      "linkedName": "MB Intake"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.9089821428571425,
-        "y": 4.1969642857142855
+        "x": 0.4421112696148347,
+        "y": 0.6256633380884444
       },
       "prevControl": {
-        "x": 1.9089821428571425,
-        "y": 4.1969642857142855
+        "x": 0.6921112696148347,
+        "y": 0.6256633380884444
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "MB Intake To Shoot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Blue Side Paths",
+  "folder": "Captian Outpost paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 89.50351520412816
+    "rotation": -90.64374571417535
   },
   "useDefaultConstraints": true
 }

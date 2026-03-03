@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.022,
-        "y": 3.16
+        "x": 0.4550499286733236,
+        "y": 4.7919115549215405
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9048035714285714,
-        "y": 3.2575714285714286
+        "x": 2.0982596291012836,
+        "y": 5.5811697574893016
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Intake Depot"
     },
     {
       "anchor": {
-        "x": 1.7104464285714283,
-        "y": 3.322
+        "x": 2.628744650499286,
+        "y": 3.9638373751783167
       },
       "prevControl": {
-        "x": 2.5688571428571425,
-        "y": 3.2251785714285712
+        "x": 2.072382310984308,
+        "y": 4.49432239657632
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,14 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Rev Flywheel",
+      "waypointRelativePos": 0.085944919278247,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -42,13 +49,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Blue Side Paths",
+  "folder": "Captian Depot Paths",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": 33.179
+    "velocity": 0,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

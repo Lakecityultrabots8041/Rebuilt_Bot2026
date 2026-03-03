@@ -42,14 +42,18 @@ public final class VisionConstants {
         APRILTAG_DISTANCES[26] = hubShootDistance;
         APRILTAG_DISTANCES[27] = hubShootDistance;
 
-        double towerApproachDistance = Units.inchesToMeters(36);
+        // Tower (climb) - need to be right up against the structure
+        // TODO: tune on real field, this should be bumper-contact distance
+        double towerApproachDistance = Units.inchesToMeters(18);
         APRILTAG_DISTANCES[15] = towerApproachDistance;
         APRILTAG_DISTANCES[16] = towerApproachDistance;
 
         APRILTAG_DISTANCES[31] = towerApproachDistance;
         APRILTAG_DISTANCES[32] = towerApproachDistance;
 
-        double outpostDistance = Units.inchesToMeters(30);
+        // Outpost - need to be very close for scoring/interaction
+        // TODO: tune on real field, this should be near bumper-contact distance
+        double outpostDistance = Units.inchesToMeters(14);
         APRILTAG_DISTANCES[13] = outpostDistance;
         APRILTAG_DISTANCES[14] = outpostDistance;
 
@@ -114,19 +118,24 @@ public final class VisionConstants {
         return isRedAlliance() ? RED_TRENCH_TAGS : BLUE_TRENCH_TAGS;
     }
 
-    // Tag heights off floor
+    // ===== AprilTag heights off the floor (from 2026 REBUILT field) =====
     public static final double HUB_TAG_HEIGHT_METERS = Units.inchesToMeters(44.25);
     public static final double TOWER_OUTPOST_TAG_HEIGHT_METERS = Units.inchesToMeters(21.75);
     public static final double TRENCH_TAG_HEIGHT_METERS = Units.inchesToMeters(35.0);
 
-    // Camera mounting — TODO: measure these on the actual robot
-    public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
-    public static final double CAMERA_MOUNT_ANGLE_DEGREES = 0;
+    // ===== Camera mounting -- TODO: measure both on the actual robot =====
+    // Front camera ("limelight-april"), near the shooter, faces forward
+    public static final double FRONT_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
+    public static final double FRONT_CAMERA_MOUNT_ANGLE_DEGREES = 0;
 
-    // Alignment tolerances
-    public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;
-    public static final double DISTANCE_TOLERANCE_METERS = Units.inchesToMeters(3.0);
-    public static final double STRAFE_TOLERANCE_METERS = Units.inchesToMeters(3.0);
+    // Rear camera ("limelight-intake"), near the intake, faces backward
+    public static final double REAR_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
+    public static final double REAR_CAMERA_MOUNT_ANGLE_DEGREES = 0;
+
+    // ===== Alignment tolerances (how close is "good enough") =====
+    public static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;       // rotation
+    public static final double DISTANCE_TOLERANCE_METERS = Units.inchesToMeters(3.0);  // forward/back
+    public static final double STRAFE_TOLERANCE_METERS = Units.inchesToMeters(3.0);    // left/right
 
     // Proportional gains
     public static final double ROTATION_GAIN = 0.03;

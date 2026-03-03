@@ -7,19 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Bump Right"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "RBR to Climb"
+            "pathName": "SimplePath"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Red Side Autons",
+  "folder": null,
   "choreoAuto": false
 }

@@ -22,7 +22,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  */
 public class LimelightSubsystem extends SubsystemBase {
 
-    private static final String LIMELIGHT_NAME = "limelight-april";
+    private final String limelightName;
+    private final boolean isRearFacing;
+    private final String dashboardPrefix;
 
     // NetworkTables
     private final NetworkTable limelightTable;
@@ -67,8 +69,15 @@ public class LimelightSubsystem extends SubsystemBase {
     private record SimTag(int id, double x, double y) {}
     private final List<SimTag> simTagCache = new ArrayList<>();
 
-    public LimelightSubsystem() {
-        limelightTable = NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME);
+    /**
+     * @param cameraName  NetworkTables name, e.g. "limelight-april" or "limelight-climber"
+     * @param rearFacing  true if the camera faces the back of the robot
+     */
+    public LimelightSubsystem(String cameraName, boolean rearFacing) {
+        this.limelightName = cameraName;
+        this.isRearFacing = rearFacing;
+        this.dashboardPrefix = cameraName + "/";
+        limelightTable = NetworkTableInstance.getDefault().getTable(cameraName);
         tv = limelightTable.getEntry("tv");
         tx = limelightTable.getEntry("tx");
         ty = limelightTable.getEntry("ty");
@@ -147,6 +156,11 @@ public class LimelightSubsystem extends SubsystemBase {
         }
     }
 
+    /** True if this camera faces the rear of the robot. */
+    public boolean isRearFacing() {
+        return isRearFacing;
+    }
+
     public void setLEDMode(boolean on) {
         if (!isSimulation) {
             limelightTable.getEntry("ledMode").setNumber(on ? 3 : 1);
@@ -195,7 +209,7 @@ public class LimelightSubsystem extends SubsystemBase {
         if (isSimulation && robotPoseSupplier != null) {
             return robotPoseSupplier.get();
         }
-        var result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+        var result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
         if (result != null && result.tagCount > 0) {
             return result.pose;
         }
@@ -204,7 +218,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public double getMegaTag2Timestamp() {
         if (isSimulation) return edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-        var result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+        var result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
         if (result != null && result.tagCount > 0) {
             return result.timestampSeconds;
         }
@@ -225,30 +239,30 @@ public class LimelightSubsystem extends SubsystemBase {
             cachedTid = (int) tid.getInteger(-1);
 
             // Fetch MegaTag2 once per loop — shared by cache update and vision fusion
-            LimelightHelpers.SetRobotOrientation_NoFlush(LIMELIGHT_NAME,
+            LimelightHelpers.SetRobotOrientation_NoFlush(limelightName,
                 robotPoseSupplier != null ? robotPoseSupplier.get().getRotation().getDegrees() : 0,
                 0, 0, 0, 0, 0);
-            cachedMegaTag2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+            cachedMegaTag2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
             updateMegaTag2Cache();
             updateVisionFusion();
         }
 
-        // Dashboard
-        SmartDashboard.putBoolean("Limelight/Has Target", hasValidTarget());
-        SmartDashboard.putNumber("Limelight/TX (deg)", getHorizontalOffset());
-        SmartDashboard.putNumber("Limelight/TY (deg)", getVerticalOffset());
-        SmartDashboard.putNumber("Limelight/Area", getTargetArea());
-        SmartDashboard.putNumber("Limelight/AprilTag ID", getAprilTagID());
-        SmartDashboard.putBoolean("Limelight/MegaTag2 Available", hasMegaTag2Data());
-        SmartDashboard.putBoolean("Limelight/Sim Mode", isSimulation);
+        // Dashboard -- each camera gets its own prefix (e.g. "limelight-april/" or "limelight-climber/")
+        SmartDashboard.putBoolean(dashboardPrefix + "Has Target", hasValidTarget());
+        SmartDashboard.putNumber(dashboardPrefix + "TX (deg)", getHorizontalOffset());
+        SmartDashboard.putNumber(dashboardPrefix + "TY (deg)", getVerticalOffset());
+        SmartDashboard.putNumber(dashboardPrefix + "Area", getTargetArea());
+        SmartDashboard.putNumber(dashboardPrefix + "AprilTag ID", getAprilTagID());
+        SmartDashboard.putBoolean(dashboardPrefix + "MegaTag2 Available", hasMegaTag2Data());
+        SmartDashboard.putBoolean(dashboardPrefix + "Sim Mode", isSimulation);
 
-        SmartDashboard.putNumber("Limelight/Distance (in)", getDistanceInchesForDisplay());
-        SmartDashboard.putNumber("Limelight/Distance (m)", getDistanceMeters());
+        SmartDashboard.putNumber(dashboardPrefix + "Distance (in)", getDistanceInchesForDisplay());
+        SmartDashboard.putNumber(dashboardPrefix + "Distance (m)", getDistanceMeters());
     }
 
     private void updateMegaTag2Cache() {
         try {
-            double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(LIMELIGHT_NAME);
+            double[] targetPose = LimelightHelpers.getTargetPose_CameraSpace(limelightName);
             if (targetPose != null && targetPose.length >= 3 && cachedHasTarget) {
                 cachedLateralOffsetMeters = targetPose[0]; // X = lateral
                 cachedDistanceMeters = targetPose[2];      // Z = forward
@@ -296,6 +310,10 @@ public class LimelightSubsystem extends SubsystemBase {
         double robotX = robotPose.getX();
         double robotY = robotPose.getY();
         double robotHeading = robotPose.getRotation().getRadians();
+        // Rear-facing camera looks behind the robot
+        if (isRearFacing) {
+            robotHeading += Math.PI;
+        }
 
         double bestDistance = Double.MAX_VALUE;
         int bestTagID = -1;

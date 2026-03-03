@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.01555357142857,
-        "y": 5.460285714285715
+        "x": 3.509,
+        "y": 2.42413694721826
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.598625,
-        "y": 4.893410714285714
+        "x": 2.758131241084165,
+        "y": 1.2855349500713273
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 13.647214285714286,
-        "y": 4.844821428571429
+        "x": 2.4993580599144076,
+        "y": 0.6256633380884444
       },
       "prevControl": {
-        "x": 13.031749999999999,
-        "y": 5.460285714285715
+        "x": 3.042781740370898,
+        "y": 1.7642653352353794
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RedBumpRight"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -149.26451229807992
+    "rotation": -90.64374571417535
   },
   "reversed": false,
-  "folder": "Red Side Paths",
+  "folder": "Captian Outpost paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 178.7078331137501
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }
