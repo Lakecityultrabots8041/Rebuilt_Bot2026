@@ -20,10 +20,9 @@ public class LEDSubsystem extends SubsystemBase {
     private final BooleanSupplier autoAimActiveSupplier;
     private final BooleanSupplier intakingSupplier;
 
-    // Alliance tracking for idle/disabled colors
+    // Alliance tracking for disabled color
     private Alliance lastAlliance = null;
     private double disabledValue = LEDConstants.DEFAULT_DISABLED;
-    private double idleValue     = LEDConstants.DEFAULT_IDLE;
 
     private LEDState currentState = LEDState.IDLE;
     private LEDState lastState    = null;
@@ -87,7 +86,7 @@ public class LEDSubsystem extends SubsystemBase {
             case INTAKING        -> LEDConstants.INTAKING;
             case AUTONOMOUS      -> LEDConstants.AUTONOMOUS;
             case DISABLED        -> disabledValue;
-            case IDLE            -> idleValue;
+            case IDLE            -> LEDConstants.IDLE;
         };
     }
 
@@ -97,15 +96,13 @@ public class LEDSubsystem extends SubsystemBase {
         if (current != lastAlliance) {
             if (current == Alliance.Red) {
                 disabledValue = LEDConstants.DISABLED_RED;
-                idleValue     = LEDConstants.IDLE_RED;
             } else {
                 disabledValue = LEDConstants.DISABLED_BLUE;
-                idleValue     = LEDConstants.IDLE_BLUE;
             }
             lastAlliance = current;
 
-            // Force a re-send if we are currently showing an alliance pattern
-            if (currentState == LEDState.DISABLED || currentState == LEDState.IDLE) {
+            // Force a re-send if we are currently showing a disabled pattern
+            if (currentState == LEDState.DISABLED) {
                 lastState = null;
             }
         }

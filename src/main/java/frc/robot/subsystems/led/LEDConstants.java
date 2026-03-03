@@ -18,8 +18,6 @@ public final class LEDConstants {
     // ===== Alliance Patterns =====
     public static final double DISABLED_RED    = -0.17;  // Breath Red
     public static final double DISABLED_BLUE   = -0.15;  // Breath Blue
-    public static final double IDLE_RED        =  0.59;  // Solid Red (actually Hot Pink on table, see note)
-    public static final double IDLE_BLUE       =  0.85;  // Solid Blue
-    public static final double DEFAULT_IDLE    =  0.85;  // Solid Blue (fallback before FMS connects)
+    public static final double IDLE             = -0.57;  // Fire, Large
     public static final double DEFAULT_DISABLED = -0.15; // Breath Blue (fallback before FMS connects)
 }
