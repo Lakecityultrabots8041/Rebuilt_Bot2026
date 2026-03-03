@@ -25,7 +25,6 @@ public final class IntakeCommands {
     }
 
     public static Command pivotToIntake(IntakeSubsystems intakeSubsystems) {
-        System.out.println("Intaking");
         return intakeSubsystems.pivotToIntake().withName("PivotToIntakeCommand");
     }
 

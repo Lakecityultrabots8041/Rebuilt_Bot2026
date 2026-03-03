@@ -3,8 +3,6 @@ package frc.robot.subsystems.shoot;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -253,19 +251,29 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
 
-    //Claude gave me the skeleton of this bit of code.
-    public Command testDelayedShot() {
-        return new SequentialCommandGroup(
-            runOnce(()-> {
-                flywheelState = FlywheelState.READY;
-            }),
-            new WaitCommand(1.5),
-            runOnce(()->{
-                feedState = FeedState.FEEDING;
-                lo4dState = FeedState.FEEDING;
-            })
-        ).withName("Please for the love of god work");
-    }
+    /*
+     * TEACHING MOMENT: testDelayedShot was an early attempt to spin the flywheel
+     * and wait before feeding. It blindly waits 1.5 seconds instead of checking
+     * whether the flywheel actually reached target velocity. That means it can
+     * fire short if the flywheel is slow, or waste time if it reaches speed early.
+     *
+     * The correct approach is shootSequence() in ShooterCommands.java. It calls
+     * readyFlywheel(), then waitUntilFlywheelReady() which checks real velocity
+     * against FLYWHEEL_TOLERANCE_RPS before feeding. Faster and more reliable.
+     *
+     * Original code:
+     *
+     * public Command testDelayedShot() {
+     *     return new SequentialCommandGroup(
+     *         runOnce(() -> flywheelState = FlywheelState.READY),
+     *         new WaitCommand(1.5),
+     *         runOnce(() -> {
+     *             feedState = FeedState.FEEDING;
+     *             lo4dState = FeedState.FEEDING;
+     *         })
+     *     ).withName("TestDelayedShot");
+     * }
+     */
 
     public Command revUp()  { return revFlywheel(); }
     public Command idle()   { return idleAll();     }

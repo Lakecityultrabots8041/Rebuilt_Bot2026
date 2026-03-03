@@ -20,9 +20,31 @@ public final class ShooterCommands {
         return Commands.sequence(shooter.shoot());
     }
 
-    public static Command testShot(ShooterSubsystem shooter) {
-        return Commands.sequence(shooter.testDelayedShot());
-    }
+    /*
+     * QUESTION: Why does testShot exist when we already have shootSequence()
+     * and smartShoot()? This calls testDelayedShot() which blindly waits 1.5s
+     * instead of checking real flywheel velocity.
+     *
+     * If you wanted a "delayed shot" that waits for the flywheel, you already
+     * have better options in this file:
+     *
+     *   shootSequence()  - revs flywheel, waits until ACTUALLY at speed, then
+     *                      feeds. Best for autos or anytime you need a guaranteed
+     *                      full-speed shot.
+     *
+     *   smartShoot()     - checks if flywheel is already spinning. If yes, feeds
+     *                      immediately. If no, does the full shootSequence().
+     *                      Best "just do the right thing" option.
+     *
+     *   quickShoot()     - skips the wait entirely. Only safe when auto-aim has
+     *                      already pre-spun the flywheel to speed.
+     *
+     * Pick one of these instead. All three check real velocity or assume it is
+     * already handled, rather than guessing with a hardcoded delay.
+     */
+    // public static Command testShot(ShooterSubsystem shooter) {
+    //     return Commands.sequence(shooter.testDelayedShot());
+    // }
 
     /** Stop everything. */
     public static Command idle(ShooterSubsystem shooter) {

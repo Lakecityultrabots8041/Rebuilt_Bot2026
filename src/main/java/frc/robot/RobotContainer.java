@@ -214,36 +214,46 @@ public class RobotContainer {
         controller.back().whileTrue(createTowerAlign());
         controller.y().whileTrue(createOutpostAlign());
 
-        //TODO If wrong change back to normal
-        if (controller.povRight().getAsBoolean() == true) {
-            controller.rightTrigger().whileTrue(ShooterCommands.testShot(shooterSubsystem))
-                .onFalse(ShooterCommands.idle(shooterSubsystem));
-        } else {
-        controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
-            .onFalse(ShooterCommands.idle(shooterSubsystem));
-        }
-        
+        /*
+         * NOTE FOR REVIEW:
+         * One of you tried to add a testShot mode toggled by D-pad right.
+         * 
+         * The problem: this if/else runs once at startup, not continuously.
+         * D-pad right is never held during boot, so testShot could never activate.
+         * 
+         * The normal shoot() was always used.
+         *
+         * testDelayedShot() is worse version of shootSequence(),
+         * it blindly waits 1.5s instead of checking actual flywheel velocity.
+         *
+         * What I recommend is that you keep normal shoot(). Use shootSequence() or smartShoot()
+         * when you need the flywheel at speed first (autos already do this).
+         *
+         * Alignment is handled by auto-aim (left bumper toggle) or the START
+         * button, not the shoot trigger. If you want a "test shot" mode that doesn't care about vision, just use shootSequence()
+         * without the auto-aim command in front of it.
+         * 
+         * Original code:
+         *
+         * if (controller.povRight().getAsBoolean() == true) {
+         *     controller.rightTrigger().whileTrue(ShooterCommands.testShot(shooterSubsystem))
+         *         .onFalse(ShooterCommands.idle(shooterSubsystem));
+         * } else {
+         *     controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
+         *         .onFalse(ShooterCommands.idle(shooterSubsystem));
+         * }
+         */
 
-        // Right Trigger plan if we want auto align on shoot, 
-        // Align to hub in parallel with spinning up, then confirm on target before firing                                                        
-       /*  controller.rightTrigger().whileTrue(                                                                                                      
-                Commands.sequence(                                                                                                                    
-                Commands.parallel(                                                                                                                
-                        createHubAlign(),                                                                                                             
-                        shooterSubsystem.shoot()                                                                                                      
-                        ),                                                                                                                                
-                        shooterSubsystem.waitUntilReady(),                                                                                                
-                        Commands.waitSeconds(0.5),                                                                                                        
-                        shooterSubsystem.idle()                                                                                                           
-        ) 
-    */                                                                                                                                    
+
+        controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));                                                                                                                                    
         controller.leftTrigger().whileTrue(ShooterCommands.eject(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
         controller.b().whileTrue(ShooterCommands.pass(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
-        // x to intake, a to stop
+        // x to intake
         controller.x().whileTrue(IntakeCommands.intake(intakeSubsystem))
             .onFalse(IntakeCommands.idle(intakeSubsystem));
         
