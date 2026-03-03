@@ -55,8 +55,8 @@ public class IntakeConstants {
     public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0;
 
     // Pivot soft limits (rotor rotations)
-    // Forward = toward intake. Set just past INTAKE_POSITION.
-    // Reverse = toward stow. Set at STOW_POSITION so it can't go past zero.
-    //public static final double SOFT_LIMIT_FORWARD = -23.8;
-    //public static final double SOFT_LIMIT_REVERSE = 0.0;
+    //Forward = toward intake. Set just past INTAKE_POSITION.
+    //Reverse = toward stow. Set at STOW_POSITION so it can't go past zero.
+    public static final double SOFT_LIMIT_FORWARD = -23.8;
+    public static final double SOFT_LIMIT_REVERSE = 0.0;
 }

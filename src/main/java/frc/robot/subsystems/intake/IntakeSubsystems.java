@@ -70,21 +70,24 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        //FIXME this might genuinely break a motor, so please find an alternative to useing this
-        pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false;
-        pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false;
+        /* Learned from experience: Phoenix 6 enables hardware limit switches by default. 
+        If you remove those two lines below, the TalonFX reverts to its default config which expects switches to be wired. 
+        A floating input on an unwired limit switch pin can randomly read as "triggered" and lock 
+        the motor from moving in that direction*/
+
+        pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false; // We rely on soft limits, so disable hard limits to avoid random lockouts from floating inputs.
+        pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false; // We rely on soft limits, so disable hard limits to avoid random lockouts from floating inputs.
 
         pivotConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.PIVOT_STATOR_CURRENT_LIMIT;
         pivotConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.PIVOT_SUPPLY_CURRENT_LIMIT;
 
-        /*
+        
         pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = IntakeConstants.SOFT_LIMIT_FORWARD;
         pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = IntakeConstants.SOFT_LIMIT_REVERSE;
-        */
 
         pivotConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.CRUISE_VELOCITY;
         pivotConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.ACCELERATION;

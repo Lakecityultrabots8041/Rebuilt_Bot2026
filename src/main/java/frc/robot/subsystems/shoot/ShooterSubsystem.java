@@ -100,10 +100,10 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
         flywheelConfig.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        //flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        //flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
-        //flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        //flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -282,12 +282,13 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
-    /** Auto-aim disengaged, back to idle. */
     public void clearAutoAimSpeed() {
         if (flywheelState == FlywheelState.VISION_TRACKING) {
             autoAimSpeed = 0;
-            flywheelState       = FlywheelState.IDLE;
-            lastFlywheelState   = null;
+            if (feedState != FeedState.FEEDING) {
+                flywheelState     = FlywheelState.IDLE;
+                lastFlywheelState = null;
+            }
         }
     }
 
