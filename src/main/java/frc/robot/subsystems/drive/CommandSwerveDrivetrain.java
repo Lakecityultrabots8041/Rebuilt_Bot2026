@@ -10,7 +10,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -147,9 +147,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configurePidgeonPose();
         configureDriveMotors();
         configureAutoBuilder();
     }
+
+    
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -173,6 +176,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configurePidgeonPose();
         configureDriveMotors();
         configureAutoBuilder();
     }
@@ -207,8 +211,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configurePidgeonPose();
         configureDriveMotors();
         configureAutoBuilder();
+    }
+
+
+    private void configurePidgeonPose() {
+        var config = new Pigeon2Configuration();
+        config.MountPose.MountPoseYaw = DriveConstants.Pidgeon_Yaw;
+        getPigeon2().getConfigurator().apply(config);
     }
 
     /**

@@ -52,7 +52,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     // Shooter camera ("limelight-april"), faces the shooter side. Used for alignment and auto-aim.
-    private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-april", false);
+    private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-shooter", false);
     // Intake camera ("limelight-intake"), faces the intake side. Provides rear vision and pose fusion.
     private final LimelightSubsystem limelightIntake = new LimelightSubsystem("limelight-intake", true);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();

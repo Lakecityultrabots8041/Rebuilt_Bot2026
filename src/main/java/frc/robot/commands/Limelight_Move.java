@@ -133,17 +133,20 @@ public class Limelight_Move extends Command {
         double lateralOffsetMeters = limelight.getLateralOffsetMeters();
 
         if (Math.abs(driverStrafe) > 0.0) {
-            strafeVelocityMps = driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE
+            strafeVelocityMps = -driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE
                 * directionMultiplier;
-        } else {
+        }/* else {
             double strafeOutput = lateralOffsetMeters * VisionConstants.AUTO_STRAFE_GAIN;
             strafeOutput = MathUtil.clamp(strafeOutput,
                 -VisionConstants.MAX_AUTO_STRAFE_SPEED, VisionConstants.MAX_AUTO_STRAFE_SPEED);
             strafeVelocityMps = strafeOutput * maxSpeedMps * directionMultiplier;
+        }*/
+        else {
+            strafeVelocityMps = 0;
         }
 
-        reusableSpeeds.vxMetersPerSecond = forwardVelocityMps;
-        reusableSpeeds.vyMetersPerSecond = strafeVelocityMps;
+        reusableSpeeds.vyMetersPerSecond = forwardVelocityMps;
+        reusableSpeeds.vxMetersPerSecond = strafeVelocityMps;
         reusableSpeeds.omegaRadiansPerSecond = rotationVelocityRps;
         drivetrain.driveRobotRelative(reusableSpeeds);
 
