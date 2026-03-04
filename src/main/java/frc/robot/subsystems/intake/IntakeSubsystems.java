@@ -83,11 +83,12 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.PIVOT_SUPPLY_CURRENT_LIMIT;
 
-        
+        /*
         pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         pivotConfigs.SoftwareLimitSwitch.ForwardSoftLimitThreshold = IntakeConstants.SOFT_LIMIT_FORWARD;
         pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         pivotConfigs.SoftwareLimitSwitch.ReverseSoftLimitThreshold = IntakeConstants.SOFT_LIMIT_REVERSE;
+        */
 
         pivotConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.CRUISE_VELOCITY;
         pivotConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.ACCELERATION;

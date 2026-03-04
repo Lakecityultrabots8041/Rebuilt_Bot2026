@@ -13,12 +13,12 @@ public final class ShooterConstants {
     // DutyCycleOut uses -1.0 to 1.0 scale. 0.5 = 50% power, 1.0 = 100% power.
     // If the ball stalls, raise it. If it slams too hard, lower it.
     public static final double FEED_POWER  =  0.80;
-    public static final double EJECT_POWER = -0.50; // Negative = reverse
+    public static final double EJECT_POWER = -0.20; // Negative = reverse
     public static final double PASS_POWER  =  0.80;
 
     // ===== Lo4d3r power =====
     public static final double LO4D3R_POWER = -0.80;
-    public static final double LO4D3R_EJECT_POWER = 0.80;
+    public static final double LO4D3R_EJECT_POWER = 0.50;
 
     // ===== Flywheel speed presets =====
     // RPS = Rotations Per Second. How fast the flywheel spins.
