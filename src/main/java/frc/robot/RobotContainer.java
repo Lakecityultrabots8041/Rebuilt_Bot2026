@@ -214,36 +214,6 @@ public class RobotContainer {
         controller.povRight().whileTrue(createTowerAlign());
         controller.start().whileTrue(createOutpostAlign());
 
-        /*
-         * NOTE FOR REVIEW:
-         * One of you tried to add a testShot mode toggled by D-pad right.
-         * 
-         * The problem: this if/else runs once at startup, not continuously.
-         * D-pad right is never held during boot, so testShot could never activate.
-         * 
-         * The normal shoot() was always used.
-         *
-         * testDelayedShot() is worse version of shootSequence(),
-         * it blindly waits 1.5s instead of checking actual flywheel velocity.
-         *
-         * What I recommend is that you keep normal shoot(). Use shootSequence() or smartShoot()
-         * when you need the flywheel at speed first (autos already do this).
-         *
-         * Alignment is handled by auto-aim (left bumper toggle) or the START
-         * button, not the shoot trigger. If you want a "test shot" mode that doesn't care about vision, just use shootSequence()
-         * without the auto-aim command in front of it.
-         * 
-         * Original code:
-         *
-         * if (controller.povRight().getAsBoolean() == true) {
-         *     controller.rightTrigger().whileTrue(ShooterCommands.testShot(shooterSubsystem))
-         *         .onFalse(ShooterCommands.idle(shooterSubsystem));
-         * } else {
-         *     controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
-         *         .onFalse(ShooterCommands.idle(shooterSubsystem));
-         * }
-         */
-
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));                                                                                                                                    
@@ -266,7 +236,7 @@ public class RobotContainer {
         controller.a().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
 
         // Demo: hold DPad Left to follow any visible AprilTag at safe distance
-        controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));
+        //controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));
     }
 
     /**

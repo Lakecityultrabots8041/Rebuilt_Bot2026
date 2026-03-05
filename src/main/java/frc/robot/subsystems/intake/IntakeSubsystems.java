@@ -104,7 +104,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotMotor2.getConfigurator().apply(pivotConfigs);
 
         // Invert right motor and set to follow left motor
-        pivotMotor2.setControl(new Follower(IntakeConstants.PIVOT_MOTOR1, MotorAlignmentValue.Opposed));
+        pivotMotor1.setControl(new Follower(IntakeConstants.PIVOT_MOTOR2, MotorAlignmentValue.Opposed));
 
         // Arm must be physically at stow before powering on.
         // This tells the motor that the current position is stow (position 0).
@@ -136,6 +136,44 @@ public class IntakeSubsystems extends SubsystemBase {
             }
             lastIntakeState = intakeState;
         }
+
+
+        /*
+         *      if (pivotState != lastPivotState) {
+            if (pivotState == PivotState.IDLE) {
+                // Coast mode lets the arm rest on the bumpers under gravity
+                pivotMotor1.setNeutralMode(NeutralModeValue.Coast);
+                pivotMotor2.setNeutralMode(NeutralModeValue.Coast);
+                pivotMotor1.setControl(neutralRequest);
+            } else {
+                // Send Motion Magic first — the motor is under active PID control
+                // so brake/coast doesn't matter during motion. This avoids the jerk
+                // that would happen if we switched to brake before commanding.
+                switch (pivotState) {
+                    case STOW -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
+                    case INTAKE -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
+                    case TRAVEL -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
+                    default -> {}
+                }
+                // Switch to brake after commanding so the arm holds position
+                // when Motion Magic finishes and the motor settles
+                if (lastPivotState == PivotState.IDLE) {
+                    pivotMotor1.setNeutralMode(NeutralModeValue.Brake);
+                    pivotMotor2.setNeutralMode(NeutralModeValue.Brake);
+                }
+            }
+            lastPivotState = pivotState;
+        }
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         */
 
         // Pivot motor only updates on state change
         if (pivotState != lastPivotState) {

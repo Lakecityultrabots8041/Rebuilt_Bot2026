@@ -34,9 +34,9 @@ public class IntakeConstants {
     public static final int JERK = 25;
 
     // Pivot preset positions (rotor rotations - tune on robot)
-    public static final double STOW_POSITION = 0.0;
-    public static final double INTAKE_POSITION = -23.3;
-    public static final double TRAVEL_POSITION = -10.0;
+    public static final double STOW_POSITION = -0.3;
+    public static final double INTAKE_POSITION = -4.25;
+    public static final double TRAVEL_POSITION = -2.87;
 
     // Position tolerance for "at target" checks (rotations)
     public static final double POSITION_TOLERANCE = 0.1;
