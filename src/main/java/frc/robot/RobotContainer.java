@@ -247,14 +247,14 @@ public class RobotContainer {
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));                                                                                                                                    
-        controller.leftTrigger().whileTrue(ShooterCommands.eject(shooterSubsystem))
+        controller.x().whileTrue(ShooterCommands.eject(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
         controller.b().whileTrue(ShooterCommands.pass(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
-        // x to intake
-        controller.x().whileTrue(IntakeCommands.intake(intakeSubsystem))
+        // Left Trigger to intake
+        controller.leftTrigger().whileTrue(IntakeCommands.intake(intakeSubsystem))
             .onFalse(IntakeCommands.idle(intakeSubsystem));
         
         

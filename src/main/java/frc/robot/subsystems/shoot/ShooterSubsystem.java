@@ -102,6 +102,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
         flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
+        flywheelConfig.Audio.AllowMusicDurDisable = true;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -175,6 +176,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     // ===== COMMAND FACTORIES =====
+
+    
 
     /** Spin flywheel up to pre-rev speed. Used before going to full READY. */
     public Command revFlywheel() {

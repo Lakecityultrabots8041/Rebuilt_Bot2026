@@ -132,7 +132,7 @@ public class Limelight_Move extends Command {
         double strafeVelocityMps;
         double lateralOffsetMeters = limelight.getLateralOffsetMeters();
 
-        if (Math.abs(driverStrafe) > 0.0) {
+        if (Math.abs(driverStrafe) > 0.05) {
             strafeVelocityMps = -driverStrafe * maxSpeedMps * VisionConstants.MAX_DRIVER_STRAFE_SCALE
                 * directionMultiplier;
         }/* else {
@@ -142,6 +142,7 @@ public class Limelight_Move extends Command {
             strafeVelocityMps = strafeOutput * maxSpeedMps * directionMultiplier;
         }*/
         else {
+            //prevent the bot from continueing past when stick is let go
             strafeVelocityMps = 0;
         }
 
