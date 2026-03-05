@@ -48,6 +48,7 @@ public class LEDSubsystem extends SubsystemBase {
         this.intakingSupplier      = intakingSupplier;
 
         blinkin = new Spark(LEDConstants.PWM_PORT);
+        blinkin.set(LEDConstants.DEFAULT_DISABLED);
     }
 
     @Override

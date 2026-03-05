@@ -8,7 +8,8 @@ public class IntakeConstants {
 
     // ===== CAN IDs =====
     public static final int INTAKE_MOTOR = 3;
-    public static final int PIVOT_MOTOR = 2;
+    public static final int PIVOT_MOTOR1 = 2;
+    public static final int PIVOT_MOTOR2 = 19;
 
     // Intake roller power (0.0 to 1.0)
     // DutyCycleOut, no PID. If balls slip, raise it. If too aggressive, lower it.
