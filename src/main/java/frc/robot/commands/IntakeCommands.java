@@ -37,8 +37,8 @@ public final class IntakeCommands {
         return Commands.sequence(
             intakeSubsystems.pivotToIntake(),
             intakeSubsystems.waitUntilPivotAtTarget(),
-            intakeSubsystems.intake(),
-            intakeSubsystems.pivotIdle() // Release arm so it can bounce on the bumper
+            intakeSubsystems.pivotIdle(), // Release arm so it can bounce on the bumper
+            intakeSubsystems.intake()
         ).withName("IntakeSequenceCommand");
     }
 

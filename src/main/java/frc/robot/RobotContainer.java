@@ -209,10 +209,10 @@ public class RobotContainer {
             SmartDashboard.putBoolean("AutoAim/Enabled", autoAimEnabled);
         }));
 
-        // Vision alignment: START=hub, Y=tower, X=outpost
-        controller.start().whileTrue(createHubAlign());
-        controller.back().whileTrue(createTowerAlign());
-        controller.y().whileTrue(createOutpostAlign());
+        // Vision alignment: Left DPad=hub, Right DPad=tower, Start=outpost
+        controller.povLeft().whileTrue(createHubAlign());
+        controller.povRight().whileTrue(createTowerAlign());
+        controller.start().whileTrue(createOutpostAlign());
 
         /*
          * NOTE FOR REVIEW:
@@ -261,9 +261,9 @@ public class RobotContainer {
         //controller.a().onTrue(IntakeCommands.idle(intakeSubsystem));
 
         // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
-        controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
-        controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
-        controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
+        //controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
+        controller.y().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
+        controller.a().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
 
         // Demo: hold DPad Left to follow any visible AprilTag at safe distance
         controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));

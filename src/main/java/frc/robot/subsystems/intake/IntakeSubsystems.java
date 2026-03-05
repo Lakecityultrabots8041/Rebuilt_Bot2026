@@ -104,7 +104,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotMotor2.getConfigurator().apply(pivotConfigs);
 
         // Invert right motor and set to follow left motor
-        pivotMotor2.setControl(new Follower(IntakeConstants.PIVOT_MOTOR1, MotorAlignmentValue.Aligned));
+        pivotMotor2.setControl(new Follower(IntakeConstants.PIVOT_MOTOR1, MotorAlignmentValue.Opposed));
 
         // Arm must be physically at stow before powering on.
         // This tells the motor that the current position is stow (position 0).
