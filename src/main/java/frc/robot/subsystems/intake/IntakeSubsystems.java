@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -11,6 +12,7 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+//import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -74,6 +76,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.Slot0.kG = IntakeConstants.kG;
         pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         /* Learned from experience: Phoenix 6 enables hardware limit switches by default. 
         If you remove those two lines below, the TalonFX reverts to its default config which expects switches to be wired. 
@@ -104,7 +107,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotMotor2.getConfigurator().apply(pivotConfigs);
 
         // Invert right motor and set to follow left motor
-        pivotMotor1.setControl(new Follower(IntakeConstants.PIVOT_MOTOR2, MotorAlignmentValue.Opposed));
+        pivotMotor2.setControl(new Follower(IntakeConstants.PIVOT_MOTOR1, MotorAlignmentValue.Opposed));
 
         // Arm must be physically at stow before powering on.
         // This tells the motor that the current position is stow (position 0).
