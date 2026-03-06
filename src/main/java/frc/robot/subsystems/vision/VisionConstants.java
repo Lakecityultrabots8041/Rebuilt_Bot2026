@@ -23,7 +23,7 @@ public final class VisionConstants {
         }
 
         // TODO: tune for our shooter
-        double hubShootDistance = Units.inchesToMeters(97); // Measured from center of hub to front of Limelight lens at shooting position
+        double hubShootDistance = Units.inchesToMeters(104); // Measured from center of hub to front of Limelight lens at shooting position
         APRILTAG_DISTANCES[2]  = hubShootDistance;
         APRILTAG_DISTANCES[3]  = hubShootDistance;
         APRILTAG_DISTANCES[4]  = hubShootDistance;

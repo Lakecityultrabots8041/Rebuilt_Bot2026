@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.8449786019971466,
-        "y": 7.483152639087019
+        "x": 4.039,
+        "y": 7.496
       },
       "prevControl": {
-        "x": 1.7359771754636228,
-        "y": 7.41845934379458
+        "x": 1.929998573466476,
+        "y": 7.431306704707561
       },
       "nextControl": null,
       "isLocked": false,
@@ -54,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 102.52880770915151
+    "rotation": -162.53607310815715
   },
   "reversed": false,
   "folder": "Shooting Paths",
