@@ -31,6 +31,13 @@ public class Robot extends LoggedRobot {
   // With multiple cameras and extra hardware, watch this carefully during matches.
   private static final double BATTERY_LOW_VOLTAGE = 12.0;
 
+  // Shift boundary times (seconds remaining) for the REBUILT game.
+  // When matchTime drops below one of these, the next shift begins.
+  private static final double[] SHIFT_BOUNDARIES = {130, 105, 80, 55, 30};
+
+  // How many seconds before a shift change to show the warning on the dashboard
+  private static final double SHIFT_WARNING_SECONDS = 4.0;
+
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -113,6 +120,23 @@ public class Robot extends LoggedRobot {
     }
     SmartDashboard.putString("Driver/Shift", shift);
     SmartDashboard.putBoolean("Driver/End Game", endGame);
+
+    // Countdown to next shift change so drivers can prepare.
+    // Shows seconds remaining until the next boundary crossing.
+    // "Shift Warning" goes true 4 seconds before a shift change.
+    double nextShiftIn = 0;
+    boolean shiftWarning = false;
+    if (DriverStation.isTeleopEnabled() && matchTime >= 0) {
+        for (double boundary : SHIFT_BOUNDARIES) {
+            if (matchTime > boundary) {
+                nextShiftIn = matchTime - boundary;
+                break;
+            }
+        }
+        shiftWarning = nextShiftIn > 0 && nextShiftIn <= SHIFT_WARNING_SECONDS;
+    }
+    SmartDashboard.putNumber("Driver/Next Shift In", nextShiftIn);
+    SmartDashboard.putBoolean("Driver/Shift Warning", shiftWarning);
 
     // Compound driver indicators (shooter state, vision lock, intake position)
     m_robotContainer.updateDriverDashboard();

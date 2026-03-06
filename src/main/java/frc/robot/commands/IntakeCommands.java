@@ -25,7 +25,6 @@ public final class IntakeCommands {
     }
 
     public static Command pivotToIntake(IntakeSubsystems intakeSubsystems) {
-        System.out.println("Intaking");
         return intakeSubsystems.pivotToIntake().withName("PivotToIntakeCommand");
     }
 
@@ -38,8 +37,8 @@ public final class IntakeCommands {
         return Commands.sequence(
             intakeSubsystems.pivotToIntake(),
             intakeSubsystems.waitUntilPivotAtTarget(),
-            intakeSubsystems.intake(),
-            intakeSubsystems.pivotIdle() // Release arm so it can bounce on the bumper
+            intakeSubsystems.pivotIdle(), // Release arm so it can bounce on the bumper
+            intakeSubsystems.intake()
         ).withName("IntakeSequenceCommand");
     }
 

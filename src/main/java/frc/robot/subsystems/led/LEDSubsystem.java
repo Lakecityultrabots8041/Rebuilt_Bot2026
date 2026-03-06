@@ -8,34 +8,34 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+// See docs/LED_GUIDE.md for priority, shift timing, and how to change patterns.
 public class LEDSubsystem extends SubsystemBase {
 
-    // The Blinkin is controlled like a Spark motor controller over PWM.
-    // Sending a value between -1.0 and 1.0 selects a built-in pattern.
     private final Spark blinkin;
 
-    // Conditions checked every loop to decide what pattern to show.
-    // These are passed in from RobotContainer so LED logic stays in one file.
     private final BooleanSupplier visionAlignedSupplier;
     private final BooleanSupplier autoAimActiveSupplier;
     private final BooleanSupplier intakingSupplier;
 
-    // Alliance tracking for disabled color
     private Alliance lastAlliance = null;
     private double disabledValue = LEDConstants.DEFAULT_DISABLED;
 
     private LEDState currentState = LEDState.IDLE;
     private LEDState lastState    = null;
 
-    // Highest priority at the top, lowest at the bottom.
-    // The first condition that is true wins.
+    // Priority order: first enum = highest priority. See LED_GUIDE.md for details.
     public enum LEDState {
-        VISION_ALIGNED,   // Auto-aim on AND locked on tag
-        AUTO_AIM_ACTIVE,  // Auto-aim toggle on, searching
-        INTAKING,         // Intake rollers running
-        AUTONOMOUS,       // Running an auto routine
-        DISABLED,         // Robot disabled
-        IDLE              // Nothing happening
+        VISION_ALIGNED,
+        AUTO_AIM_ACTIVE,
+        INTAKING,
+        AUTONOMOUS,
+        DISABLED,
+        END_GAME,
+        SHIFT_1,
+        SHIFT_2,
+        SHIFT_3,
+        SHIFT_4,
+        IDLE
     }
 
     public LEDSubsystem(
@@ -48,6 +48,7 @@ public class LEDSubsystem extends SubsystemBase {
         this.intakingSupplier      = intakingSupplier;
 
         blinkin = new Spark(LEDConstants.PWM_PORT);
+        blinkin.set(LEDConstants.DEFAULT_DISABLED);
     }
 
     @Override
@@ -66,11 +67,13 @@ public class LEDSubsystem extends SubsystemBase {
             newState = LEDState.AUTONOMOUS;
         } else if (DriverStation.isDisabled()) {
             newState = LEDState.DISABLED;
+        } else if (DriverStation.isTeleopEnabled()) {
+            newState = getTeleopShiftState();
         } else {
             newState = LEDState.IDLE;
         }
 
-        // Only send PWM on state change to avoid redundant writes
+        // Only send PWM on state change
         if (newState != lastState) {
             blinkin.set(getPatternValue(newState));
             SmartDashboard.putString("LED/State", newState.toString());
@@ -85,12 +88,30 @@ public class LEDSubsystem extends SubsystemBase {
             case AUTO_AIM_ACTIVE -> LEDConstants.AUTO_AIM_ACTIVE;
             case INTAKING        -> LEDConstants.INTAKING;
             case AUTONOMOUS      -> LEDConstants.AUTONOMOUS;
+            case END_GAME        -> LEDConstants.END_GAME;
+            case SHIFT_1         -> LEDConstants.SHIFT_1;
+            case SHIFT_2         -> LEDConstants.SHIFT_2;
+            case SHIFT_3         -> LEDConstants.SHIFT_3;
+            case SHIFT_4         -> LEDConstants.SHIFT_4;
             case DISABLED        -> disabledValue;
             case IDLE            -> LEDConstants.IDLE;
         };
     }
 
-    // Update alliance colors when FMS connects and tells us red or blue
+    // Boundaries match Robot.java shift tracking
+    private LEDState getTeleopShiftState() {
+        double matchTime = DriverStation.getMatchTime();
+        if (matchTime < 0) return LEDState.IDLE;
+
+        if (matchTime <= 30)  return LEDState.END_GAME;
+        if (matchTime <= 55)  return LEDState.SHIFT_4;
+        if (matchTime <= 80)  return LEDState.SHIFT_3;
+        if (matchTime <= 105) return LEDState.SHIFT_2;
+        if (matchTime <= 130) return LEDState.SHIFT_1;
+
+        return LEDState.IDLE;
+    }
+
     private void updateAlliancePatterns() {
         Alliance current = DriverStation.getAlliance().orElse(null);
         if (current != lastAlliance) {
@@ -101,7 +122,7 @@ public class LEDSubsystem extends SubsystemBase {
             }
             lastAlliance = current;
 
-            // Force a re-send if we are currently showing a disabled pattern
+            // Force re-send if currently showing disabled pattern
             if (currentState == LEDState.DISABLED) {
                 lastState = null;
             }

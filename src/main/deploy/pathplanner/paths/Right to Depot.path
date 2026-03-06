@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 0.4550499286733236,
-        "y": 7.10793152639087
+        "x": 0.4421112696148347,
+        "y": 7.17262482168331
       },
       "prevControl": {
-        "x": 1.9559343794579167,
-        "y": 6.991483594864479
+        "x": 1.942995720399428,
+        "y": 7.056176890156919
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Test"
+      "linkedName": "Start of Intake Depot"
     }
   ],
   "rotationTargets": [],

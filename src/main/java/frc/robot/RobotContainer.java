@@ -52,7 +52,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     // Shooter camera ("limelight-april"), faces the shooter side. Used for alignment and auto-aim.
-    private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-april", false);
+    private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-shooter", false);
     // Intake camera ("limelight-intake"), faces the intake side. Provides rear vision and pose fusion.
     private final LimelightSubsystem limelightIntake = new LimelightSubsystem("limelight-intake", true);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -209,54 +209,35 @@ public class RobotContainer {
             SmartDashboard.putBoolean("AutoAim/Enabled", autoAimEnabled);
         }));
 
-        // Vision alignment: START=hub, Y=tower, X=outpost
-        controller.start().whileTrue(createHubAlign());
-        controller.back().whileTrue(createTowerAlign());
-        controller.y().whileTrue(createOutpostAlign());
+        // Vision alignment: Left DPad=hub, Right DPad=tower, Start=outpost
+        controller.povLeft().whileTrue(createHubAlign());
+        controller.povRight().whileTrue(createTowerAlign());
+        controller.start().whileTrue(createOutpostAlign());
 
-        //TODO If wrong change back to normal
-        if (controller.povRight().getAsBoolean() == true) {
-            controller.rightTrigger().whileTrue(ShooterCommands.testShot(shooterSubsystem))
-                .onFalse(ShooterCommands.idle(shooterSubsystem));
-        } else {
+        //TODO Also review this
+        controller.back().onTrue(ShooterCommands.speedSwitch(shooterSubsystem));
+
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
-            .onFalse(ShooterCommands.idle(shooterSubsystem));
-        }
-        
-
-        // Right Trigger plan if we want auto align on shoot, 
-        // Align to hub in parallel with spinning up, then confirm on target before firing                                                        
-       /*  controller.rightTrigger().whileTrue(                                                                                                      
-                Commands.sequence(                                                                                                                    
-                Commands.parallel(                                                                                                                
-                        createHubAlign(),                                                                                                             
-                        shooterSubsystem.shoot()                                                                                                      
-                        ),                                                                                                                                
-                        shooterSubsystem.waitUntilReady(),                                                                                                
-                        Commands.waitSeconds(0.5),                                                                                                        
-                        shooterSubsystem.idle()                                                                                                           
-        ) 
-    */                                                                                                                                    
-        controller.leftTrigger().whileTrue(ShooterCommands.eject(shooterSubsystem))
-            .onFalse(ShooterCommands.idle(shooterSubsystem));
-        controller.b().whileTrue(ShooterCommands.pass(shooterSubsystem))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));                                                                                                                                    
+        controller.x().whileTrue(ShooterCommands.eject(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
-        // x to intake, a to stop
-        controller.x().whileTrue(IntakeCommands.intake(intakeSubsystem))
+        // Left Trigger to intake
+        controller.leftTrigger().whileTrue(IntakeCommands.intake(intakeSubsystem))
             .onFalse(IntakeCommands.idle(intakeSubsystem));
         
         
         //controller.a().onTrue(IntakeCommands.idle(intakeSubsystem));
 
         // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
-        controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
-        controller.povDown().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
-        controller.a().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
+        //controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
+        controller.y().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
+        controller.a().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
+        controller.b().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
 
         // Demo: hold DPad Left to follow any visible AprilTag at safe distance
-        controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));
+        //controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));
     }
 
     /**

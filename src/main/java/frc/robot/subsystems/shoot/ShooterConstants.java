@@ -13,20 +13,21 @@ public final class ShooterConstants {
     // DutyCycleOut uses -1.0 to 1.0 scale. 0.5 = 50% power, 1.0 = 100% power.
     // If the ball stalls, raise it. If it slams too hard, lower it.
     public static final double FEED_POWER  =  0.80;
-    public static final double EJECT_POWER = -0.50; // Negative = reverse
+    public static final double EJECT_POWER = -0.20; // Negative = reverse
     public static final double PASS_POWER  =  0.80;
 
     // ===== Lo4d3r power =====
     public static final double LO4D3R_POWER = -0.80;
-    public static final double LO4D3R_EJECT_POWER = -0.0;
+    public static final double LO4D3R_EJECT_POWER = 0.50;
 
     // ===== Flywheel speed presets =====
     // RPS = Rotations Per Second. How fast the flywheel spins.
     // Higher RPS = ball goes farther. Feed power does not affect distance.
-    public static final double FLYWHEEL_READY_RPS = 60.0;
-    public static final double FLYWHEEL_REV_RPS   =  45.0; // Pre-spin before going to full speed
+    public static final double FLYWHEEL_READY_RPS = 46.0;
+    public static final double FLYWHEEL_REV_RPS   =  35.0; // Pre-spin before going to full speed
     public static final double FLYWHEEL_PASS_RPS  =  50.0;
     public static final double FLYWHEEL_IDLE_RPS  =   0.0;
+    public static final double FLYWHEEL_SPEED_2   = 35.0;
 
     // ===== Flywheel PID =====
     // kV = main tuning knob. How much voltage per RPS of target speed.
@@ -40,9 +41,9 @@ public final class ShooterConstants {
     // Stator = motor torque. Supply = battery draw.
 
     // Flywheel draws high current during spin-up, then drops at steady state.
-    // Stator maxed to 120A for full torque during spin-up.
-    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 120.0;
-    public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60.0;
+    // Based on CyberCoyotes (mentor school) reference: 90A stator / 45A supply.
+    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 90.0;
+    public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 45.0;
 
     // Feed rollers (floor and ceiling, no gearbox reduction).
     // Stator maxed to 120A so they never stall pushing balls through.
@@ -62,8 +63,13 @@ public final class ShooterConstants {
     // ===== Variable distance velocity table =====
     // Flywheel speed is adjusted based on distance from the target (from Limelight).
     // Feed rollers always use FEED_POWER regardless of distance.
+    // All values need real field testing. 60 RPS is already strong at close range.
     private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
-    private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
+    private static final double[] VELOCITY_TABLE_RPS    = { 35,  40,   45,  50,  55,  58,  60};
+
+    // Old table (hit the gym ceiling at 90 RPS)
+    // private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
+    // private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
 
     /** Returns flywheel speed (RPS) for a given distance in meters. */
     public static double getSpeedForDistance(double meters) {

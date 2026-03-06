@@ -1,0 +1,66 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.4421112696148347,
+        "y": 0.6256633380884444
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.3440941512125537,
+        "y": 0.7032952924393738
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.039,
+        "y": 7.496
+      },
+      "prevControl": {
+        "x": 2.7192567760342357,
+        "y": 7.703018544935809
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Left Shooting Point"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Rev Flywheel",
+      "waypointRelativePos": 0.35565052231719163,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Rev Flywheel"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -162.53607310815715
+  },
+  "reversed": false,
+  "folder": "Outpost paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -90.64374571417535
+  },
+  "useDefaultConstraints": true
+}

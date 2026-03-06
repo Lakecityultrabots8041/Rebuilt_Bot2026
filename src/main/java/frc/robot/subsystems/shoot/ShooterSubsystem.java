@@ -3,8 +3,6 @@ package frc.robot.subsystems.shoot;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -40,6 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final StatusSignal<AngularVelocity> flywheelVelocitySig;
     private final StatusSignal<Voltage>         flywheelVoltageSig;
     private final StatusSignal<Current>         flywheelCurrentSig;
+    private boolean flySpeed = true;
 
     public enum FeedState {
         IDLE,     // Stopped
@@ -52,6 +51,7 @@ public class ShooterSubsystem extends SubsystemBase {
         IDLE,           // Stopped
         REVVING,        // Pre-spinning before full speed
         READY,          // At full shooting speed
+        READY2,         // At a faster shot speed
         PASSING,        // At passing speed
         VISION_TRACKING // Speed set by Limelight distance, updated every loop
     }
@@ -100,10 +100,11 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
         flywheelConfig.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        //flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        //flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
-        //flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        //flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
+        flywheelConfig.Audio.AllowMusicDurDisable = true;
         flywheelMotor.getConfigurator().apply(flywheelConfig);
         flywheelMotor2.getConfigurator().apply(flywheelConfig);
 
@@ -138,6 +139,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 case IDLE    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_RPS);
                 case REVVING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_REV_RPS);
                 case READY   -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_READY_RPS);
+                case READY2  -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_SPEED_2);
                 case PASSING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_PASS_RPS);
                 default      -> {}
             }
@@ -178,6 +180,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // ===== COMMAND FACTORIES =====
 
+    //TODO Overview code here
+    public Command speedSwitch() {
+        return runOnce(() -> flySpeed ^= true)
+            .withName("SwapFlySpeed");
+    }
+
     /** Spin flywheel up to pre-rev speed. Used before going to full READY. */
     public Command revFlywheel() {
         return runOnce(() -> flywheelState = FlywheelState.REVVING)
@@ -186,8 +194,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
     /** Spin flywheel to full shooting speed. Feed rollers stay off. */
     public Command readyFlywheel() {
+        if (flySpeed == true) {
         return runOnce(() -> flywheelState = FlywheelState.READY)
                 .withName("ReadyFlywheel");
+        } else {
+            return runOnce(() -> flywheelState = FlywheelState.READY2)
+                .withName("ReadyFlywheelMore");
+        }
     }
 
     /** Turn feed rollers on. Call this AFTER flywheel is at speed. */
@@ -253,19 +266,29 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
 
-    //Claude gave me the skeleton of this bit of code.
-    public Command testDelayedShot() {
-        return new SequentialCommandGroup(
-            runOnce(()-> {
-                flywheelState = FlywheelState.READY;
-            }),
-            new WaitCommand(1.5),
-            runOnce(()->{
-                feedState = FeedState.FEEDING;
-                lo4dState = FeedState.FEEDING;
-            })
-        ).withName("Please for the love of god work");
-    }
+    /*
+     * TEACHING MOMENT: testDelayedShot was an early attempt to spin the flywheel
+     * and wait before feeding. It blindly waits 1.5 seconds instead of checking
+     * whether the flywheel actually reached target velocity. That means it can
+     * fire short if the flywheel is slow, or waste time if it reaches speed early.
+     *
+     * The correct approach is shootSequence() in ShooterCommands.java. It calls
+     * readyFlywheel(), then waitUntilFlywheelReady() which checks real velocity
+     * against FLYWHEEL_TOLERANCE_RPS before feeding. Faster and more reliable.
+     *
+     * Original code:
+     *
+     * public Command testDelayedShot() {
+     *     return new SequentialCommandGroup(
+     *         runOnce(() -> flywheelState = FlywheelState.READY),
+     *         new WaitCommand(1.5),
+     *         runOnce(() -> {
+     *             feedState = FeedState.FEEDING;
+     *             lo4dState = FeedState.FEEDING;
+     *         })
+     *     ).withName("TestDelayedShot");
+     * }
+     */
 
     public Command revUp()  { return revFlywheel(); }
     public Command idle()   { return idleAll();     }
@@ -282,12 +305,13 @@ public class ShooterSubsystem extends SubsystemBase {
         }
     }
 
-    /** Auto-aim disengaged, back to idle. */
     public void clearAutoAimSpeed() {
         if (flywheelState == FlywheelState.VISION_TRACKING) {
             autoAimSpeed = 0;
-            flywheelState       = FlywheelState.IDLE;
-            lastFlywheelState   = null;
+            if (feedState != FeedState.FEEDING) {
+                flywheelState     = FlywheelState.IDLE;
+                lastFlywheelState = null;
+            }
         }
     }
 
@@ -299,6 +323,7 @@ public class ShooterSubsystem extends SubsystemBase {
             case IDLE            -> ShooterConstants.FLYWHEEL_IDLE_RPS;
             case REVVING         -> ShooterConstants.FLYWHEEL_REV_RPS;
             case READY           -> ShooterConstants.FLYWHEEL_READY_RPS;
+            case READY2          -> ShooterConstants.FLYWHEEL_SPEED_2;
             case PASSING         -> ShooterConstants.FLYWHEEL_PASS_RPS;
             case VISION_TRACKING -> autoAimSpeed;
         };

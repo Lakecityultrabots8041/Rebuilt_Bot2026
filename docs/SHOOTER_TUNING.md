@@ -47,17 +47,17 @@ All of these are in `ShooterConstants.java`:
 
 | Constant      | Default | What it controls                                      |
 |---------------|---------|-------------------------------------------------------|
-| `FEED_POWER`  | 1.0     | Power to run feed rollers when shooting (0.0 to 1.0)  |
-| `EJECT_POWER` | -0.80   | Power when ejecting a stuck ball (negative = reverse)  |
-| `PASS_POWER`  | 0.60    | Power when passing                                     |
+| `FEED_POWER`  | 0.80    | Power to run feed rollers when shooting (0.0 to 1.0)  |
+| `EJECT_POWER` | -0.50   | Power when ejecting a stuck ball (negative = reverse)  |
+| `PASS_POWER`  | 0.80    | Power when passing                                     |
 
 ### Flywheel Speed Presets
 
 | Constant             | Default | What it controls                          |
 |----------------------|---------|-------------------------------------------|
-| `FLYWHEEL_READY_RPS` | 105.0   | Full shooting speed                       |
-| `FLYWHEEL_REV_RPS`   | 75.0    | Pre-spin speed before going to full power |
-| `FLYWHEEL_PASS_RPS`  | 65.0    | Passing speed                             |
+| `FLYWHEEL_READY_RPS` | 60.0    | Full shooting speed                       |
+| `FLYWHEEL_REV_RPS`   | 45.0    | Pre-spin speed before going to full power |
+| `FLYWHEEL_PASS_RPS`  | 50.0    | Passing speed                             |
 | `FLYWHEEL_IDLE_RPS`  | 0.0     | Stopped                                   |
 
 ### Flywheel PID
@@ -213,7 +213,7 @@ In auto-aim mode, flywheel speed comes from the distance table below. The code i
 
 ```java
 private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
-private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
+private static final double[] VELOCITY_TABLE_RPS    = { 35,  40,   45,  50,  55,  58,  60};
 ```
 
 This table maps shooting distance (from Limelight) to flywheel RPS. The code interpolates between rows automatically. You don't need to add every possible distance, just enough points to cover your shooting range.
@@ -235,8 +235,8 @@ Passing uses `FLYWHEEL_PASS_RPS` for the flywheel and `PASS_POWER` for the feed 
 
 | Constant             | Default | Direction                                               |
 |----------------------|---------|---------------------------------------------------------|
-| `FLYWHEEL_PASS_RPS`  | 65.0    | Up for more range, down if overshooting                 |
-| `PASS_POWER`         | 0.60    | Up if ball stalls during a pass, down if too aggressive |
+| `FLYWHEEL_PASS_RPS`  | 50.0    | Up for more range, down if overshooting                 |
+| `PASS_POWER`         | 0.80    | Up if ball stalls during a pass, down if too aggressive |
 
 Passing is lower precision than shooting, so these don't need to be tuned as tightly.
 
@@ -326,48 +326,35 @@ Assumes flywheel is already at speed. Skips the wait and just runs the feed. Use
 
 ## Current Limits
 
-All shooter motors have current limits configured in `ShooterConstants.java`. These protect the motors, wiring, and battery.
+All motors have current limits configured in `ShooterConstants.java`.
 
-**Stator current** controls torque output of the motor. Limits how hard the motor pushes. If a ball jams or a motor stalls, stator current is what prevents damage.
+**Stator current** controls torque output of the motor. Limits how hard the motor pushes.
 
-**Supply current** controls how much the motor draws from the battery. Prevents brownouts and breaker trips during a match.
-
-**WARNING:** The stator limits are currently at 120A, which is the Phoenix 6 default. These should be lowered before competition. 80A stator is a good starting point for most mechanisms. If spin-up feels sluggish at 80A, raise it back. If you see brownouts, lower supply current.
-
-### Flywheel
-
-| Constant                         | Default | What it does                                                          |
-|----------------------------------|---------|-----------------------------------------------------------------------|
-| `FLYWHEEL_STATOR_CURRENT_LIMIT` | 120 A   | Max torque during spin-up and operation. **Lower to 80A before comp.**|
-| `FLYWHEEL_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw, prevents brownouts                                  |
-
-Watch `Flywheel/Current` on SmartDashboard. At steady state (flywheel at target speed), sustained current over 40A means something is wrong, either the PID is fighting itself or there is mechanical resistance.
+**Supply current** controls how much the motor draws from the battery. Prevents brownouts and breaker trips.
 
 ### Feed Rollers (Floor + Ceiling, direct drive)
 
-| Constant                     | Default | What it does                                                            |
-|------------------------------|---------|-------------------------------------------------------------------------|
-| `FEED_STATOR_CURRENT_LIMIT` | 120 A   | Max torque for floor and ceiling rollers. **Lower to 80A before comp.**|
-| `FEED_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw                                                        |
+| Constant                     | Default | What it does                      |
+|------------------------------|---------|-----------------------------------|
+| `FEED_STATOR_CURRENT_LIMIT` | 120 A   | Max torque for floor and ceiling  |
+| `FEED_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw                  |
 
 ### Upper Feed Roller (12:1 gearbox, 4 belts)
 
-| Constant                      | Default | What it does                                                                                         |
-|-------------------------------|---------|------------------------------------------------------------------------------------------------------|
-| `UPPER_STATOR_CURRENT_LIMIT` | 120 A   | Max torque. **Lower to 80A before comp.** Needs headroom to overcome gearbox + belt drag on startup.|
-| `UPPER_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw                                                                                     |
-
-The upper roller has a 12:1 gearbox driving 4 belts. It needs current headroom to break through startup friction. If the motor struggles to start at 80A, raise stator back up. If it runs hot during sustained use, lower it.
+| Constant                      | Default | What it does                                                           |
+|-------------------------------|---------|------------------------------------------------------------------------|
+| `UPPER_STATOR_CURRENT_LIMIT` | 120 A   | Max torque. Needs headroom to overcome gearbox + belt drag on startup. |
+| `UPPER_SUPPLY_CURRENT_LIMIT` | 60 A    | Max battery draw                                                       |
 
 ### How these compare to the rest of the robot
 
-| Mechanism                      | Stator Limit | Supply Limit | Notes                    |
-|--------------------------------|--------------|--------------|--------------------------|
-| Shooter flywheel               | 120 A        | 60 A         | Lower stator before comp |
-| Shooter feed (floor + ceiling) | 120 A        | 60 A         | Lower stator before comp |
-| Shooter feed (upper, 12:1)     | 120 A        | 60 A         | Lower stator before comp |
-| Intake pivot                   | 60 A         | 35 A         | Already tuned            |
-| Drivetrain (per module)        | 80 A         | 60 A         | Set by TunerConstants    |
+| Mechanism                      | Stator Limit | Supply Limit | Notes              |
+|--------------------------------|--------------|--------------|---------------------|
+| Shooter flywheel               | 90 A         | 45 A         | CyberCoyotes ref   |
+| Shooter feed (floor + ceiling) | 120 A        | 60 A         |                    |
+| Shooter feed (upper, 12:1)     | 120 A        | 60 A         |                    |
+| Intake pivot                   | 60 A         | 35 A         | Already tuned      |
+| Drivetrain (per module)        | 80 A         | 60 A         | Set by TunerConstants |
 
 ---
 

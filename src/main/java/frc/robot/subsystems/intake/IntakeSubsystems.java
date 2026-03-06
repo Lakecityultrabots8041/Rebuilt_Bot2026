@@ -4,11 +4,15 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+//import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +22,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class IntakeSubsystems extends SubsystemBase {
 
     private final TalonFX intakeMotor;
-    private final TalonFX pivotMotor;
+    private final TalonFX pivotMotor1;
+    private final TalonFX pivotMotor2;
     // Roller uses DutyCycleOut (simple % power, no PID)
     private final DutyCycleOut intakeRequest    = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest;
@@ -26,6 +31,7 @@ public class IntakeSubsystems extends SubsystemBase {
 
     // Pivot position signal, refreshed non-blocking in periodic()
     private final StatusSignal<Angle> pivotPositionSig;
+    private final StatusSignal<Angle> pivotPositionSig2;
 
     private IntakeState intakeState = IntakeState.IDLE;
     private IntakeState lastIntakeState = null;
@@ -48,7 +54,8 @@ public class IntakeSubsystems extends SubsystemBase {
 
     public IntakeSubsystems() {
         intakeMotor = new TalonFX(IntakeConstants.INTAKE_MOTOR);
-        pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR);
+        pivotMotor1 = new TalonFX(IntakeConstants.PIVOT_MOTOR1);
+        pivotMotor2 = new TalonFX(IntakeConstants.PIVOT_MOTOR2);
         motionMagicRequest = new MotionMagicVoltage(0);
 
         // Intake roller config (12:1 gearbox)
@@ -69,10 +76,15 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.Slot0.kG = IntakeConstants.kG;
         pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-        //FIXME this might genuinely break a motor, so please find an alternative to useing this
-        pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false;
-        pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false;
+        /* Learned from experience: Phoenix 6 enables hardware limit switches by default. 
+        If you remove those two lines below, the TalonFX reverts to its default config which expects switches to be wired. 
+        A floating input on an unwired limit switch pin can randomly read as "triggered" and lock 
+        the motor from moving in that direction*/
+
+        pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false; // We rely on soft limits, so disable hard limits to avoid random lockouts from floating inputs.
+        pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false; // We rely on soft limits, so disable hard limits to avoid random lockouts from floating inputs.
 
         pivotConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.PIVOT_STATOR_CURRENT_LIMIT;
@@ -91,20 +103,28 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.MotionMagic.MotionMagicJerk = IntakeConstants.JERK;
 
         intakeMotor.getConfigurator().apply(intakeConfigs);
-        pivotMotor.getConfigurator().apply(pivotConfigs);
+        pivotMotor1.getConfigurator().apply(pivotConfigs);
+        pivotMotor2.getConfigurator().apply(pivotConfigs);
+
+        // Invert right motor and set to follow left motor
+        pivotMotor2.setControl(new Follower(IntakeConstants.PIVOT_MOTOR1, MotorAlignmentValue.Opposed));
 
         // Arm must be physically at stow before powering on.
         // This tells the motor that the current position is stow (position 0).
-        pivotMotor.setPosition(IntakeConstants.STOW_POSITION);
+        pivotMotor1.setPosition(IntakeConstants.STOW_POSITION);
+        pivotMotor2.setPosition(IntakeConstants.STOW_POSITION);
 
         // Pivot position updates at 50 Hz (every 20 ms)
-        pivotPositionSig = pivotMotor.getPosition();
+        pivotPositionSig = pivotMotor1.getPosition();
+        pivotPositionSig2 = pivotMotor2.getPosition();
         pivotPositionSig.setUpdateFrequency(50);
+        pivotPositionSig2.setUpdateFrequency(50);
 
         // Disable unused status frames to reduce CAN traffic.
         // Pivot keeps its position signal at 50 Hz, everything else gets disabled.
         // Intake roller has no signals we read, so all frames get disabled.
-        pivotMotor.optimizeBusUtilization();
+        pivotMotor1.optimizeBusUtilization();
+        pivotMotor2.optimizeBusUtilization();
         intakeMotor.optimizeBusUtilization();
     }
 
@@ -120,13 +140,51 @@ public class IntakeSubsystems extends SubsystemBase {
             lastIntakeState = intakeState;
         }
 
+
+        /*
+         *      if (pivotState != lastPivotState) {
+            if (pivotState == PivotState.IDLE) {
+                // Coast mode lets the arm rest on the bumpers under gravity
+                pivotMotor1.setNeutralMode(NeutralModeValue.Coast);
+                pivotMotor2.setNeutralMode(NeutralModeValue.Coast);
+                pivotMotor1.setControl(neutralRequest);
+            } else {
+                // Send Motion Magic first — the motor is under active PID control
+                // so brake/coast doesn't matter during motion. This avoids the jerk
+                // that would happen if we switched to brake before commanding.
+                switch (pivotState) {
+                    case STOW -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
+                    case INTAKE -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
+                    case TRAVEL -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
+                    default -> {}
+                }
+                // Switch to brake after commanding so the arm holds position
+                // when Motion Magic finishes and the motor settles
+                if (lastPivotState == PivotState.IDLE) {
+                    pivotMotor1.setNeutralMode(NeutralModeValue.Brake);
+                    pivotMotor2.setNeutralMode(NeutralModeValue.Brake);
+                }
+            }
+            lastPivotState = pivotState;
+        }
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         */
+
         // Pivot motor only updates on state change
         if (pivotState != lastPivotState) {
             switch (pivotState) {
-                case STOW -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
-                case INTAKE -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
-                case TRAVEL -> pivotMotor.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
-                case IDLE -> pivotMotor.setControl(neutralRequest);
+                case STOW -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
+                case INTAKE -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
+                case TRAVEL -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
+                case IDLE -> pivotMotor1.setControl(neutralRequest);
             }
             lastPivotState = pivotState;
         }

@@ -23,7 +23,7 @@ public final class VisionConstants {
         }
 
         // TODO: tune for our shooter
-        double hubShootDistance = Units.inchesToMeters(97); // Measured from center of hub to front of Limelight lens at shooting position
+        double hubShootDistance = Units.inchesToMeters(104); // Measured from center of hub to front of Limelight lens at shooting position
         APRILTAG_DISTANCES[2]  = hubShootDistance;
         APRILTAG_DISTANCES[3]  = hubShootDistance;
         APRILTAG_DISTANCES[4]  = hubShootDistance;
@@ -125,8 +125,8 @@ public final class VisionConstants {
 
     // ===== Camera mounting -- TODO: measure both on the actual robot =====
     // Front camera ("limelight-april"), near the shooter, faces forward
-    public static final double FRONT_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
-    public static final double FRONT_CAMERA_MOUNT_ANGLE_DEGREES = 0;
+    public static final double FRONT_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.25);
+    public static final double FRONT_CAMERA_MOUNT_ANGLE_DEGREES = 21.8;
 
     // Rear camera ("limelight-intake"), near the intake, faces backward
     public static final double REAR_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
