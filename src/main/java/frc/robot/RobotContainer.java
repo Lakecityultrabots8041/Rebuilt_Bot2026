@@ -214,12 +214,12 @@ public class RobotContainer {
         controller.povRight().whileTrue(createTowerAlign());
         controller.start().whileTrue(createOutpostAlign());
 
+        //TODO Also review this
+        controller.back().onTrue(ShooterCommands.speedSwitch(shooterSubsystem));
 
         controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));                                                                                                                                    
         controller.x().whileTrue(ShooterCommands.eject(shooterSubsystem))
-            .onFalse(ShooterCommands.idle(shooterSubsystem));
-        controller.b().whileTrue(ShooterCommands.pass(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
 
         // ----- INTAKE ----
@@ -232,8 +232,9 @@ public class RobotContainer {
 
         // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
         //controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
-        controller.y().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
+        controller.y().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.a().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
+        controller.b().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
 
         // Demo: hold DPad Left to follow any visible AprilTag at safe distance
         //controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));

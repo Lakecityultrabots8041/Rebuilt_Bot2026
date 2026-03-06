@@ -20,6 +20,11 @@ public final class ShooterCommands {
         return Commands.sequence(shooter.shoot());
     }
 
+    //TODO Review code here as well
+    public static Command speedSwitch(ShooterSubsystem shooter) {
+        return Commands.sequence(shooter.speedSwitch());
+    }
+
     /*
      * QUESTION: Why does testShot exist when we already have shootSequence()
      * and smartShoot()? This calls testDelayedShot() which blindly waits 1.5s

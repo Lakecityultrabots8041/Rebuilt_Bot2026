@@ -38,6 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final StatusSignal<AngularVelocity> flywheelVelocitySig;
     private final StatusSignal<Voltage>         flywheelVoltageSig;
     private final StatusSignal<Current>         flywheelCurrentSig;
+    private boolean flySpeed = true;
 
     public enum FeedState {
         IDLE,     // Stopped
@@ -50,6 +51,7 @@ public class ShooterSubsystem extends SubsystemBase {
         IDLE,           // Stopped
         REVVING,        // Pre-spinning before full speed
         READY,          // At full shooting speed
+        READY2,         // At a faster shot speed
         PASSING,        // At passing speed
         VISION_TRACKING // Speed set by Limelight distance, updated every loop
     }
@@ -137,6 +139,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 case IDLE    -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_IDLE_RPS);
                 case REVVING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_REV_RPS);
                 case READY   -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_READY_RPS);
+                case READY2  -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_SPEED_2);
                 case PASSING -> setFlywheelVelocity(ShooterConstants.FLYWHEEL_PASS_RPS);
                 default      -> {}
             }
@@ -177,7 +180,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // ===== COMMAND FACTORIES =====
 
-    
+    //TODO Overview code here
+    public Command speedSwitch() {
+        return runOnce(() -> flySpeed ^= true)
+            .withName("SwapFlySpeed");
+    }
 
     /** Spin flywheel up to pre-rev speed. Used before going to full READY. */
     public Command revFlywheel() {
@@ -187,8 +194,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
     /** Spin flywheel to full shooting speed. Feed rollers stay off. */
     public Command readyFlywheel() {
+        if (flySpeed == true) {
         return runOnce(() -> flywheelState = FlywheelState.READY)
                 .withName("ReadyFlywheel");
+        } else {
+            return runOnce(() -> flywheelState = FlywheelState.READY2)
+                .withName("ReadyFlywheelMore");
+        }
     }
 
     /** Turn feed rollers on. Call this AFTER flywheel is at speed. */
@@ -311,6 +323,7 @@ public class ShooterSubsystem extends SubsystemBase {
             case IDLE            -> ShooterConstants.FLYWHEEL_IDLE_RPS;
             case REVVING         -> ShooterConstants.FLYWHEEL_REV_RPS;
             case READY           -> ShooterConstants.FLYWHEEL_READY_RPS;
+            case READY2          -> ShooterConstants.FLYWHEEL_SPEED_2;
             case PASSING         -> ShooterConstants.FLYWHEEL_PASS_RPS;
             case VISION_TRACKING -> autoAimSpeed;
         };

@@ -3,35 +3,47 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.547,
-        "y": 5.516
+        "x": 3.509,
+        "y": 2.424
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7193152639087015,
-        "y": 6.616262482168331
+        "x": 1.9947503566333804,
+        "y": 3.0710699001426542
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.4421112696148347,
-        "y": 7.17262482168331
+        "x": 3.8449786019971466,
+        "y": 7.483152639087019
       },
       "prevControl": {
-        "x": 1.942995720399428,
-        "y": 7.056176890156919
+        "x": 1.7359771754636228,
+        "y": 7.41845934379458
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Start of Intake Depot"
+      "linkedName": "Left Shooting Point"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Rev Flywheel",
+      "waypointRelativePos": 0.030952380952380946,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Rev Flywheel"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -42,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 102.52880770915151
   },
   "reversed": false,
-  "folder": "Depot Paths",
+  "folder": "Shooting Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }
