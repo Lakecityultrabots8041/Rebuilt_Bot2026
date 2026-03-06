@@ -204,15 +204,17 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // Auto-aim toggle
+        /* 
         controller.leftBumper().onTrue(Commands.runOnce(() -> {
             autoAimEnabled = !autoAimEnabled;
             SmartDashboard.putBoolean("AutoAim/Enabled", autoAimEnabled);
         }));
+        */
 
         // Vision alignment: Left DPad=hub, Right DPad=tower, Start=outpost
-        controller.povLeft().whileTrue(createHubAlign());
-        controller.povRight().whileTrue(createTowerAlign());
-        controller.start().whileTrue(createOutpostAlign());
+        controller.start().toggleOnTrue(createHubAlign());
+        //controller.povRight().whileTrue(createTowerAlign());
+        //controller.start().whileTrue(createOutpostAlign());
 
         //TODO Also review this
         controller.back().onTrue(ShooterCommands.speedSwitch(shooterSubsystem));
