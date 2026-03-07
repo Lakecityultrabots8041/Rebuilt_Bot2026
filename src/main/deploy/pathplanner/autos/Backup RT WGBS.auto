@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "RT to Shoot"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "AlignHubAndShoot"
@@ -20,6 +26,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Captian Autons",
+  "folder": "Compition Autons(That Work)",
   "choreoAuto": false
 }
