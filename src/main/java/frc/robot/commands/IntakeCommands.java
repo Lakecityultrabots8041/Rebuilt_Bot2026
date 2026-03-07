@@ -25,7 +25,7 @@ public final class IntakeCommands {
     }
 
     public static Command pivotToIntake(IntakeSubsystems intakeSubsystems) {
-        return intakeSubsystems.pivotToIntake().withName("PivotToIntakeCommand");
+        return Commands.sequence(intakeSubsystems.pivotToIntake(), intakeSubsystems.waitUntilPivotAtTarget());
     }
 
     public static Command pivotToTravel(IntakeSubsystems intakeSubsystems) {

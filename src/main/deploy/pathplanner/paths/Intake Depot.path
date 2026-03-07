@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4421112696148347,
-        "y": 7.17262482168331
+        "x": 1.8136091298145502,
+        "y": 6.034022824536376
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.44656392205816564,
-        "y": 6.885453966291
+        "x": 1.5555747789512382,
+        "y": 6.038361689683199
       },
       "isLocked": false,
       "linkedName": "Start of Intake Depot"
     },
     {
       "anchor": {
-        "x": 0.4550499286733236,
-        "y": 4.7919115549215405
+        "x": 0.5197432239657629,
+        "y": 6.034022824536376
       },
       "prevControl": {
-        "x": 0.4513945938890034,
-        "y": 5.6003192466631635
+        "x": 1.2077728323988048,
+        "y": 6.036799410388546
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 1.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Depot Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

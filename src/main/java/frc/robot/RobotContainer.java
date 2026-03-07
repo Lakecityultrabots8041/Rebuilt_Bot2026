@@ -125,7 +125,7 @@ public class RobotContainer {
 
         // =====Shooter Name Commands=====
         NamedCommands.registerCommand("Rev Flywheel", ShooterCommands.revUpFlywheel(shooterSubsystem));
-        NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
+        NamedCommands.registerCommand("Shoot", ShooterCommands.quickShoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
         NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
         NamedCommands.registerCommand("Quick Shoot", ShooterCommands.quickShoot(shooterSubsystem));
@@ -162,8 +162,8 @@ public class RobotContainer {
         // Default drive — field-centric with auto-aim overlay
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed);
-                currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed);
+                currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed * 0.9);
+                currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed * 0.9);
                 double velocityX = currentDriveX;
                 double velocityY = currentDriveY;
 
@@ -212,7 +212,7 @@ public class RobotContainer {
         */
 
         // Vision alignment: Left DPad=hub, Right DPad=tower, Start=outpost
-        controller.start().toggleOnTrue(createHubAlign());
+        controller.start().whileTrue(createHubAlign());
         //controller.povRight().whileTrue(createTowerAlign());
         //controller.start().whileTrue(createOutpostAlign());
 

@@ -88,7 +88,7 @@ public final class ShooterCommands {
             shooter.readyFlywheel(),
             shooter.startFeeding(),
             shooter.startLo4d(),
-            Commands.waitSeconds(0.5),
+            Commands.waitSeconds(4.5),
             shooter.idleAll()
         ).withName("QuickShoot");
     }

@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 0.4421112696148347,
-        "y": 7.17262482168331
+        "x": 1.8136091298145502,
+        "y": 6.034022824536376
       },
       "prevControl": {
-        "x": 2.124136947218259,
-        "y": 7.159686162624822
+        "x": 3.4956348074179746,
+        "y": 6.021084165477888
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Depot Paths",

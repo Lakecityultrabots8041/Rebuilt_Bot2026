@@ -11,9 +11,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "sequential",
           "data": {
-            "name": "Start Intake"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Pivot To Intake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,9 +36,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "sequential",
           "data": {
-            "name": "Idle Intake"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Idle Intake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Pivot To Travel"
+                }
+              }
+            ]
           }
         },
         {
@@ -37,7 +63,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AlignHubAndShoot"
+            "name": "Shoot"
           }
         }
       ]
