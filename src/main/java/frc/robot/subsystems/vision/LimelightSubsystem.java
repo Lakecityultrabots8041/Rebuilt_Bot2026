@@ -2,11 +2,11 @@ package frc.robot.subsystems.vision;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
@@ -46,7 +46,8 @@ public class LimelightSubsystem extends SubsystemBase {
     private int cachedTid = -1;
 
     // Vision fusion
-    private BiConsumer<Pose2d, Double> visionMeasurementConsumer = null;
+    private VisionConstants.VisionPoseConsumer visionPoseConsumer = null;
+    private Supplier<Double> spinRateSupplier = null;
 
     // Simulation
     private final boolean isSimulation;
@@ -116,9 +117,14 @@ public class LimelightSubsystem extends SubsystemBase {
         this.robotPoseSupplier = poseSupplier;
     }
 
-    /** Receives MegaTag2 poses for odometry fusion each loop. */
-    public void setVisionMeasurementConsumer(BiConsumer<Pose2d, Double> consumer) {
-        this.visionMeasurementConsumer = consumer;
+    /** Where to send accepted vision poses. Set from RobotContainer. */
+    public void setVisionPoseConsumer(VisionConstants.VisionPoseConsumer consumer) {
+        this.visionPoseConsumer = consumer;
+    }
+
+    /** How fast the robot is spinning (rad/s). Used to skip vision during fast turns. */
+    public void setSpinRateSupplier(Supplier<Double> supplier) {
+        this.spinRateSupplier = supplier;
     }
 
     // Limelight data — all return per-loop cached values (updated at top of periodic)
@@ -277,22 +283,63 @@ public class LimelightSubsystem extends SubsystemBase {
         }
     }
 
-    // Uses the estimate already fetched this loop — no second NT call
+    // Filters bad vision data, then sends good data to the pose estimator.
+    // Accuracy scales automatically: more tags + closer = trust camera more.
     private void updateVisionFusion() {
-        if (visionMeasurementConsumer == null) return;
+        if (visionPoseConsumer == null) return;
         if (!hasValidTarget()) return;
         if (robotPoseSupplier == null) return;
 
         LimelightHelpers.PoseEstimate result = cachedMegaTag2Estimate;
         if (result == null) return;
-        if (result.tagCount == 0) return;
-        if (result.avgTagArea < VisionConstants.MIN_TARGET_AREA) return;
+
+        if (result.tagCount == 0) {
+            SmartDashboard.putString(dashboardPrefix + "Vision/Reject", "No tags");
+            return;
+        }
+        if (result.avgTagArea < VisionConstants.MIN_TARGET_AREA) {
+            SmartDashboard.putString(dashboardPrefix + "Vision/Reject", "Area too small");
+            return;
+        }
 
         double x = result.pose.getX();
         double y = result.pose.getY();
-        if (x < 0 || x > 17.0 || y < 0 || y > 9.0) return;
+        if (x < 0 || x > 17.0 || y < 0 || y > 9.0) {
+            SmartDashboard.putString(dashboardPrefix + "Vision/Reject", "Off field");
+            return;
+        }
 
-        visionMeasurementConsumer.accept(result.pose, result.timestampSeconds);
+        // Skip during fast spins. Camera images blur and give bad poses.
+        if (spinRateSupplier != null) {
+            double spin = Math.abs(spinRateSupplier.get());
+            if (spin > VisionConstants.VISION_MAX_SPIN) {
+                SmartDashboard.putString(dashboardPrefix + "Vision/Reject", "Spinning too fast");
+                return;
+            }
+        }
+
+        // Skip if vision says we teleported. One bad frame shouldn't move the robot.
+        Pose2d currentPose = robotPoseSupplier.get();
+        double jump = currentPose.getTranslation().getDistance(result.pose.getTranslation());
+        if (jump > VisionConstants.VISION_MAX_JUMP) {
+            SmartDashboard.putString(dashboardPrefix + "Vision/Reject", "Jumped " + String.format("%.1fm", jump));
+            return;
+        }
+
+        // How accurate is this measurement? More tags + closer = better.
+        // Start with VISION_ACCURACY, divide by tags squared, scale up by distance.
+        double howFarOff = VisionConstants.VISION_ACCURACY / (result.tagCount * result.tagCount);
+        howFarOff *= (1.0 + (result.avgTagDist * result.avgTagDist / 30.0));
+        howFarOff = Math.max(0.1, Math.min(5.0, howFarOff));
+
+        // CTRE needs three numbers: [x uncertainty, y uncertainty, rotation uncertainty]
+        // We use the same value for x and y. Rotation is 999 = "ignore it, gyro is better."
+        var poseUncertainty = VecBuilder.fill(howFarOff, howFarOff, 999.0);
+
+        visionPoseConsumer.accept(result.pose, result.timestampSeconds, poseUncertainty);
+
+        SmartDashboard.putString(dashboardPrefix + "Vision/Reject", "Accepted");
+        SmartDashboard.putNumber(dashboardPrefix + "Vision/HowFarOff", howFarOff);
     }
 
     // Sim — finds closest visible tag from robot pose using pre-built cache.

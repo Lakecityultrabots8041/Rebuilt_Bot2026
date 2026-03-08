@@ -270,14 +270,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-private edu.wpi.first.math.geometry.Pose2d getPose() {
-    return getState().Pose;
-}
-
-private edu.wpi.first.math.kinematics.ChassisSpeeds getRobotRelativeSpeeds() {
-    return getState().Speeds;
-}
-    
     /**
      * Returns a command that applies the specified control request to this swerve drivetrain.
      *

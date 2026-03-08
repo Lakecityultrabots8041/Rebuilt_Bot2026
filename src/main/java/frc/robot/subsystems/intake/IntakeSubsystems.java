@@ -275,4 +275,8 @@ public class IntakeSubsystems extends SubsystemBase {
     public PivotState getPivotState() {
         return pivotState;
     }
+
+    // Used by SimManager to feed physics back into the motor controllers
+    public TalonFX getPivotMotor1() { return pivotMotor1; }
+    public TalonFX getPivotMotor2() { return pivotMotor2; }
 }

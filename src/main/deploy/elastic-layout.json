@@ -74,22 +74,8 @@
           },
 
           {
-            "title": "Next Shift In",
-            "x": 1152.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Driver/Next Shift In",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
             "title": "Alliance",
-            "x": 1408.0,
+            "x": 1152.0,
             "y": 0.0,
             "width": 256.0,
             "height": 128.0,
@@ -103,7 +89,7 @@
 
           {
             "title": "Shift Warning",
-            "x": 1664.0,
+            "x": 1408.0,
             "y": 0.0,
             "width": 256.0,
             "height": 128.0,
@@ -119,11 +105,11 @@
           },
 
           {
-            "title": "Ready to Shoot",
+            "title": "READY TO SHOOT",
             "x": 0.0,
             "y": 128.0,
-            "width": 256.0,
-            "height": 256.0,
+            "width": 384.0,
+            "height": 384.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/SmartDashboard/Driver/Ready to Shoot",
@@ -136,78 +122,10 @@
           },
 
           {
-            "title": "Auto Aim",
-            "x": 256.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Driver/Auto Aim On",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-
-          {
-            "title": "Shooter Ready",
-            "x": 384.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Driver/Shooter Ready",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-
-          {
-            "title": "Vision Locked",
-            "x": 256.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Driver/Vision Locked",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-
-          {
-            "title": "Intake Down",
-            "x": 384.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Driver/Intake Down",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-
-          {
             "title": "Field",
-            "x": 512.0,
+            "x": 384.0,
             "y": 128.0,
-            "width": 768.0,
+            "width": 896.0,
             "height": 384.0,
             "type": "Field",
             "properties": {
@@ -226,84 +144,11 @@
           },
 
           {
-            "title": "Has Target",
+            "title": "END GAME",
             "x": 1280.0,
             "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/limelight-april/Has Target",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-
-          {
-            "title": "Tag ID",
-            "x": 1408.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/limelight-april/AprilTag ID",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
-            "title": "Vision Status",
-            "x": 1536.0,
-            "y": 128.0,
-            "width": 384.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Vision/Status",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
-            "title": "TX Error",
-            "x": 1280.0,
-            "y": 256.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/limelight-april/TX (deg)",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
-            "title": "Limelight",
-            "x": 1536.0,
-            "y": 256.0,
             "width": 384.0,
             "height": 256.0,
-            "type": "Camera Stream",
-            "properties": {
-              "topic": "/CameraPublisher/limelight-april",
-              "period": 0.033,
-              "rotation_turns": 0
-            }
-          },
-
-          {
-            "title": "END GAME",
-            "x": 0.0,
-            "y": 512.0,
-            "width": 384.0,
-            "height": 128.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/SmartDashboard/Driver/End Game",
@@ -316,72 +161,36 @@
           },
 
           {
-            "title": "Feed State",
-            "x": 384.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Shooter/Feed State",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
-            "title": "Intake",
-            "x": 640.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Intake/State",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
-            "title": "Pivot",
-            "x": 896.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Intake/Pivot State",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-
-          {
-            "title": "Flywheel A",
-            "x": 1152.0,
-            "y": 512.0,
+            "title": "Auto Aim",
+            "x": 1280.0,
+            "y": 384.0,
             "width": 192.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Flywheel/Current",
+              "topic": "/SmartDashboard/Driver/Auto Aim On",
               "period": 0.033,
-              "show_submit_button": false
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           },
 
           {
-            "title": "Flywheel V",
-            "x": 1344.0,
-            "y": 512.0,
+            "title": "Intake Down",
+            "x": 1472.0,
+            "y": 384.0,
             "width": 192.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Flywheel/Voltage",
+              "topic": "/SmartDashboard/Driver/Intake Down",
               "period": 0.033,
-              "show_submit_button": false
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
 
@@ -472,14 +281,14 @@
           },
 
           {
-            "title": "Has Target",
+            "title": "Has Target (Shooter)",
             "x": 0.0,
             "y": 128.0,
             "width": 256.0,
             "height": 256.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/limelight-april/Has Target",
+              "topic": "/SmartDashboard/limelight-shooter/Has Target",
               "period": 0.033,
               "true_color": 4283215696,
               "false_color": 4294198070,
@@ -496,7 +305,7 @@
             "height": 256.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/limelight-april/MegaTag2 Available",
+              "topic": "/SmartDashboard/limelight-shooter/MegaTag2 Available",
               "period": 0.033,
               "true_color": 4283215696,
               "false_color": 4294198070,
@@ -513,21 +322,21 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/limelight-april/AprilTag ID",
+              "topic": "/SmartDashboard/limelight-shooter/AprilTag ID",
               "period": 0.033,
               "show_submit_button": false
             }
           },
 
           {
-            "title": "Vision Status",
+            "title": "Vision Reject",
             "x": 512.0,
             "y": 256.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/Vision/Status",
+              "topic": "/SmartDashboard/limelight-shooter/Vision/Reject",
               "period": 0.033,
               "show_submit_button": false
             }
@@ -565,14 +374,45 @@
           },
 
           {
-            "title": "Limelight",
+            "title": "Pivot At Target",
             "x": 1024.0,
             "y": 128.0,
-            "width": 512.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot At Target",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+
+          {
+            "title": "Pivot State",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Pivot State",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+
+          {
+            "title": "Limelight",
+            "x": 1280.0,
+            "y": 128.0,
+            "width": 384.0,
             "height": 256.0,
             "type": "Camera Stream",
             "properties": {
-              "topic": "/CameraPublisher/limelight-april",
+              "topic": "/CameraPublisher/limelight-shooter",
               "period": 0.033,
               "rotation_turns": 0
             }
