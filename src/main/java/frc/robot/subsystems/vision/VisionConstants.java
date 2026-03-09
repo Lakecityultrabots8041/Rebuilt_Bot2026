@@ -23,7 +23,7 @@ public final class VisionConstants {
         }
 
         // TODO: tune for our shooter
-        double hubShootDistance = Units.inchesToMeters(104); // Measured from center of hub to front of Limelight lens at shooting position
+        double hubShootDistance = Units.inchesToMeters(80); // Measured from center of hub to front of Limelight lens at shooting position
         APRILTAG_DISTANCES[2]  = hubShootDistance;
         APRILTAG_DISTANCES[3]  = hubShootDistance;
         APRILTAG_DISTANCES[4]  = hubShootDistance;
@@ -75,21 +75,21 @@ public final class VisionConstants {
     public static final double DEFAULT_APRILTAG_DISTANCE = 2.0;
 
     // Tag groups — pass to Limelight_Move to filter which tags to align to
-    public static final Set<Integer> BLUE_HUB_TAGS = Set.of(2, 3, 4, 5, 8, 9, 10, 11);
-    public static final Set<Integer> RED_HUB_TAGS = Set.of(18, 19, 20, 21, 24, 25, 26, 27);
+    public static final Set<Integer> RED_HUB_TAGS = Set.of(2, 3, 4, 5, 8, 9, 10, 11);
+    public static final Set<Integer> BLUE_HUB_TAGS = Set.of(18, 19, 20, 21, 24, 25, 26, 27);
     public static final Set<Integer> ALL_HUB_TAGS = Set.of(
         2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27);
 
-    public static final Set<Integer> BLUE_TOWER_TAGS = Set.of(15, 16);
-    public static final Set<Integer> RED_TOWER_TAGS = Set.of(31, 32);
+    public static final Set<Integer> RED_TOWER_TAGS = Set.of(15, 16);
+    public static final Set<Integer> BLUE_TOWER_TAGS = Set.of(31, 32);
     public static final Set<Integer> ALL_TOWER_TAGS = Set.of(15, 16, 31, 32);
 
-    public static final Set<Integer> BLUE_OUTPOST_TAGS = Set.of(13, 14);
-    public static final Set<Integer> RED_OUTPOST_TAGS = Set.of(29, 30);
+    public static final Set<Integer> RED_OUTPOST_TAGS = Set.of(13, 14);
+    public static final Set<Integer> BLUE_OUTPOST_TAGS = Set.of(29, 30);
     public static final Set<Integer> ALL_OUTPOST_TAGS = Set.of(13, 14, 29, 30);
 
-    public static final Set<Integer> BLUE_TRENCH_TAGS = Set.of(1, 6, 7, 12);
-    public static final Set<Integer> RED_TRENCH_TAGS = Set.of(17, 22, 23, 28);
+    public static final Set<Integer> RED_TRENCH_TAGS = Set.of(1, 6, 7, 12);
+    public static final Set<Integer> BLUE_TRENCH_TAGS = Set.of(17, 22, 23, 28);
     public static final Set<Integer> ALL_TRENCH_TAGS = Set.of(1, 6, 7, 12, 17, 22, 23, 28);
 
     public static final Set<Integer> ALL_TAGS = Set.of(

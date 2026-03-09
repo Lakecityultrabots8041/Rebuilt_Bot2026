@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Pivot To Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RT to Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignHubAndShoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Captian Autons",
+  "choreoAuto": false
+}

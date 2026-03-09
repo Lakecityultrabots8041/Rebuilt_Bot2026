@@ -4,15 +4,15 @@
     {
       "anchor": {
         "x": 3.5732667617689007,
-        "y": 0.6256633380884444
+        "y": 0.8068045649072757
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.978088445078458,
-        "y": 0.612724679029957
+        "y": 0.7938659058487882
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RT starting"
     },
     {
       "anchor": {

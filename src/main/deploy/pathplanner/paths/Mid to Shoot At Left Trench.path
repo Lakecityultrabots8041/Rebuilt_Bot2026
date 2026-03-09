@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9041797432239653,
-        "y": 4.947175463623396
+        "x": 3.2596806982015005,
+        "y": 4.047435990635406
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.039,
-        "y": 7.496
+        "x": 2.4346647646219686,
+        "y": 4.029
       },
       "prevControl": {
-        "x": 1.606532097004279,
-        "y": 6.396213980028531
+        "x": 2.706376604850214,
+        "y": 4.028530670470756
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Left Shooting Point"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -54,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -162.53607310815715
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Shooting Paths",

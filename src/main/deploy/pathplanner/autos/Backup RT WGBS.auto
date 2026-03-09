@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RT to Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Pivot To Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignHubAndShoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Compition Autons(That Work)",
+  "choreoAuto": false
+}

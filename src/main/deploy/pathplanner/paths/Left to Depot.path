@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 3.534450784593438,
-        "y": 7.17262482168331
+        "y": 7.2890727532097
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.6934379457917257,
-        "y": 7.133808844507846
+        "y": 7.250256776034236
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LT start point"
     },
     {
       "anchor": {
-        "x": 0.4421112696148347,
-        "y": 7.17262482168331
+        "x": 1.7877318116975744,
+        "y": 5.930513552068473
       },
       "prevControl": {
-        "x": 2.124136947218259,
-        "y": 7.159686162624822
+        "x": 3.469757489300999,
+        "y": 5.917574893009985
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Depot Paths",

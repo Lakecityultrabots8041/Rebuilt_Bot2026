@@ -23,7 +23,7 @@ public class IntakeConstants {
     public static final double kS = 0.0;
     public static final double kV = 0.0;
     public static final double kA = 0.0;
-    public static final double kG = 0.0;
+    public static final double kG = 0.5;
 
     //Arm Cosine says that sensor positions must be at 0 when the arm is parallel to the ground, so...
     public static final GravityTypeValue GRAVITY_TYPE = GravityTypeValue.Arm_Cosine;
@@ -35,8 +35,8 @@ public class IntakeConstants {
 
     // Pivot preset positions (rotor rotations - tune on robot)
     public static final double STOW_POSITION = -0.3;
-    public static final double INTAKE_POSITION = -4.2;
-    public static final double TRAVEL_POSITION = -2.87;
+    public static final double INTAKE_POSITION = -4.25;
+    public static final double TRAVEL_POSITION = -2.1;
 
     // Position tolerance for "at target" checks (rotations)
     public static final double POSITION_TOLERANCE = 0.05;
