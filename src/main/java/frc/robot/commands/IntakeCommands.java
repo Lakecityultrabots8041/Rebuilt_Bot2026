@@ -11,6 +11,13 @@ public final class IntakeCommands {
         return intakeSubsystems.intake().withName("IntakeCommand");
     }
 
+    public static Command autonIntake(IntakeSubsystems intakeSubsystems) {
+        return Commands.sequence(
+            intakeSubsystems.intake(),
+            Commands.waitSeconds(10)
+        ).withName("AutonIntakeCommand");
+    }
+
     public static Command eject(IntakeSubsystems intakeSubsystems) {
         return intakeSubsystems.eject().withName("EjectCommand");
     }
@@ -25,7 +32,7 @@ public final class IntakeCommands {
     }
 
     public static Command pivotToIntake(IntakeSubsystems intakeSubsystems) {
-        return intakeSubsystems.pivotToIntake().withName("PivotToIntakeCommand");
+        return Commands.sequence(intakeSubsystems.pivotToIntake(), intakeSubsystems.waitUntilPivotAtTarget());
     }
 
     public static Command pivotToTravel(IntakeSubsystems intakeSubsystems) {

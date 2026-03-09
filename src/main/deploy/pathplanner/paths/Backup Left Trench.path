@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7877318116975744,
-        "y": 5.930513552068473
+        "x": 2.344094151212553,
+        "y": 6.849158345221112
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.2161768850320467,
-        "y": 5.935728136371306
+        "x": 3.344094151212555,
+        "y": 6.849158345221112
       },
       "isLocked": false,
-      "linkedName": "Start of Intake Depot"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.4162339514978599,
-        "y": 5.930513552068473
+        "x": 3.922610556348074,
+        "y": 5.425905848787448
       },
       "prevControl": {
-        "x": 1.1667919111468743,
-        "y": 5.9321599110743986
+        "x": 2.922610556348074,
+        "y": 5.425905848787448
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Intake Depot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Depot Paths",
+  "folder": "Shooting Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": 0.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

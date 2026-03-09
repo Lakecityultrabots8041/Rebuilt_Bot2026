@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4550499286733236,
-        "y": 4.7919115549215405
+        "x": 0.4162339514978599,
+        "y": 5.930513552068473
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.344094151212553,
-        "y": 7.6125392296718974
+        "x": 2.3052781740370887,
+        "y": 8.75114122681883
       },
       "isLocked": false,
       "linkedName": "Intake Depot"
@@ -21,7 +21,7 @@
       },
       "prevControl": {
         "x": 1.8786676176890147,
-        "y": 0.651540656205422
+        "y": 0.6515406562054216
       },
       "nextControl": null,
       "isLocked": false,
@@ -55,7 +55,7 @@
   "folder": "Depot Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

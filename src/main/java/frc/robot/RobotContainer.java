@@ -130,7 +130,7 @@ public class RobotContainer {
 
         // =====Shooter Name Commands=====
         NamedCommands.registerCommand("Rev Flywheel", ShooterCommands.revUpFlywheel(shooterSubsystem));
-        NamedCommands.registerCommand("Shoot", ShooterCommands.shoot(shooterSubsystem));
+        NamedCommands.registerCommand("Shoot", ShooterCommands.quickShoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
         NamedCommands.registerCommand("Pass", ShooterCommands.passSequence(shooterSubsystem));
         NamedCommands.registerCommand("Quick Shoot", ShooterCommands.quickShoot(shooterSubsystem));
@@ -141,14 +141,14 @@ public class RobotContainer {
         NamedCommands.registerCommand("AlignTowerAndShoot",
             Commands.sequence(createAutoTowerAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         // =====Intake Commands=====
-        NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
+        NamedCommands.registerCommand("Intake", IntakeCommands.autonIntake(intakeSubsystem));
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
         NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
-        NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
-        NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
+        //NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
+        //NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 
         // LEDs react to subsystem states automatically, no commands needed
         ledSubsystem = new LEDSubsystem(
@@ -167,8 +167,8 @@ public class RobotContainer {
         // Default drive — field-centric with auto-aim overlay
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
-                currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed);
-                currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed);
+                currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed * 0.9);
+                currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed * 0.9);
                 double velocityX = currentDriveX;
                 double velocityY = currentDriveY;
 
@@ -209,15 +209,17 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // Auto-aim toggle
+        /* 
         controller.leftBumper().onTrue(Commands.runOnce(() -> {
             autoAimEnabled = !autoAimEnabled;
             SmartDashboard.putBoolean("AutoAim/Enabled", autoAimEnabled);
         }));
+        */
 
         // Vision alignment: Left DPad=hub, Right DPad=tower, Start=outpost
-        controller.povLeft().whileTrue(createHubAlign());
-        controller.povRight().whileTrue(createTowerAlign());
-        controller.start().whileTrue(createOutpostAlign());
+        controller.start().whileTrue(createHubAlign());
+        //controller.povRight().whileTrue(createTowerAlign());
+        //controller.start().whileTrue(createOutpostAlign());
 
         //TODO Also review this
         controller.back().onTrue(ShooterCommands.speedSwitch(shooterSubsystem));

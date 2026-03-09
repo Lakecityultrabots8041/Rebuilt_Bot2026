@@ -65,6 +65,9 @@ public class IntakeSubsystems extends SubsystemBase {
         intakeConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.INTAKE_STATOR_CURRENT_LIMIT;
         intakeConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         intakeConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.INTAKE_SUPPLY_CURRENT_LIMIT;
+        intakeConfigs.HardwareLimitSwitch.ForwardLimitEnable = false;
+        intakeConfigs.HardwareLimitSwitch.ReverseLimitEnable = false;
+        intakeConfigs.HardwareLimitSwitch.ForwardLimitAutosetPositionEnable = false;
 
         var pivotConfigs = new TalonFXConfiguration();
         pivotConfigs.Slot0.kP = IntakeConstants.kP;
