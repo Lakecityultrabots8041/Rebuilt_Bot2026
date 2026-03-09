@@ -2,6 +2,11 @@ package frc.robot.subsystems.vision;
 
 import java.util.Optional;
 import java.util.Set;
+
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -75,6 +80,8 @@ public final class VisionConstants {
     public static final double DEFAULT_APRILTAG_DISTANCE = 2.0;
 
     // Tag groups — pass to Limelight_Move to filter which tags to align to
+    // Verified against 2026 Game Manual Figure 5-21 (page 33)
+    // RED structures are on the left side of the field, BLUE on the right
     public static final Set<Integer> RED_HUB_TAGS = Set.of(2, 3, 4, 5, 8, 9, 10, 11);
     public static final Set<Integer> BLUE_HUB_TAGS = Set.of(18, 19, 20, 21, 24, 25, 26, 27);
     public static final Set<Integer> ALL_HUB_TAGS = Set.of(
@@ -166,6 +173,24 @@ public final class VisionConstants {
             return APRILTAG_DISTANCES[tagID];
         }
         return DEFAULT_APRILTAG_DISTANCE;
+    }
+
+    // ===== Vision Accuracy =====
+    // How accurate we think the camera is, in meters. Gets scaled automatically
+    // by how many tags the camera sees and how far away they are.
+    // Lower = trust camera more. Higher = trust wheel odometry more.
+    // 0.5 is a good starting point. Tune up if vision is jerky, down if it drifts.
+    public static final double VISION_ACCURACY = 0.5;
+
+    // ===== Vision Rejection =====
+    // Skip vision data that would mess up our position
+    public static final double VISION_MAX_JUMP = 2.0;                  // reject if pose teleports > 2m
+    public static final double VISION_MAX_SPIN = Math.toRadians(720);  // reject during fast spins (720 deg/s)
+
+    // Callback for sending vision poses to the drivetrain
+    @FunctionalInterface
+    public interface VisionPoseConsumer {
+        void accept(Pose2d pose, double timestampSeconds, Matrix<N3, N1> accuracy);
     }
 
 }

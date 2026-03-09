@@ -349,6 +349,10 @@ public class ShooterSubsystem extends SubsystemBase {
     public FeedState     getFeedState()     { return feedState;     }
     public FlywheelState getFlywheelState() { return flywheelState; }
 
+    // Used by SimManager to feed physics back into the motor controllers
+    public TalonFX getFlywheelMotor()  { return flywheelMotor;  }
+    public TalonFX getFlywheelMotor2() { return flywheelMotor2; }
+
     // ===== PRIVATE HELPERS =====
 
     private void setFeedPower(double power) {

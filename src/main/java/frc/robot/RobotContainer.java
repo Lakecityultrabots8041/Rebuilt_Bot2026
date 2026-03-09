@@ -107,14 +107,19 @@ public class RobotContainer {
     }
 
     public RobotContainer() {
-        // Both cameras fuse poses into the drivetrain Kalman filter for better localization
+        // Both cameras fuse poses into the drivetrain Kalman filter.
+        // Each camera filters bad data and scales accuracy by tag count and distance.
         limelightShooter.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
-        limelightShooter.setVisionMeasurementConsumer(
-            (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
+        limelightShooter.setVisionPoseConsumer(
+            (pose, timestamp, accuracy) -> drivetrain.addVisionMeasurement(pose, timestamp, accuracy));
+        limelightShooter.setSpinRateSupplier(
+            () -> drivetrain.getState().Speeds.omegaRadiansPerSecond);
 
         limelightIntake.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
-        limelightIntake.setVisionMeasurementConsumer(
-            (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
+        limelightIntake.setVisionPoseConsumer(
+            (pose, timestamp, accuracy) -> drivetrain.addVisionMeasurement(pose, timestamp, accuracy));
+        limelightIntake.setSpinRateSupplier(
+            () -> drivetrain.getState().Speeds.omegaRadiansPerSecond);
         autoAimPID.enableContinuousInput(-Math.PI, Math.PI);
 
         // PathPlanner named commands - vision alignment

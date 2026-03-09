@@ -18,12 +18,57 @@ We use two Limelight 4 cameras to see AprilTags on the field. The robot uses tho
 
 Hardware: two Limelight 4 cameras, CTRE Phoenix 6 swerve, RoboRIO 2.0.
 
+---
+
+## Quick Reference - Things You Change at Competition
+
+These are the values you will actually tune. Everything is in `VisionConstants.java` unless noted.
+
+### Shooting Distance (most important)
+
+`APRILTAG_DISTANCES` array, hub entries. This is how far the robot stops from the hub when aligning. Currently 104 inches. If shots are falling short, move closer. If they are overshooting, move farther back.
+
+### Camera Mounting (measure on the real robot)
+
+| Value                              | Current       | What to do                                      |
+|------------------------------------|---------------|--------------------------------------------------|
+| `FRONT_CAMERA_HEIGHT_METERS`       | 25.25in       | Measure floor to center of shooter Limelight lens |
+| `FRONT_CAMERA_MOUNT_ANGLE_DEGREES` | 21.8 deg      | Measure tilt angle from horizontal                |
+| `REAR_CAMERA_HEIGHT_METERS`        | 25.125in      | Measure floor to center of intake Limelight lens  |
+| `REAR_CAMERA_MOUNT_ANGLE_DEGREES`  | 0 deg         | Measure tilt angle from horizontal                |
+
+### Vision Filtering
+
+| Value              | Default | When to change                                     |
+|--------------------|---------|----------------------------------------------------|
+| `VISION_ACCURACY`  | 0.5     | Raise if robot position is jerky. Lower if it drifts |
+| `VISION_MAX_JUMP`  | 2.0m    | Lower if pose still teleports. Raise if it rejects good data |
+| `VISION_MAX_SPIN`  | 720 deg/s | Lower if pose corrupts during turns. Raise if it rejects too much |
+
+### Alignment Gains
+
+| Value              | Default | Too low = slow/lazy             | Too high = oscillates            |
+|--------------------|---------|---------------------------------|----------------------------------|
+| `ROTATION_GAIN`    | 0.03    | Slow turning                    | Wobbles side to side             |
+| `FORWARD_GAIN`     | 0.8     | Takes forever to reach target   | Overshoots and bounces           |
+| `AUTO_STRAFE_GAIN` | 0.5     | Does not correct lateral drift  | Sideways oscillation             |
+
+### Auto-Aim
+
+| Value                      | Default | What it does                        |
+|----------------------------|---------|-------------------------------------|
+| `AUTO_AIM_KP`              | 4.0     | How aggressively it locks onto tags |
+| `AUTO_AIM_KD`              | 0.1     | Damping to prevent overshoot        |
+| `AUTO_AIM_MAX_ROTATION_RATE` | 1.5 rad/s | Speed limit for auto-aim turning |
+
+---
+
 ### Two Camera Setup
 
-| Camera         | NetworkTables Name  | Location         | Faces        | Used For                                  |
-|----------------|---------------------|------------------|--------------|-------------------------------------------|
-| Shooter camera | `limelight-april`   | Near the shooter | Shooter side | Hub/outpost/trench alignment, auto-aim    |
-| Intake camera  | `limelight-intake`  | Near the intake  | Intake side  | Pose fusion, future intake-side alignment |
+| Camera         | NetworkTables Name    | Location         | Faces        | Used For                                  |
+|----------------|-----------------------|------------------|--------------|-------------------------------------------|
+| Shooter camera | `limelight-shooter`   | Near the shooter | Shooter side | Hub/outpost/trench alignment, auto-aim    |
+| Intake camera  | `limelight-intake`    | Near the intake  | Intake side  | Pose fusion, future intake-side alignment |
 
 Both cameras run independently. Both fuse their pose estimates into the drivetrain Kalman filter every loop, which means better localization from two different vantage points. The intake camera does not currently run any alignment commands, but the code supports it if needed later.
 
@@ -41,8 +86,8 @@ The hub is what we shoot fuel into. It is a 47in x 47in structure centered 158.6
 
 | Alliance | Tag IDs                        |
 |----------|--------------------------------|
-| Blue     | 2, 3, 4, 5, 8, 9, 10, 11      |
-| Red      | 18, 19, 20, 21, 24, 25, 26, 27 |
+| Red      | 2, 3, 4, 5, 8, 9, 10, 11      |
+| Blue     | 18, 19, 20, 21, 24, 25, 26, 27 |
 
 Tag centers sit at 44.25in (1.124m) off the floor.
 
@@ -55,8 +100,8 @@ Towers are for climbing. 49.25in wide, 45in deep, 78.25in tall. Three rungs:
 
 | Alliance | Tag IDs |
 |----------|---------|
-| Blue     | 15, 16  |
-| Red      | 31, 32  |
+| Red      | 15, 16  |
+| Blue     | 31, 32  |
 
 Tag centers at 21.75in (0.5525m) off the floor.
 
@@ -66,8 +111,8 @@ Outposts are where the human player hands off fuel. The opening is 31.8in wide x
 
 | Alliance | Tag IDs |
 |----------|---------|
-| Blue     | 13, 14  |
-| Red      | 29, 30  |
+| Red      | 13, 14  |
+| Blue     | 29, 30  |
 
 Tag centers at 21.75in (0.5525m) off the floor.
 
@@ -77,8 +122,8 @@ Each trench has one tag facing the alliance zone and one facing the neutral zone
 
 | Alliance | Tag IDs        |
 |----------|----------------|
-| Blue     | 1, 6, 7, 12    |
-| Red      | 17, 22, 23, 28 |
+| Red      | 1, 6, 7, 12    |
+| Blue     | 17, 22, 23, 28 |
 
 Tag centers at 35in (0.889m) off the floor.
 
@@ -92,11 +137,11 @@ Tag centers at 35in (0.889m) off the floor.
 
 ## File Breakdown
 
-**LimelightSubsystem.java**: Talks to a single Limelight camera via NetworkTables (or fakes it in sim). The constructor takes two arguments: the camera name (e.g. `"limelight-april"`) and whether it faces the rear of the robot. Each instance caches its own MegaTag2 distance/lateral data and feeds vision poses into drivetrain odometry independently.
+**LimelightSubsystem.java**: Talks to a single Limelight camera via NetworkTables (or fakes it in sim). The constructor takes two arguments: the camera name (e.g. `"limelight-shooter"`) and whether it faces the rear of the robot. Each instance caches its own MegaTag2 distance/lateral data and feeds vision poses into drivetrain odometry independently.
 
 **VisionConstants.java**: All the numbers. Tag groups, target distances, PID gains, speed limits, tolerances, and camera mounting values for both cameras. Alliance-aware getter methods live here too.
 
-**Limelight_Move.java**: The alignment command. Controls rotation, forward/back, and strafe simultaneously. Works with tag groups (not single IDs). Has a direction multiplier that flips all outputs when using a rear-facing camera, so the robot drives toward what that camera sees. Two strafe modes: driver input for teleop, auto-correction for autonomous.
+**Limelight_Move.java**: The alignment command. Controls rotation, forward/back, and strafe simultaneously. Works with tag groups (not single IDs). Has a direction multiplier that flips all outputs when using a rear-facing camera, so the robot drives toward what that camera sees. In teleop, the driver can strafe with the left stick during alignment. In autonomous, strafe is zeroed out (auto-strafe correction is commented out because it caused oscillation).
 
 **RobotContainer.java**: Wires everything together. Creates both camera instances, sets up pose fusion for both, builds command factories, configures button bindings, and runs auto-aim in the default drive command.
 
@@ -118,28 +163,32 @@ In RobotContainer, two instances are created:
 ```java
 // Shooter camera, faces the shooter side
 private final LimelightSubsystem limelightShooter =
-    new LimelightSubsystem("limelight-april", false);
+    new LimelightSubsystem("limelight-shooter", false);
 
 // Intake camera, faces the intake side
 private final LimelightSubsystem limelightIntake =
     new LimelightSubsystem("limelight-intake", true);
 ```
 
-Both cameras get their own SmartDashboard entries. The shooter camera publishes under `limelight-april/Has Target`, `limelight-april/Distance (m)`, etc. The intake camera publishes under `limelight-intake/Has Target`, `limelight-intake/Distance (m)`, etc. No key collisions.
+Both cameras get their own SmartDashboard entries. The shooter camera publishes under `limelight-shooter/Has Target`, `limelight-shooter/Distance (m)`, etc. The intake camera publishes under `limelight-intake/Has Target`, `limelight-intake/Distance (m)`, etc. No key collisions.
 
-Both cameras fuse poses independently:
+Both cameras fuse poses independently. Each camera also gets a spin rate supplier so it can skip vision during fast turns:
 
 ```java
 limelightShooter.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
-limelightShooter.setVisionMeasurementConsumer(
-    (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
+limelightShooter.setVisionPoseConsumer(
+    (pose, timestamp, accuracy) -> drivetrain.addVisionMeasurement(pose, timestamp, accuracy));
+limelightShooter.setSpinRateSupplier(
+    () -> drivetrain.getState().Speeds.omegaRadiansPerSecond);
 
 limelightIntake.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
-limelightIntake.setVisionMeasurementConsumer(
-    (pose, timestamp) -> drivetrain.addVisionMeasurement(pose, timestamp));
+limelightIntake.setVisionPoseConsumer(
+    (pose, timestamp, accuracy) -> drivetrain.addVisionMeasurement(pose, timestamp, accuracy));
+limelightIntake.setSpinRateSupplier(
+    () -> drivetrain.getState().Speeds.omegaRadiansPerSecond);
 ```
 
-The CTRE swerve Kalman filter accepts multiple measurement sources naturally. More data from different angles means better odometry.
+The CTRE swerve Kalman filter accepts multiple measurement sources naturally. More data from different angles means better odometry. The third argument (`accuracy`) tells the filter how much to trust each measurement. See the Vision Filtering section below for how that works.
 
 ---
 
@@ -245,22 +294,22 @@ FORWARD_GAIN is 0.8, higher than rotation because distance errors tend to be big
 
 ### Strafe
 
-This one has two modes:
+**Teleop** - if the driver is pushing the stick left/right, that input controls strafe. This lets the driver arc around while the system handles rotation and distance. Useful for dodging defense or lining up a shot angle.
 
-**Teleop** - if the driver is pushing the stick left/right, that input takes priority. This lets the driver arc around while the system handles rotation and distance. Useful for dodging defense.
-
-**Autonomous** - if there is no driver input, the system auto-corrects lateral offset using camera-space X data. This centers the robot on the tag.
+**No driver input** - strafe is zero. The robot only drives forward/back and rotates.
 
 ```java
-if (Math.abs(driverStrafe) > 0.0) {
-    strafeVelocityMps = driverStrafe * maxSpeedMps * MAX_DRIVER_STRAFE_SCALE
+if (Math.abs(driverStrafe) > 0.05) {
+    strafeVelocityMps = -driverStrafe * maxSpeedMps * MAX_DRIVER_STRAFE_SCALE
         * directionMultiplier;
 } else {
-    double strafeOutput = lateralOffsetMeters * AUTO_STRAFE_GAIN;
-    strafeOutput = MathUtil.clamp(strafeOutput, -MAX_AUTO_STRAFE_SPEED, MAX_AUTO_STRAFE_SPEED);
-    strafeVelocityMps = strafeOutput * maxSpeedMps * directionMultiplier;
+    strafeVelocityMps = 0;
 }
 ```
+
+**Note about the negation:** The driver strafe input gets negated twice, once in RobotContainer (`-controller.getLeftX()`) and once here (`-driverStrafe`). This was tuned to work correctly with our Pigeon mounting orientation. Do not change one without the other or the strafe direction will flip.
+
+**Auto-strafe correction** (using camera lateral offset to center on the tag) is commented out in the code. It was causing oscillation during testing. The constants for it (`AUTO_STRAFE_GAIN`, `MAX_AUTO_STRAFE_SPEED`) are still in VisionConstants if the team wants to re-enable it later.
 
 ### When is it "aligned"?
 
@@ -311,18 +360,62 @@ Auto-aim only fires when:
 
 ## Vision-Odometry Fusion
 
-This is separate from alignment. It is about making odometry more accurate over time.
+This is separate from alignment. It is about making the robot's position estimate more accurate.
 
-Every loop, if MegaTag2 data is good, we feed the pose estimate into the CTRE swerve drivetrain's Kalman filter. The filter blends vision with wheel odometry. **Both cameras do this independently**, so the robot gets pose corrections from both the shooter side and the intake side.
+Every loop, both cameras try to feed pose data into the drivetrain's Kalman filter. The filter blends camera data with wheel odometry. Two cameras from different angles means better accuracy than one.
 
-Before feeding a pose, we filter it:
-- Must have at least 1 tag visible
-- Tag area must be above MIN_TARGET_AREA (0.1), rejects tiny far-away detections
-- Pose X/Y must be on the actual field (0-17m x 0-9m), rejects garbage estimates
+But not all camera data is good. A blurry image, a tag that is barely visible, or the robot spinning fast can all give garbage poses. If we blindly trust every measurement, the robot's position will jump around.
 
-We also set the robot's current heading via `SetRobotOrientation()` before pulling MegaTag2 data, because MegaTag2 needs to know the robot's orientation to give a good blue-origin pose.
+So we filter everything before it reaches the Kalman filter.
 
-Bad vision data will corrupt your odometry. Always filter.
+### What Gets Rejected
+
+Each check logs a reason to SmartDashboard (`Vision/Reject`) so you can see why data was skipped during a match.
+
+| Check             | Why it gets rejected                                        |
+|-------------------|-------------------------------------------------------------|
+| No tags           | Camera does not see any AprilTags                           |
+| Area too small    | Tag is tiny in the frame, too far away to trust             |
+| Off field         | Pose is outside the field (0-17m x 0-9m), clearly wrong    |
+| Spinning too fast | Robot turning faster than 720 deg/s, camera images blur     |
+| Jumped too far    | Vision says we are more than 2m from where wheels say we are |
+
+The spin rejection is something top teams like 1678 (Citrus Circuits) use. Fast turns cause motion blur and MegaTag2 gives bad poses during them.
+
+The jump rejection prevents one bad camera frame from teleporting the robot. If odometry says we are at (3, 4) and vision suddenly says (7, 4), something is wrong with the camera data, not the wheels.
+
+### How Much to Trust the Camera
+
+When a pose passes all the filters, we still need to tell the Kalman filter "how much should I believe this?" That is what `howFarOff` is in the code. It is a number in meters representing how uncertain the measurement might be.
+
+- `0.1` = "this is probably accurate within 10cm" (trust camera a lot)
+- `5.0` = "this could be off by 5 meters" (barely trust it)
+
+The number scales automatically:
+- **More tags = better.** Seeing 2 tags makes it 4x more certain. Seeing 3 tags makes it 9x more certain.
+- **Closer tags = better.** A tag 1 meter away gives much better data than one 5 meters away.
+
+The starting point is `VISION_ACCURACY` in VisionConstants (default 0.5). You only need to change this one number. Raise it if the robot feels jerky. Lower it if position drifts over time.
+
+### Why Rotation is Ignored
+
+The Pigeon 2 gyro already knows the robot's heading better than any camera. We set rotation uncertainty to 999 (basically infinity), which tells the Kalman filter to never adjust heading based on vision. Only x and y position get corrected.
+
+### The Code
+
+In `LimelightSubsystem.updateVisionFusion()`, after all the filters pass:
+
+```java
+double howFarOff = VISION_ACCURACY / (tagCount * tagCount);
+howFarOff *= (1.0 + (avgTagDist * avgTagDist / 30.0));
+
+var poseUncertainty = VecBuilder.fill(howFarOff, howFarOff, 999.0);
+visionPoseConsumer.accept(pose, timestamp, poseUncertainty);
+```
+
+`VecBuilder.fill` is just a WPILib way to pack three numbers into one object. The three numbers are [x uncertainty, y uncertainty, rotation uncertainty]. CTRE's `addVisionMeasurement` needs all three.
+
+We also call `SetRobotOrientation()` before pulling MegaTag2 data each loop, because MegaTag2 needs the robot's heading to compute a good pose.
 
 ---
 
@@ -351,7 +444,7 @@ Each tag type has a target stop distance in VisionConstants (the `APRILTAG_DISTA
 
 | Structure | Distance      | Why                                              |
 |-----------|---------------|--------------------------------------------------|
-| Hub       | 97in (~2.46m) | Shooting range, tune for your shooter            |
+| Hub       | 104in (~2.64m) | Shooting range, tune for your shooter            |
 | Tower     | 18in (~0.46m) | Close approach for climbing, near bumper contact |
 | Outpost   | 14in (~0.36m) | Very close for human player handoff              |
 | Trench    | 48in (~1.22m) | Center under the trench arm                      |
@@ -394,7 +487,7 @@ The D term adds damping so it does not overshoot the target heading. The slew li
 
 | Camera                      | Height                 | Angle                | Constant Prefix |
 |-----------------------------|------------------------|----------------------|-----------------|
-| Shooter ("limelight-april") | 25.125in (placeholder) | 0 deg (placeholder)  | `FRONT_CAMERA_` |
+| Shooter ("limelight-shooter") | 25.25in (placeholder)  | 21.8 deg (placeholder) | `FRONT_CAMERA_` |
 | Intake ("limelight-intake") | 25.125in (placeholder) | 0 deg (placeholder)  | `REAR_CAMERA_`  |
 
 Measure from the floor to the center of each Limelight lens. The angle is 0 for horizontal, positive for tilted up. Mount cameras as high as you can, angled up 30-45 degrees. Set pipeline 0 for AprilTags.
@@ -405,14 +498,15 @@ These values are used by the trig-based backup calculation and by simulation, no
 
 ## Controller Bindings (Vision Related)
 
-| Button       | Action                      |
-|--------------|-----------------------------|
-| Left Bumper  | Toggle auto-aim             |
-| Right Bumper | Reset field-centric heading |
-| START        | Align to hub (hold)         |
-| BACK         | Align to tower (hold)       |
-| Y            | Align to outpost (hold)     |
-| D-Left       | Follow any tag demo (hold)  |
+| Button       | Action                       | Status           |
+|--------------|------------------------------|------------------|
+| Right Bumper | Reset field-centric heading  | Active           |
+| Left Bumper  | Toggle auto-aim              | Active           |
+| START        | Align to outpost (hold)      | Active           |
+| D-Left       | Align to hub (hold)          | Active           |
+| D-Right      | Align to tower (hold)        | Active           |
+
+Only the START button (outpost align) is currently being used for alignment. The D-pad hub/tower bindings and auto-aim are wired but not tested or needed right now.
 
 See `docs/CONTROLLER_MAP.md` for the full binding table.
 
@@ -431,18 +525,19 @@ See `docs/CONTROLLER_MAP.md` for the full binding table.
 
 ### Align-Then-Shoot Combos (align, then full shoot sequence)
 
-| Name                   | What it does                       |
-|------------------------|------------------------------------|
-| `AlignAndShoot`        | Hub align, then shoot sequence     |
-| `AlignOutpostAndShoot` | Outpost align, then shoot sequence |
-| `AlignTowerAndShoot`   | Tower align, then shoot sequence   |
+| Name                    | What it does                       |
+|-------------------------|------------------------------------|
+| `AlignHubAndShoot`      | Hub align, then quick shoot        |
+| `AlignOutpostAndShoot`  | Outpost align, then shoot sequence |
+| `AlignTowerAndShoot`    | Tower align, then shoot sequence   |
 
 ### Shooter and Intake Commands
 
 | Name              | What it does                  |
 |-------------------|-------------------------------|
-| `Rev Shooter`     | Pre-spin flywheel             |
+| `Rev Flywheel`    | Pre-spin flywheel             |
 | `Shoot`           | Flywheel + feed on            |
+| `Quick Shoot`     | Fast shoot, no rev wait       |
 | `Idle Shooter`    | Everything off                |
 | `Pass`            | Pass speed sequence           |
 | `Intake`          | Intake roller on              |
@@ -462,7 +557,7 @@ Use these in PathPlanner autos. Typical pattern: drive near a target with a path
 
 ## Common Problems
 
-**No distance data on SmartDashboard**: MegaTag2 is not returning camera-space data. Check that pipeline 0 is set, firmware is current, NetworkTables is connected, and `SetRobotOrientation` is being called. Make sure you are looking at the correct camera prefix (`limelight-april/` or `limelight-intake/`).
+**No distance data on SmartDashboard**: MegaTag2 is not returning camera-space data. Check that pipeline 0 is set, firmware is current, NetworkTables is connected, and `SetRobotOrientation` is being called. Make sure you are looking at the correct camera prefix (`limelight-shooter/` or `limelight-intake/`).
 
 **Robot does not see tags**: Too far away, camera obstructed, wrong pipeline, or LEDs off. Sim max range is 8.0m, real range depends on lighting.
 
@@ -474,7 +569,7 @@ Use these in PathPlanner autos. Typical pattern: drive near a target with a path
 
 **Only one camera shows data**: Each camera is a separate subsystem instance. Make sure both are constructed in RobotContainer and both have their pose supplier and measurement consumer set.
 
-**Dashboard keys changed**: With two cameras, the SmartDashboard prefix is now the camera name (e.g. `limelight-april/Has Target`) instead of the old `Limelight/Has Target`. Update your Elastic/Shuffleboard layouts.
+**Dashboard keys changed**: With two cameras, the SmartDashboard prefix is now the camera name (e.g. `limelight-shooter/Has Target`) instead of the old `Limelight/Has Target`. Update your Elastic/Shuffleboard layouts.
 
 ---
 
