@@ -86,8 +86,8 @@ The hub is what we shoot fuel into. It is a 47in x 47in structure centered 158.6
 
 | Alliance | Tag IDs                        |
 |----------|--------------------------------|
-| Blue     | 2, 3, 4, 5, 8, 9, 10, 11      |
-| Red      | 18, 19, 20, 21, 24, 25, 26, 27 |
+| Red      | 2, 3, 4, 5, 8, 9, 10, 11      |
+| Blue     | 18, 19, 20, 21, 24, 25, 26, 27 |
 
 Tag centers sit at 44.25in (1.124m) off the floor.
 
@@ -100,8 +100,8 @@ Towers are for climbing. 49.25in wide, 45in deep, 78.25in tall. Three rungs:
 
 | Alliance | Tag IDs |
 |----------|---------|
-| Blue     | 15, 16  |
-| Red      | 31, 32  |
+| Red      | 15, 16  |
+| Blue     | 31, 32  |
 
 Tag centers at 21.75in (0.5525m) off the floor.
 
@@ -111,8 +111,8 @@ Outposts are where the human player hands off fuel. The opening is 31.8in wide x
 
 | Alliance | Tag IDs |
 |----------|---------|
-| Blue     | 13, 14  |
-| Red      | 29, 30  |
+| Red      | 13, 14  |
+| Blue     | 29, 30  |
 
 Tag centers at 21.75in (0.5525m) off the floor.
 
@@ -122,8 +122,8 @@ Each trench has one tag facing the alliance zone and one facing the neutral zone
 
 | Alliance | Tag IDs        |
 |----------|----------------|
-| Blue     | 1, 6, 7, 12    |
-| Red      | 17, 22, 23, 28 |
+| Red      | 1, 6, 7, 12    |
+| Blue     | 17, 22, 23, 28 |
 
 Tag centers at 35in (0.889m) off the floor.
 

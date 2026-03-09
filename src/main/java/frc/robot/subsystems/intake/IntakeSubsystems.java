@@ -36,7 +36,7 @@ public class IntakeSubsystems extends SubsystemBase {
     private IntakeState intakeState = IntakeState.IDLE;
     private IntakeState lastIntakeState = null;
     private PivotState pivotState = PivotState.STOW;
-    private PivotState lastPivotState = PivotState.STOW;
+    private PivotState lastPivotState = null;
     private boolean cachedPivotAtTarget = false;
 
     public enum PivotState {

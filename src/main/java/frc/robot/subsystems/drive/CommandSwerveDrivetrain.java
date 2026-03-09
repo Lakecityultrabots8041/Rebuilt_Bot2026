@@ -56,6 +56,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
+
+    // Sim perspective rotated 90 so forward stick = UP on the top-down field view
+    private static final Rotation2d kSimBlueRotation = Rotation2d.fromDegrees(90);
+    private static final Rotation2d kSimRedRotation = Rotation2d.fromDegrees(270);
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
 
@@ -218,6 +222,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
 
     private void configurePidgeonPose() {
+        // Skip in sim, the physical mount offset doesn't apply
+        if (Utils.isSimulation()) return;
+
         var config = new Pigeon2Configuration();
         config.MountPose.MountPoseYaw = DriveConstants.Pidgeon_Yaw;
         getPigeon2().getConfigurator().apply(config);
@@ -313,11 +320,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
          */
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance().ifPresent(allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation
-                );
+                if (Utils.isSimulation()) {
+                    setOperatorPerspectiveForward(
+                        allianceColor == Alliance.Red
+                            ? kSimRedRotation
+                            : kSimBlueRotation
+                    );
+                } else {
+                    setOperatorPerspectiveForward(
+                        allianceColor == Alliance.Red
+                            ? kRedAlliancePerspectiveRotation
+                            : kBlueAlliancePerspectiveRotation
+                    );
+                }
                 m_hasAppliedOperatorPerspective = true;
             });
         }

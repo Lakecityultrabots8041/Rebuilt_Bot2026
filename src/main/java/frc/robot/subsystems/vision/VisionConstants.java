@@ -80,21 +80,23 @@ public final class VisionConstants {
     public static final double DEFAULT_APRILTAG_DISTANCE = 2.0;
 
     // Tag groups — pass to Limelight_Move to filter which tags to align to
-    public static final Set<Integer> BLUE_HUB_TAGS = Set.of(2, 3, 4, 5, 8, 9, 10, 11);
-    public static final Set<Integer> RED_HUB_TAGS = Set.of(18, 19, 20, 21, 24, 25, 26, 27);
+    // Verified against 2026 Game Manual Figure 5-21 (page 33)
+    // RED structures are on the left side of the field, BLUE on the right
+    public static final Set<Integer> RED_HUB_TAGS = Set.of(2, 3, 4, 5, 8, 9, 10, 11);
+    public static final Set<Integer> BLUE_HUB_TAGS = Set.of(18, 19, 20, 21, 24, 25, 26, 27);
     public static final Set<Integer> ALL_HUB_TAGS = Set.of(
         2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27);
 
-    public static final Set<Integer> BLUE_TOWER_TAGS = Set.of(15, 16);
-    public static final Set<Integer> RED_TOWER_TAGS = Set.of(31, 32);
+    public static final Set<Integer> RED_TOWER_TAGS = Set.of(15, 16);
+    public static final Set<Integer> BLUE_TOWER_TAGS = Set.of(31, 32);
     public static final Set<Integer> ALL_TOWER_TAGS = Set.of(15, 16, 31, 32);
 
-    public static final Set<Integer> BLUE_OUTPOST_TAGS = Set.of(13, 14);
-    public static final Set<Integer> RED_OUTPOST_TAGS = Set.of(29, 30);
+    public static final Set<Integer> RED_OUTPOST_TAGS = Set.of(13, 14);
+    public static final Set<Integer> BLUE_OUTPOST_TAGS = Set.of(29, 30);
     public static final Set<Integer> ALL_OUTPOST_TAGS = Set.of(13, 14, 29, 30);
 
-    public static final Set<Integer> BLUE_TRENCH_TAGS = Set.of(1, 6, 7, 12);
-    public static final Set<Integer> RED_TRENCH_TAGS = Set.of(17, 22, 23, 28);
+    public static final Set<Integer> RED_TRENCH_TAGS = Set.of(1, 6, 7, 12);
+    public static final Set<Integer> BLUE_TRENCH_TAGS = Set.of(17, 22, 23, 28);
     public static final Set<Integer> ALL_TRENCH_TAGS = Set.of(1, 6, 7, 12, 17, 22, 23, 28);
 
     public static final Set<Integer> ALL_TAGS = Set.of(
