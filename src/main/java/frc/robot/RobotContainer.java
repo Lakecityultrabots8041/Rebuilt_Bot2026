@@ -136,14 +136,14 @@ public class RobotContainer {
         NamedCommands.registerCommand("AlignTowerAndShoot",
             Commands.sequence(createAutoTowerAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         // =====Intake Commands=====
-        NamedCommands.registerCommand("Intake", IntakeCommands.intake(intakeSubsystem));
+        NamedCommands.registerCommand("Intake", IntakeCommands.autonIntake(intakeSubsystem));
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
         NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
-        NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
-        NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
+        //NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
+        //NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 
         // LEDs react to subsystem states automatically, no commands needed
         ledSubsystem = new LEDSubsystem(

@@ -1,0 +1,102 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.752453637660485,
+        "y": 5.2059486447931524
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.509099345577091,
+        "y": 5.263208478224539
+      },
+      "isLocked": false,
+      "linkedName": "Intake Center"
+    },
+    {
+      "anchor": {
+        "x": 4.582482168330954,
+        "y": 5.4647218259629105
+      },
+      "prevControl": {
+        "x": 6.129710999572397,
+        "y": 5.605378992439405
+      },
+      "nextControl": {
+        "x": 4.013181169757488,
+        "y": 5.412967189728959
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.188830242510698,
+        "y": 5.2059486447931524
+      },
+      "prevControl": {
+        "x": 2.8745791726105545,
+        "y": 5.529415121255349
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6459065796082375,
+      "rotationDegrees": -140.0
+    },
+    {
+      "waypointRelativePos": 1.5138121546961305,
+      "rotationDegrees": -140.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Pivot to Travel",
+      "waypointRelativePos": 0.2744360902255629,
+      "endWaypointRelativePos": 2.0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Pivot To Travel"
+        }
+      }
+    },
+    {
+      "name": "Rev Flywheel",
+      "waypointRelativePos": 1.5175438596491162,
+      "endWaypointRelativePos": 2.0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Rev Flywheel"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -132.5104470780008
+  },
+  "reversed": false,
+  "folder": "Compition paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

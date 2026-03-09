@@ -33,10 +33,26 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "Pivot to Travel",
+      "waypointRelativePos": 0.02811860940695643,
+      "endWaypointRelativePos": 1.0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Pivot To Travel"
+        }
+      }
+    },
+    {
       "name": "Rev Flywheel",
-      "waypointRelativePos": 0.085944919278247,
-      "endWaypointRelativePos": null,
-      "command": null
+      "waypointRelativePos": 0.12014314928425397,
+      "endWaypointRelativePos": 1.0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Rev Flywheel"
+        }
+      }
     }
   ],
   "globalConstraints": {

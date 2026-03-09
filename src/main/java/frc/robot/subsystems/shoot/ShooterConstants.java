@@ -23,7 +23,7 @@ public final class ShooterConstants {
     // ===== Flywheel speed presets =====
     // RPS = Rotations Per Second. How fast the flywheel spins.
     // Higher RPS = ball goes farther. Feed power does not affect distance.
-    public static final double FLYWHEEL_READY_RPS = 35.0;
+    public static final double FLYWHEEL_READY_RPS = 43.0;
     public static final double FLYWHEEL_REV_RPS   =  30.0; // Pre-spin before going to full speed
     public static final double FLYWHEEL_PASS_RPS  =  50.0;
     public static final double FLYWHEEL_IDLE_RPS  =   0.0;

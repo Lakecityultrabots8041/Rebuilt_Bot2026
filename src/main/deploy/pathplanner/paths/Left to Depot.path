@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 3.534450784593438,
-        "y": 7.17262482168331
+        "y": 7.2890727532097
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.6934379457917257,
-        "y": 7.133808844507846
+        "y": 7.250256776034236
       },
       "isLocked": false,
       "linkedName": "LT start point"

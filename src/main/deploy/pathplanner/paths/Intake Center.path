@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7877318116975744,
-        "y": 5.930513552068473
+        "x": 7.752453637660485,
+        "y": 7.327888730385164
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.2161768850320467,
-        "y": 5.935728136371306
+        "x": 7.752453637660485,
+        "y": 7.077888730385164
       },
       "isLocked": false,
-      "linkedName": "Start of Intake Depot"
+      "linkedName": "LB to Center"
     },
     {
       "anchor": {
-        "x": 0.4162339514978599,
-        "y": 5.930513552068473
+        "x": 7.752453637660485,
+        "y": 5.2059486447931524
       },
       "prevControl": {
-        "x": 1.1667919111468743,
-        "y": 5.9321599110743986
+        "x": 7.7653922967189715,
+        "y": 5.594108416547789
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Intake Depot"
+      "linkedName": "Intake Center"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Depot Paths",
+  "folder": "Compition paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": 0.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

@@ -7,7 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left to Depot"
+            "pathName": "LT to LB"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LB to Center"
           }
         },
         {
@@ -23,7 +29,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Intake Depot"
+                  "pathName": "Intake Center"
                 }
               },
               {
@@ -36,21 +42,15 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Idle Intake"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Depot to Shoot At Left Trench"
+            "pathName": "Center to Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "AlignHubAndShoot"
           }
         }
       ]

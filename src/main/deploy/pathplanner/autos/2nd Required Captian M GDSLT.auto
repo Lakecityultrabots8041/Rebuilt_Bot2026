@@ -36,22 +36,9 @@
           }
         },
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Idle Intake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Pivot To Travel"
-                }
-              }
-            ]
+            "name": "Idle Intake"
           }
         },
         {

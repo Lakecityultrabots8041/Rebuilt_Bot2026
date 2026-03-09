@@ -8,9 +8,14 @@ public final class IntakeCommands {
 
     // ====== INTAKE WHEEL COMMANDS ======
     public static Command intake(IntakeSubsystems intakeSubsystems) {
+        return intakeSubsystems.intake().withName("IntakeCommand");
+    }
+
+    public static Command autonIntake(IntakeSubsystems intakeSubsystems) {
         return Commands.sequence(
             intakeSubsystems.intake(),
-            Commands.waitSeconds(20.0)).withName("IntakeCommand");
+            Commands.waitSeconds(10)
+        ).withName("AutonIntakeCommand");
     }
 
     public static Command eject(IntakeSubsystems intakeSubsystems) {
