@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LT to LB"
+            "pathName": "RT to RB"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LB to Center"
+            "pathName": "RB to Center"
           }
         },
         {
@@ -29,7 +29,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Intake Center Left"
+                  "pathName": "Intake Center Right"
                 }
               },
               {
@@ -44,7 +44,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center to Shoot Left"
+            "pathName": "Center to Shoot"
           }
         },
         {

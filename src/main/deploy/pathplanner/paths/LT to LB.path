@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.418002853067046,
-        "y": 7.302011412268189
+        "x": 3.560328102710413,
+        "y": 7.263195435092724
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.1870811185145156,
-        "y": 6.752998488273089
+        "x": 3.3294063681578825,
+        "y": 6.714182511097625
       },
       "isLocked": false,
       "linkedName": null
@@ -48,7 +48,7 @@
   "folder": "Compition paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": -89.99999999999993
   },
   "useDefaultConstraints": true
 }
