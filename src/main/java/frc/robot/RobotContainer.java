@@ -1,18 +1,11 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-//import frc.robot.subsystems.climb.ClimberSubsystem;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
-import frc.robot.subsystems.shoot.ShooterConstants;
 import frc.robot.subsystems.shoot.ShooterSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystems;
 import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.vision.LimelightSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.commands.FollowTag_Demo;
 import frc.robot.commands.Limelight_Move;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.IntakeCommands;
@@ -22,8 +15,6 @@ import frc.robot.subsystems.drive.DriveConstants;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,12 +26,10 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
-@SuppressWarnings("unused")
 public class RobotContainer {
 
     private final CommandXboxController controller = new CommandXboxController(0);
 
-    // Drivetrain
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
@@ -51,35 +40,29 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    // Shooter camera ("limelight-april"), faces the shooter side. Used for alignment and auto-aim.
     private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-shooter", false);
-    // Intake camera ("limelight-intake"), faces the intake side. Provides rear vision and pose fusion.
     private final LimelightSubsystem limelightIntake = new LimelightSubsystem("limelight-intake", true);
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
-
     private final LEDSubsystem ledSubsystem;
 
-    // Tracked commanded speeds for asymmetric slew (fast accel, controlled decel)
+    // Tracked commanded speeds for asymmetric slew
     private double currentDriveX = 0.0;
     private double currentDriveY = 0.0;
 
-    // Auto-aim
-    private boolean autoAimEnabled = false;
-    private final PIDController autoAimPID = new PIDController(
-        VisionConstants.AUTO_AIM_KP, VisionConstants.AUTO_AIM_KI, VisionConstants.AUTO_AIM_KD);
-    private final SlewRateLimiter autoAimSlew = new SlewRateLimiter(VisionConstants.AUTO_AIM_SLEW_RATE);
+    // Back button toggles between distance-based and fixed speed shooting.
+    // Turn off before comp if the distance table isn't tuned.
+    private boolean useDistanceShot = true;
 
     private final SendableChooser<Command> autoChooser;
 
-    // Command factories -- each call returns a new instance.
-    // All alignment currently uses the shooter camera.
+    // Teleop alignment factories, each call returns a new instance
     private Limelight_Move createHubAlign() {
         return new Limelight_Move(drivetrain, limelightShooter,
             VisionConstants::getHubTags, () -> -controller.getLeftX());
     }
 
-    private Limelight_Move createTowerAlign() {
+    /* private Limelight_Move createTowerAlign() {
         return new Limelight_Move(drivetrain, limelightShooter,
             VisionConstants::getTowerTags, () -> -controller.getLeftX());
     }
@@ -88,8 +71,9 @@ public class RobotContainer {
         return new Limelight_Move(drivetrain, limelightShooter,
             VisionConstants::getOutpostTags, () -> -controller.getLeftX());
     }
+   */
 
-    // Auto (no driver input) factories for PathPlanner named commands
+    // Auto alignment factories (no driver strafe input)
     private Limelight_Move createAutoHubAlign() {
         return new Limelight_Move(drivetrain, limelightShooter, VisionConstants::getHubTags);
     }
@@ -107,8 +91,7 @@ public class RobotContainer {
     }
 
     public RobotContainer() {
-        // Both cameras fuse poses into the drivetrain Kalman filter.
-        // Each camera filters bad data and scales accuracy by tag count and distance.
+        // Both cameras fuse poses into the drivetrain Kalman filter
         limelightShooter.setRobotPoseSupplier(() -> drivetrain.getState().Pose);
         limelightShooter.setVisionPoseConsumer(
             (pose, timestamp, accuracy) -> drivetrain.addVisionMeasurement(pose, timestamp, accuracy));
@@ -120,15 +103,13 @@ public class RobotContainer {
             (pose, timestamp, accuracy) -> drivetrain.addVisionMeasurement(pose, timestamp, accuracy));
         limelightIntake.setSpinRateSupplier(
             () -> drivetrain.getState().Speeds.omegaRadiansPerSecond);
-        autoAimPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        // PathPlanner named commands - vision alignment
+        // PathPlanner named commands
         NamedCommands.registerCommand("Align Hub", createAutoHubAlign());
         NamedCommands.registerCommand("Align Outpost", createAutoOutpostAlign());
         NamedCommands.registerCommand("Align Tower", createAutoTowerAlign());
         NamedCommands.registerCommand("Align Trench", createAutoTrenchAlign());
 
-        // =====Shooter Name Commands=====
         NamedCommands.registerCommand("Rev Flywheel", ShooterCommands.revUpFlywheel(shooterSubsystem));
         NamedCommands.registerCommand("Shoot", ShooterCommands.quickShoot(shooterSubsystem));
         NamedCommands.registerCommand("Idle Shooter", ShooterCommands.idle(shooterSubsystem));
@@ -140,144 +121,99 @@ public class RobotContainer {
             Commands.sequence(createAutoOutpostAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
         NamedCommands.registerCommand("AlignTowerAndShoot",
             Commands.sequence(createAutoTowerAlign().andThen(ShooterCommands.shootSequence(shooterSubsystem))));
-        // =====Intake Commands=====
+
         NamedCommands.registerCommand("Intake", IntakeCommands.autonIntake(intakeSubsystem));
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
         NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
-        //NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
-        //NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 
-        // LEDs react to subsystem states automatically, no commands needed
+        // LEDs react to subsystem states, no commands needed
         ledSubsystem = new LEDSubsystem(
-            () -> autoAimEnabled && limelightShooter.isTrackingHubTag(),
-            () -> autoAimEnabled,
+            () -> limelightShooter.isTrackingHubTag(),
+            () -> useDistanceShot && limelightShooter.hasValidTarget(),
             () -> intakeSubsystem.getState() == IntakeSubsystems.IntakeState.INTAKING
         );
 
         autoChooser = AutoBuilder.buildAutoChooser("SimplePath Auton");
         SmartDashboard.putData("Auton Mode", autoChooser);
+        SmartDashboard.putBoolean("Shooter/Distance Mode", useDistanceShot);
 
         configureBindings();
     }
 
     private void configureBindings() {
-        // Default drive — field-centric with auto-aim overlay
+        // Field-centric drive with asymmetric slew
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed * 0.9);
                 currentDriveY = applyDriveSlew(currentDriveY, -controller.getLeftX() * MaxSpeed * 0.9);
-                double velocityX = currentDriveX;
-                double velocityY = currentDriveY;
 
-                if (autoAimEnabled && limelightShooter.isTrackingHubTag()) {
-                    double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
-                    double targetHeading = currentHeading - Math.toRadians(limelightShooter.getHorizontalOffset());
-
-                    double rawOutput = autoAimPID.calculate(currentHeading, targetHeading);
-                    double clampedOutput = MathUtil.clamp(rawOutput,
-                        -VisionConstants.AUTO_AIM_MAX_ROTATION_RATE,
-                         VisionConstants.AUTO_AIM_MAX_ROTATION_RATE);
-                    double smoothOutput = autoAimSlew.calculate(clampedOutput);
-
-                    // Pre-spin shooter to distance-based velocity only when trigger is not held.
-                    // When trigger is held, shooter is already firing — don't fight it.
-                    double distance = limelightShooter.getDistanceMeters();
-                    if (distance > 0 && !controller.rightTrigger().getAsBoolean()) {
-                        shooterSubsystem.setAutoAimSpeed(
-                            ShooterConstants.getSpeedForDistance(distance));
-                    }
-
-                    return drive.withVelocityX(velocityX)
-                                .withVelocityY(velocityY)
-                                .withRotationalRate(smoothOutput);
-                } else {
-                    autoAimSlew.reset(0);
-                    autoAimPID.reset();
-                    shooterSubsystem.clearAutoAimSpeed();
-
-                    return drive.withVelocityX(velocityX)
-                                .withVelocityY(velocityY)
-                                .withRotationalRate(-controller.getRightX() * MaxAngularRate);
-                }
+                return drive.withVelocityX(currentDriveX)
+                            .withVelocityY(currentDriveY)
+                            .withRotationalRate(-controller.getRightX() * MaxAngularRate);
             })
         );
 
         controller.rightBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        // Auto-aim toggle
-        /* 
-        controller.leftBumper().onTrue(Commands.runOnce(() -> {
-            autoAimEnabled = !autoAimEnabled;
-            SmartDashboard.putBoolean("AutoAim/Enabled", autoAimEnabled);
-        }));
-        */
-
-        // Vision alignment: Left DPad=hub, Right DPad=tower, Start=outpost
+        // Vision alignment: Start = hub
         controller.start().whileTrue(createHubAlign());
-        //controller.povRight().whileTrue(createTowerAlign());
-        //controller.start().whileTrue(createOutpostAlign());
 
-        //TODO Also review this
-        controller.back().onTrue(ShooterCommands.speedSwitch(shooterSubsystem));
+        // Back = toggle distance-based vs fixed speed shooting
+        controller.back().onTrue(Commands.runOnce(() -> {
+            useDistanceShot = !useDistanceShot;
+            SmartDashboard.putBoolean("Shooter/Distance Mode", useDistanceShot);
+        }));
 
-        controller.rightTrigger().whileTrue(ShooterCommands.shoot(shooterSubsystem))
-            .onFalse(ShooterCommands.idle(shooterSubsystem));                                                                                                                                    
+        // Trigger shoots. Distance mode picks speed from Limelight, fixed mode uses 43 RPS.
+        controller.rightTrigger().whileTrue(
+            shooterSubsystem.shootWithDistance(
+                () -> limelightShooter.getDistanceMeters(),
+                () -> useDistanceShot))
+            .onFalse(ShooterCommands.idle(shooterSubsystem));
+
         controller.x().whileTrue(ShooterCommands.eject(shooterSubsystem))
             .onFalse(ShooterCommands.idle(shooterSubsystem));
 
-        // ----- INTAKE ----
-        // Left Trigger to intake
+        // Left trigger = intake
         controller.leftTrigger().whileTrue(IntakeCommands.intake(intakeSubsystem))
             .onFalse(IntakeCommands.idle(intakeSubsystem));
-        
-        
-        //controller.a().onTrue(IntakeCommands.idle(intakeSubsystem));
 
-        // Pivot presets: DPad Up = stow, DPad Down = intake, A = travel (ramp safe)
-        //controller.povUp().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
+        // Pivot presets: Y = stow, A = intake, B = travel
         controller.y().onTrue(IntakeCommands.pivotToStow(intakeSubsystem));
         controller.a().onTrue(IntakeCommands.pivotToIntake(intakeSubsystem));
         controller.b().onTrue(IntakeCommands.pivotToTravel(intakeSubsystem));
-
-        // Demo: hold DPad Left to follow any visible AprilTag at safe distance
-        //controller.povLeft().whileTrue(new FollowTag_Demo(drivetrain, limelightShooter));
     }
 
-    /**
-     * Asymmetric slew rate limiter.
-     * Accelerating (|requested| > |current|) uses MAX_TELEOP_ACCEL.
-     * Decelerating or reversing  uses MAX_TELEOP_DECEL.
-     * Tune both values in DriveConstants.java.
-     */
+    // Fast accel, controlled decel. Tune in DriveConstants.
     private double applyDriveSlew(double current, double requested) {
         double rateLimit = (Math.abs(requested) > Math.abs(current))
             ? DriveConstants.MAX_TELEOP_ACCEL
             : DriveConstants.MAX_TELEOP_DECEL;
-        double maxDelta = rateLimit * 0.02; // 20 ms loop period
+        double maxDelta = rateLimit * 0.02;
         return current + MathUtil.clamp(requested - current, -maxDelta, maxDelta);
     }
 
     public void updateDriverDashboard() {
-        boolean shooterReady = shooterSubsystem.atTargetVelocity() && shooterSubsystem.atFlywheelTargetVelocity();
-        boolean visionLocked = autoAimEnabled && limelightShooter.isTrackingHubTag();
-        boolean intakeDown   = intakeSubsystem.getPivotState() == IntakeSubsystems.PivotState.INTAKE
-                               && intakeSubsystem.isPivotAtTarget();
+        boolean shooterReady = shooterSubsystem.atTargetVelocity();
+        boolean trackingTarget = limelightShooter.isTrackingHubTag();
+        boolean intakeDown = intakeSubsystem.getPivotState() == IntakeSubsystems.PivotState.INTAKE
+                             && intakeSubsystem.isPivotAtTarget();
 
-        SmartDashboard.putBoolean("Driver/Ready to Shoot", shooterReady && visionLocked);
-        SmartDashboard.putBoolean("Driver/Shooter Ready",  shooterReady);
-        SmartDashboard.putBoolean("Driver/Vision Locked",  visionLocked);
-        SmartDashboard.putBoolean("Driver/Auto Aim On",    autoAimEnabled);
-        SmartDashboard.putBoolean("Driver/Intake Down",    intakeDown);
+        SmartDashboard.putBoolean("Driver/Shooter Ready",   shooterReady);
+        SmartDashboard.putBoolean("Driver/Tracking Target",  trackingTarget);
+        SmartDashboard.putBoolean("Driver/Distance Mode",    useDistanceShot);
+        SmartDashboard.putBoolean("Driver/Intake Down",      intakeDown);
     }
 
     public LimelightSubsystem getLimelightShooter() { return limelightShooter; }
     public LimelightSubsystem getLimelightIntake() { return limelightIntake; }
     public ShooterSubsystem getShooter() { return shooterSubsystem; }
     public IntakeSubsystems getIntake() { return intakeSubsystem; }
+    public LEDSubsystem getLEDs() { return ledSubsystem; }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
