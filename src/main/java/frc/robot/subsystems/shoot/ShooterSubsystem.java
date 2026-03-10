@@ -78,8 +78,7 @@ public class ShooterSubsystem extends SubsystemBase {
         // Floor + ceiling config (direct drive)
         var feedConfig = new TalonFXConfiguration();
         feedConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        feedConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        feedConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FEED_STATOR_CURRENT_LIMIT;
+        feedConfig.CurrentLimits.StatorCurrentLimitEnable = false;
         feedConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         feedConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FEED_SUPPLY_CURRENT_LIMIT;
         actFloor.getConfigurator().apply(feedConfig);
@@ -88,8 +87,7 @@ public class ShooterSubsystem extends SubsystemBase {
         // Upper feed roller (12:1 gearbox, 4 belts)
         var upperConfig = new TalonFXConfiguration();
         upperConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        upperConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        upperConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.UPPER_STATOR_CURRENT_LIMIT;
+        upperConfig.CurrentLimits.StatorCurrentLimitEnable = false;
         upperConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         upperConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.UPPER_SUPPLY_CURRENT_LIMIT;
         actUpper.getConfigurator().apply(upperConfig);
@@ -100,8 +98,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelConfig.Slot0.kV = ShooterConstants.FLYWHEEL_kV;
         flywheelConfig.Slot0.kS = ShooterConstants.FLYWHEEL_kS;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
+        flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = false;
         flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
         flywheelConfig.Audio.AllowMusicDurDisable = true;

@@ -11,8 +11,6 @@ public final class DriveConstants {
 
     public static final double Pidgeon_Yaw = -90;
     
-    // Applied in CommandSwerveDrivetrain, not TunerConstants — survives Tuner X regeneration.
-    // See docs/DRIVE_TUNING.md for tuning guidance.
-    public static final double DRIVE_STATOR_CURRENT_LIMIT_AMPS = 80.0;
+    // Applied in CommandSwerveDrivetrain, not TunerConstants -- survives Tuner X regeneration.
     public static final double DRIVE_SUPPLY_CURRENT_LIMIT_AMPS = 60.0;
 }

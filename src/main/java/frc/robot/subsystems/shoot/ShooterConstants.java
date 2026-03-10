@@ -37,23 +37,10 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_kV = 0.15;
     public static final double FLYWHEEL_kS = 0.25;
 
-    // ===== Current Limits =====
-    // Stator = motor torque. Supply = battery draw.
-
-    // Flywheel draws high current during spin-up, then drops at steady state.
-    // Based on CyberCoyotes (mentor school) reference: 90A stator / 45A supply.
-    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 90.0;
+    // ===== Supply Current Limits =====
+    // Supply limits prevent brownouts. No stator limits (254 style).
     public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 45.0;
-
-    // Feed rollers (floor and ceiling, no gearbox reduction).
-    // Stator maxed to 120A so they never stall pushing balls through.
-    public static final double FEED_STATOR_CURRENT_LIMIT = 120.0;
     public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
-
-    // Upper feed roller (12:1 gearbox, 4 belts). Needs high current
-    // because the 4 belts add significant mechanical load.
-    // Stator maxed to 120A for the same reason.
-    public static final double UPPER_STATOR_CURRENT_LIMIT = 120.0;
     public static final double UPPER_SUPPLY_CURRENT_LIMIT = 60.0;
 
     // ===== Tolerances =====

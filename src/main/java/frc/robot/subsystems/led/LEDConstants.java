@@ -1,28 +1,38 @@
 package frc.robot.subsystems.led;
 
+import com.ctre.phoenix6.signals.RGBWColor;
+
 // See docs/LED_GUIDE.md for patterns and how to change them.
 public final class LEDConstants {
     private LEDConstants() {}
 
-    public static final int PWM_PORT = 0;
+    // CANdle on default CAN bus, CAN ID 1
+    public static final int CAN_ID = 1;
 
-    // ===== Action Patterns =====
-    public static final double VISION_ALIGNED  =  0.75;  // Solid Green
-    public static final double AUTO_AIM_ACTIVE =  0.67;  // Solid Yellow
-    public static final double INTAKING        =  0.63;  // Solid Orange
-    public static final double AUTONOMOUS      = -0.99;  // Rainbow
+    // 8 onboard LEDs (indices 0-7) + 25 external strip LEDs (indices 8-32)
+    public static final int ONBOARD_LEDS = 8;
+    public static final int STRIP_LENGTH = 25;
+    public static final int TOTAL_LEDS = ONBOARD_LEDS + STRIP_LENGTH;
+    public static final int FIRST_LED = 0;
+    public static final int LAST_LED = TOTAL_LEDS - 1;
 
-    // ===== Alliance Patterns =====
-    public static final double DISABLED_RED    = -0.17;  // Breath Red
-    public static final double DISABLED_BLUE   = -0.15;  // Breath Blue
-    public static final double DEFAULT_DISABLED = -0.15; // Fallback before FMS connects
+    // Global brightness scalar (0.0 to 1.0)
+    public static final double BRIGHTNESS = 0.75;
 
-    // ===== Teleop Shift Patterns =====
-    public static final double SHIFT_1   = -0.45;  // Color Waves, Rainbow Palette
-    public static final double SHIFT_2   = -0.69;  // Beats Per Minute, Rainbow Palette
-    public static final double SHIFT_3   = -0.35;  // Larson Scanner, Red
-    public static final double SHIFT_4   = -0.25;  // Heartbeat, Red
-    public static final double END_GAME  = -0.11;  // Strobe, Red
+    // ===== Colors =====
+    public static final RGBWColor GREEN  = new RGBWColor(0, 255, 0);
+    public static final RGBWColor YELLOW = new RGBWColor(255, 255, 0);
+    public static final RGBWColor ORANGE = new RGBWColor(255, 80, 0);
+    public static final RGBWColor RED    = new RGBWColor(255, 0, 0);
+    public static final RGBWColor BLUE   = new RGBWColor(0, 0, 255);
+    public static final RGBWColor OFF    = new RGBWColor(0, 0, 0);
 
-    public static final double IDLE      = -0.57;  // Fire, Large
+    // ===== Animation Frame Rates (Hz) =====
+    public static final double RAINBOW_SPEED  = 25.0;
+    public static final double FIRE_SPEED     = 25.0;
+    public static final double STROBE_SPEED   = 10.0;
+    public static final double FADE_SPEED     = 5.0;
+    public static final double FLOW_SPEED     = 15.0;
+    public static final double LARSON_SPEED   = 15.0;
+    public static final double RGB_FADE_SPEED = 10.0;
 }

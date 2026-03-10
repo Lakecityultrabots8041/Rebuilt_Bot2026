@@ -230,16 +230,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         getPigeon2().getConfigurator().apply(config);
     }
 
-    /**
-     * Applies drive motor current limits to all four swerve modules.
-     *
-     * These are set here rather than in TunerConstants.java so they survive
-     * a Tuner X regeneration. Tune the values in DriveConstants.java.
-     */
+    // Supply limits only, no stator limits. Overrides TunerConstants defaults.
     private void configureDriveMotors() {
         var currentLimits = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(DriveConstants.DRIVE_STATOR_CURRENT_LIMIT_AMPS)
-            .withStatorCurrentLimitEnable(true)
+            .withStatorCurrentLimitEnable(false)
             .withSupplyCurrentLimit(DriveConstants.DRIVE_SUPPLY_CURRENT_LIMIT_AMPS)
             .withSupplyCurrentLimitEnable(true);
 

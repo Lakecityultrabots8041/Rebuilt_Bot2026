@@ -44,14 +44,7 @@ public class IntakeConstants {
     // How long to wait for the pivot to reach its target before giving up
     public static final double PIVOT_TIMEOUT_SECONDS = 3.0;
 
-    // Intake roller current limits (12:1 gearbox)
-    // Keep these conservative to protect the motor and gearbox.
-    // Stator = motor torque. Supply = battery draw.
-    public static final double INTAKE_STATOR_CURRENT_LIMIT = 40.0;
+    // Supply current limits prevent brownouts. No stator limits (254 style).
     public static final double INTAKE_SUPPLY_CURRENT_LIMIT = 30.0;
-
-    // Pivot current limits
-    // Stator = motor torque. Supply = battery draw.
-    public static final double PIVOT_STATOR_CURRENT_LIMIT = 60.0;
     public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0;
 }
