@@ -80,15 +80,11 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-        /* Learned from experience: Phoenix 6 enables hardware limit switches by default. 
-        If you remove those two lines below, the TalonFX reverts to its default config which expects switches to be wired. 
-        A floating input on an unwired limit switch pin can randomly read as "triggered" and lock 
-        the motor from moving in that direction*/
-
         pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false;
         pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false;
 
-        pivotConfigs.CurrentLimits.StatorCurrentLimitEnable = false;
+        pivotConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+        pivotConfigs.CurrentLimits.StatorCurrentLimit = IntakeConstants.PIVOT_STATOR_CURRENT_LIMIT;
         pivotConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
         pivotConfigs.CurrentLimits.SupplyCurrentLimit = IntakeConstants.PIVOT_SUPPLY_CURRENT_LIMIT;
 
@@ -98,9 +94,10 @@ public class IntakeSubsystems extends SubsystemBase {
 
         intakeMotor.getConfigurator().apply(intakeConfigs);
         pivotMotor1.getConfigurator().apply(pivotConfigs);
+
         pivotMotor2.getConfigurator().apply(pivotConfigs);
 
-        // Invert right motor and set to follow left motor
+        // Motor2 is mounted opposite of motor1
         pivotMotor2.setControl(new Follower(IntakeConstants.PIVOT_MOTOR1, MotorAlignmentValue.Opposed));
 
         // Arm must be physically at stow before powering on.
@@ -134,44 +131,6 @@ public class IntakeSubsystems extends SubsystemBase {
             lastIntakeState = intakeState;
         }
 
-
-        /*
-         *      if (pivotState != lastPivotState) {
-            if (pivotState == PivotState.IDLE) {
-                // Coast mode lets the arm rest on the bumpers under gravity
-                pivotMotor1.setNeutralMode(NeutralModeValue.Coast);
-                pivotMotor2.setNeutralMode(NeutralModeValue.Coast);
-                pivotMotor1.setControl(neutralRequest);
-            } else {
-                // Send Motion Magic first — the motor is under active PID control
-                // so brake/coast doesn't matter during motion. This avoids the jerk
-                // that would happen if we switched to brake before commanding.
-                switch (pivotState) {
-                    case STOW -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.STOW_POSITION));
-                    case INTAKE -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.INTAKE_POSITION));
-                    case TRAVEL -> pivotMotor1.setControl(motionMagicRequest.withPosition(IntakeConstants.TRAVEL_POSITION));
-                    default -> {}
-                }
-                // Switch to brake after commanding so the arm holds position
-                // when Motion Magic finishes and the motor settles
-                if (lastPivotState == PivotState.IDLE) {
-                    pivotMotor1.setNeutralMode(NeutralModeValue.Brake);
-                    pivotMotor2.setNeutralMode(NeutralModeValue.Brake);
-                }
-            }
-            lastPivotState = pivotState;
-        }
-         * 
-         * 
-         * 
-         * 
-         * 
-         * 
-         * 
-         * 
-         * 
-         */
-
         // Pivot motor only updates on state change
         if (pivotState != lastPivotState) {
             switch (pivotState) {
@@ -183,13 +142,15 @@ public class IntakeSubsystems extends SubsystemBase {
             lastPivotState = pivotState;
         }
 
-        // Non-blocking fetch of pivot position
-        BaseStatusSignal.waitForAll(0, pivotPositionSig);
+        // Non-blocking fetch of pivot positions
+        BaseStatusSignal.waitForAll(0, pivotPositionSig, pivotPositionSig2);
         double currentPivotPosition = pivotPositionSig.getValueAsDouble();
+        double followerPosition = pivotPositionSig2.getValueAsDouble();
         cachedPivotAtTarget = isPivotAtTarget(currentPivotPosition);
         SmartDashboard.putString("Intake/State", intakeState.toString());
         SmartDashboard.putString("Intake/Pivot State", pivotState.toString());
-        SmartDashboard.putNumber("Intake/Pivot Position", currentPivotPosition);
+        SmartDashboard.putNumber("Intake/Pivot1 Position", currentPivotPosition);
+        SmartDashboard.putNumber("Intake/Pivot2 Position", followerPosition);
         SmartDashboard.putBoolean("Intake/Pivot At Target", cachedPivotAtTarget);
     }
 
