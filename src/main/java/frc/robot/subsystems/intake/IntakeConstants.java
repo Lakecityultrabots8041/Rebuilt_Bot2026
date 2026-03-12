@@ -43,6 +43,6 @@ public class IntakeConstants {
     public static final double PIVOT_TIMEOUT_SECONDS = 3.0;
 
     // Current limits (supply only, no stator limits - they restrict torque and drop arms)
-    public static final double INTAKE_SUPPLY_CURRENT_LIMIT = 30.0;
+    public static final double INTAKE_SUPPLY_CURRENT_LIMIT = 60.0;
     public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 60.0;
 }

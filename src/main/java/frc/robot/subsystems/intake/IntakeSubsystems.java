@@ -23,7 +23,7 @@ public class IntakeSubsystems extends SubsystemBase {
     private final TalonFX pivotMotor2;
 
     // Roller uses DutyCycleOut (simple % power, no PID)
-    private final DutyCycleOut intakeRequest    = new DutyCycleOut(0);
+    private final DutyCycleOut intakeRequest = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest;
     private final NeutralOut neutralRequest = new NeutralOut();
 
