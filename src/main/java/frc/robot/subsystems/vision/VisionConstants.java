@@ -125,17 +125,16 @@ public final class VisionConstants {
         return isRedAlliance() ? RED_TRENCH_TAGS : BLUE_TRENCH_TAGS;
     }
 
-    // ===== AprilTag heights off the floor (from 2026 REBUILT field) =====
+    // ===== AprilTag heights off the floor =====
     public static final double HUB_TAG_HEIGHT_METERS = Units.inchesToMeters(44.25);
     public static final double TOWER_OUTPOST_TAG_HEIGHT_METERS = Units.inchesToMeters(21.75);
     public static final double TRENCH_TAG_HEIGHT_METERS = Units.inchesToMeters(35.0);
 
-    // ===== Camera mounting -- TODO: measure both on the actual robot =====
-    // Front camera ("limelight-april"), near the shooter, faces forward
+    // Front camera ("limelight-shooter")
     public static final double FRONT_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.25);
     public static final double FRONT_CAMERA_MOUNT_ANGLE_DEGREES = 21.8;
 
-    // Rear camera ("limelight-intake"), near the intake, faces backward
+    // Rear camera ("limelight-intake")
     public static final double REAR_CAMERA_HEIGHT_METERS = Units.inchesToMeters(25.125);
     public static final double REAR_CAMERA_MOUNT_ANGLE_DEGREES = 0;
 
@@ -176,15 +175,13 @@ public final class VisionConstants {
     }
 
     // ===== Vision Accuracy =====
-    // How accurate we think the camera is, in meters. Gets scaled automatically
-    // by how many tags the camera sees and how far away they are.
     // Lower = trust camera more. Higher = trust wheel odometry more.
     // 0.5 is a good starting point. Tune up if vision is jerky, down if it drifts.
     public static final double VISION_ACCURACY = 0.5;
 
     // ===== Vision Rejection =====
     // Skip vision data that would mess up our position
-    public static final double VISION_MAX_JUMP = 2.0;                  // reject if pose teleports > 2m
+    public static final double VISION_MAX_JUMP = 2.0;  // reject if pose teleports > 2m
     public static final double VISION_MAX_SPIN = Math.toRadians(720);  // reject during fast spins (720 deg/s)
 
     // Callback for sending vision poses to the drivetrain
