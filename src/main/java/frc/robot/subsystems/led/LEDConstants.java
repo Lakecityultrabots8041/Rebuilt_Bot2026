@@ -7,7 +7,7 @@ public final class LEDConstants {
     private LEDConstants() {}
 
     // CANdle on default CAN bus, CAN ID 1
-    public static final int CAN_ID = 1;
+    public static final int CAN_ID = 10;
 
     // 8 onboard LEDs (indices 0-7) + 25 external strip LEDs (indices 8-32)
     public static final int ONBOARD_LEDS = 8;

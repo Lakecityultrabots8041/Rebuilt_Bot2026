@@ -32,7 +32,7 @@ public final class IntakeCommands {
     }
 
     public static Command pivotToIntake(IntakeSubsystems intakeSubsystems) {
-        return Commands.sequence(intakeSubsystems.pivotToIntake(), intakeSubsystems.waitUntilPivotAtTarget());
+        return Commands.sequence(intakeSubsystems.pivotToIntake());
     }
 
     public static Command pivotToTravel(IntakeSubsystems intakeSubsystems) {
@@ -44,7 +44,6 @@ public final class IntakeCommands {
         return Commands.sequence(
             intakeSubsystems.pivotToIntake(),
             intakeSubsystems.waitUntilPivotAtTarget(),
-            intakeSubsystems.pivotIdle(), // Release arm so it can bounce on the bumper
             intakeSubsystems.intake()
         ).withName("IntakeSequenceCommand");
     }
