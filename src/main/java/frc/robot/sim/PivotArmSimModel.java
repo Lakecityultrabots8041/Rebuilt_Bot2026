@@ -11,13 +11,14 @@ public class PivotArmSimModel {
 
     private static final DCMotor MOTOR = DCMotor.getKrakenX60(2);
     // Change gear ratio if arm travel doesn't match real robot
-    private static final double GEAR_RATIO = 16.0;
+    private static final double GEAR_RATIO = 12.0;
     // Change these if arm movement feels wrong in sim
     private static final double ARM_LENGTH_METERS = 0.5;
     private static final double ARM_MASS_KG = 3.0;
 
-    private static final double MIN_ANGLE_RAD = -Math.PI / 2.0;
-    private static final double MAX_ANGLE_RAD = 0.1;
+    // Arm travels ~1.53 rad from stow to intake through the 16:1 ratio
+    private static final double MIN_ANGLE_RAD = -0.5;
+    private static final double MAX_ANGLE_RAD = 2.0;
     // Must start at 0 because setPosition(-0.3) in the subsystem adds an offset
     private static final double STARTING_ANGLE_RAD = 0;
 
@@ -55,7 +56,8 @@ public class PivotArmSimModel {
 
         motor1SimState.setRawRotorPosition(rotorPosition);
         motor1SimState.setRotorVelocity(rotorVelocity);
-        motor2SimState.setRawRotorPosition(rotorPosition);
-        motor2SimState.setRotorVelocity(rotorVelocity);
+        // Motor 2 is mounted opposite, raw rotor spins the other way
+        motor2SimState.setRawRotorPosition(-rotorPosition);
+        motor2SimState.setRotorVelocity(-rotorVelocity);
     }
 }
