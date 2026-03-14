@@ -73,7 +73,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotConfigs.Slot0.kG = IntakeConstants.kG;
         pivotConfigs.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        pivotConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         pivotConfigs.HardwareLimitSwitch.ReverseLimitEnable = false;
         pivotConfigs.HardwareLimitSwitch.ForwardLimitEnable = false;
@@ -91,7 +91,7 @@ public class IntakeSubsystems extends SubsystemBase {
         pivotMotor1.getConfigurator().apply(pivotConfigs);
 
         // Motor 2 (right side) goes clockwise for positive arm movement
-        pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        pivotConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         pivotMotor2.getConfigurator().apply(pivotConfigs);
 
         // Arm must be physically at stow before powering on.

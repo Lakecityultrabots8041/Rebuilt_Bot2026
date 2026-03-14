@@ -8,36 +8,36 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.509099345577091,
-        "y": 5.263208478224539
+        "x": 6.406833095577745,
+        "y": 4.869543509272469
       },
       "isLocked": false,
       "linkedName": "Intake Center"
     },
     {
       "anchor": {
-        "x": 4.582482168330954,
-        "y": 5.4647218259629105
+        "x": 4.569543509272467,
+        "y": 5.723495007132667
       },
       "prevControl": {
-        "x": 6.129710999572397,
-        "y": 5.605378992439405
+        "x": 5.212021970948834,
+        "y": 5.700797621110088
       },
       "nextControl": {
-        "x": 4.013181169757488,
-        "y": 5.412967189728959
+        "x": 3.5136743502241243,
+        "y": 5.760796599826878
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.188830242510698,
-        "y": 5.2059486447931524
+        "x": 2.2147075606276743,
+        "y": 4.960114122681883
       },
       "prevControl": {
-        "x": 2.8745791726105545,
-        "y": 5.529415121255349
+        "x": 3.8837945791726103,
+        "y": 5.568231098430813
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,12 +46,12 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6459065796082375,
-      "rotationDegrees": -140.0
+      "waypointRelativePos": 0.46107483676543565,
+      "rotationDegrees": 45.507
     },
     {
-      "waypointRelativePos": 1.5138121546961305,
-      "rotationDegrees": -140.0
+      "waypointRelativePos": 1.3209442491210446,
+      "rotationDegrees": 45.0
     }
   ],
   "constraintZones": [],
@@ -90,7 +90,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -132.5104470780008
+    "rotation": -123.6900675259798
   },
   "reversed": false,
   "folder": "Compition paths",

@@ -17,25 +17,32 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Pivot To Intake"
-          }
-        },
-        {
-          "type": "race",
+          "type": "sequential",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "Intake Center Left"
+                  "name": "Pivot To Intake"
                 }
               },
               {
-                "type": "named",
+                "type": "race",
                 "data": {
-                  "name": "Intake"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Intake Center Left"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Intake"
+                      }
+                    }
+                  ]
                 }
               }
             ]
