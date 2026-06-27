@@ -1,76 +1,77 @@
 package frc.robot.subsystems.shoot;
 
 public final class ShooterConstants {
-    private ShooterConstants() {}
+  private ShooterConstants() {}
 
-    public static final int ACT_FLOOR = 5;
-    public static final int ACT_CEILING = 7;
-    public static final int LO4D3R = 8; // 12:1 gearbox reduction motor
-    public static final int FLYWHEEL_MOTOR = 6;
-    public static final int FLYWHEEL_MOTOR2 = 9; //Change can id later
+  public static final int ACT_FLOOR = 5;
+  public static final int ACT_CEILING = 7;
+  public static final int LO4D3R = 8; // 12:1 gearbox reduction motor
+  public static final int FLYWHEEL_MOTOR = 6;
+  public static final int FLYWHEEL_MOTOR2 = 9; // Change can id later
 
-    // ===== Feed roller power (-1.0 to 1.0) =====
-    // DutyCycleOut uses -1.0 to 1.0 scale. 0.5 = 50% power, 1.0 = 100% power.
-    // If the ball stalls, raise it. If it slams too hard, lower it.
-    public static final double FEED_POWER  =  0.80;
-    public static final double EJECT_POWER = -0.20; // Negative = reverse
-    public static final double PASS_POWER  =  0.80;
+  // ===== Feed roller power (-1.0 to 1.0) =====
+  // DutyCycleOut uses -1.0 to 1.0 scale. 0.5 = 50% power, 1.0 = 100% power.
+  // If the ball stalls, raise it. If it slams too hard, lower it.
+  public static final double FEED_POWER = 0.80;
+  public static final double EJECT_POWER = -0.20; // Negative = reverse
+  public static final double PASS_POWER = 0.80;
 
-    // ===== Lo4d3r power =====
-    public static final double LO4D3R_POWER = -0.80;
-    public static final double LO4D3R_EJECT_POWER = 0.50;
+  // ===== Lo4d3r power =====
+  public static final double LO4D3R_POWER = -0.80;
+  public static final double LO4D3R_EJECT_POWER = 0.50;
 
-    // ===== Flywheel speed presets =====
-    // RPS = Rotations Per Second. How fast the flywheel spins.
-    // Higher RPS = ball goes farther. Feed power does not affect distance.
-    public static final double FLYWHEEL_READY_RPS = 43.0;
-    public static final double FLYWHEEL_REV_RPS   =  30.0; // Pre-spin before going to full speed
-    public static final double FLYWHEEL_PASS_RPS  =  50.0;
-    public static final double FLYWHEEL_IDLE_RPS  =   0.0;
-    public static final double FLYWHEEL_SPEED_2   = 45.0;
+  // ===== Flywheel speed presets =====
+  // RPS = Rotations Per Second. How fast the flywheel spins.
+  // Higher RPS = ball goes farther. Feed power does not affect distance.
+  public static final double FLYWHEEL_READY_RPS = 43.0;
+  public static final double FLYWHEEL_REV_RPS = 30.0; // Pre-spin before going to full speed
+  public static final double FLYWHEEL_PASS_RPS = 50.0;
+  public static final double FLYWHEEL_IDLE_RPS = 0.0;
+  public static final double FLYWHEEL_SPEED_2 = 45.0;
 
-    // ===== Flywheel PID =====
-    // kV = main tuning knob. How much voltage per RPS of target speed.
-    // kS = overcomes friction to start the motor spinning.
-    // kP = corrects remaining error once spinning.
-    public static final double FLYWHEEL_kP = 3.0;
-    public static final double FLYWHEEL_kV = 0.15;
-    public static final double FLYWHEEL_kS = 0.25;
+  // ===== Flywheel PID =====
+  // kV = main tuning knob. How much voltage per RPS of target speed.
+  // kS = overcomes friction to start the motor spinning.
+  // kP = corrects remaining error once spinning.
+  public static final double FLYWHEEL_kP = 3.0;
+  public static final double FLYWHEEL_kV = 0.15;
+  public static final double FLYWHEEL_kS = 0.25;
 
-    // ===== Supply Current Limits =====
-    // Supply limits prevent brownouts. No stator limits (254 style).
-    public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 45.0;
-    public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
-    public static final double UPPER_SUPPLY_CURRENT_LIMIT = 60.0;
+  // ===== Supply Current Limits =====
+  // Supply limits prevent brownouts. No stator limits (254 style).
+  public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 45.0;
+  public static final double FEED_SUPPLY_CURRENT_LIMIT = 60.0;
+  public static final double UPPER_SUPPLY_CURRENT_LIMIT = 60.0;
 
-    // ===== Tolerances =====
-    public static final double FLYWHEEL_TOLERANCE_RPS = 2.0;  // How close is "close enough"
-    public static final double READY_TIMEOUT_SECONDS  = 3.0;  // Give up waiting after this long
+  // ===== Tolerances =====
+  public static final double FLYWHEEL_TOLERANCE_RPS = 2.0; // How close is "close enough"
+  public static final double READY_TIMEOUT_SECONDS = 3.0; // Give up waiting after this long
 
-    // ===== Variable distance velocity table =====
-    // Flywheel speed is adjusted based on distance from the target (from Limelight).
-    // Feed rollers always use FEED_POWER regardless of distance.
-    // All values need real field testing. 60 RPS is already strong at close range.
-    private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
-    private static final double[] VELOCITY_TABLE_RPS    = { 35,  40,   45,  50,  55,  58,  60};
+  // ===== Variable distance velocity table =====
+  // Flywheel speed is adjusted based on distance from the target (from Limelight).
+  // Feed rollers always use FEED_POWER regardless of distance.
+  // All values need real field testing. 60 RPS is already strong at close range.
+  private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
+  private static final double[] VELOCITY_TABLE_RPS = {35, 40, 45, 50, 55, 58, 60};
 
-    // Old table (hit the gym ceiling at 90 RPS)
-    // private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
-    // private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
+  // Old table (hit the gym ceiling at 90 RPS)
+  // private static final double[] DISTANCE_TABLE_METERS = {1.5, 2.0, 2.46, 3.0, 3.5, 4.0, 5.0};
+  // private static final double[] VELOCITY_TABLE_RPS    = { 60,  70,   80,  85,  88,  90,  90};
 
-    /** Returns flywheel speed (RPS) for a given distance in meters. */
-    public static double getSpeedForDistance(double meters) {
-        if (meters <= DISTANCE_TABLE_METERS[0]) return VELOCITY_TABLE_RPS[0];
-        if (meters >= DISTANCE_TABLE_METERS[DISTANCE_TABLE_METERS.length - 1])
-            return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
+  /** Returns flywheel speed (RPS) for a given distance in meters. */
+  public static double getSpeedForDistance(double meters) {
+    if (meters <= DISTANCE_TABLE_METERS[0]) return VELOCITY_TABLE_RPS[0];
+    if (meters >= DISTANCE_TABLE_METERS[DISTANCE_TABLE_METERS.length - 1])
+      return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
 
-        for (int i = 0; i < DISTANCE_TABLE_METERS.length - 1; i++) {
-            if (meters <= DISTANCE_TABLE_METERS[i + 1]) {
-                double t = (meters - DISTANCE_TABLE_METERS[i])
-                         / (DISTANCE_TABLE_METERS[i + 1] - DISTANCE_TABLE_METERS[i]);
-                return VELOCITY_TABLE_RPS[i] + t * (VELOCITY_TABLE_RPS[i + 1] - VELOCITY_TABLE_RPS[i]);
-            }
-        }
-        return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
+    for (int i = 0; i < DISTANCE_TABLE_METERS.length - 1; i++) {
+      if (meters <= DISTANCE_TABLE_METERS[i + 1]) {
+        double t =
+            (meters - DISTANCE_TABLE_METERS[i])
+                / (DISTANCE_TABLE_METERS[i + 1] - DISTANCE_TABLE_METERS[i]);
+        return VELOCITY_TABLE_RPS[i] + t * (VELOCITY_TABLE_RPS[i + 1] - VELOCITY_TABLE_RPS[i]);
+      }
     }
+    return VELOCITY_TABLE_RPS[VELOCITY_TABLE_RPS.length - 1];
+  }
 }

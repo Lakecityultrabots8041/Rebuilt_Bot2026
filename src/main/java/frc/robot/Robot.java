@@ -1,16 +1,8 @@
-
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-
-
-
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -18,8 +10,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.sim.SimManager;
-
-
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -49,25 +45,50 @@ public class Robot extends LoggedRobot {
    * initialization code.
    */
   public Robot() {
+
+    // Record metadata
+    Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+    Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+    Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+    Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+    Logger.recordMetadata(
+        "GitDirty",
+        switch (BuildConstants.DIRTY) {
+          case 0 -> "All changes committed";
+          case 1 -> "Uncommitted changes";
+          default -> "Unknown";
+        });
+
+    // Set up data receivers & replay source
+    switch (Constants.currentMode) {
+      case REAL:
+        // Running on a real robot, log to a USB stick ("/U/logs")
+        Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new NT4Publisher());
+        break;
+
+      case SIM:
+        // Running a physics simulator, log to NT
+        Logger.addDataReceiver(new NT4Publisher());
+        break;
+
+      case REPLAY:
+        // Replaying a log, set up replay source
+        setUseTiming(false); // Run as fast as possible
+        String logPath = LogFileUtil.findReplayLog();
+        Logger.setReplaySource(new WPILOGReader(logPath));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        break;
+    }
+
+    // Start AdvantageKit logger
+    Logger.start();
+
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
   }
-
-
-  @Override
-  public void robotInit() {
-      // Set up the logger for data recording
-      super.robotInit();
-      Logger.recordMetadata("ProjectName", "Rebuilt Bot 2026");
-      Logger.addDataReceiver(new WPILOGWriter("/U/logs"));  // Save logs to USB on the RoboRIO
-      Logger.addDataReceiver(new NT4Publisher());  // Stream data live to NetworkTables
-      Logger.start();
-
-      
-  }
-
-
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -90,8 +111,8 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putBoolean("Driver/Battery Low", voltage < BATTERY_LOW_VOLTAGE);
 
     // Alliance color — resolves from DriverStation once the match connects
-    SmartDashboard.putString("Driver/Alliance",
-        DriverStation.getAlliance().map(a -> a.name()).orElse("Unknown"));
+    SmartDashboard.putString(
+        "Driver/Alliance", DriverStation.getAlliance().map(a -> a.name()).orElse("Unknown"));
 
     // REBUILT shift tracking.
     // Teleop is 2:20 (140s). Shifts are determined by time remaining:
@@ -111,14 +132,17 @@ public class Robot extends LoggedRobot {
     String shift = "--";
     boolean endGame = false;
     if (DriverStation.isTeleopEnabled() && matchTime >= 0) {
-        if      (matchTime > 130) shift = "Transition";
-        else if (matchTime > 105) shift = "Shift 1";
-        else if (matchTime > 80)  shift = "Shift 2";
-        else if (matchTime > 55)  shift = "Shift 3";
-        else if (matchTime > 30)  shift = "Shift 4";
-        else                    { shift = "End Game"; endGame = true; }
+      if (matchTime > 130) shift = "Transition";
+      else if (matchTime > 105) shift = "Shift 1";
+      else if (matchTime > 80) shift = "Shift 2";
+      else if (matchTime > 55) shift = "Shift 3";
+      else if (matchTime > 30) shift = "Shift 4";
+      else {
+        shift = "End Game";
+        endGame = true;
+      }
     } else if (DriverStation.isAutonomousEnabled()) {
-        shift = "Auto";
+      shift = "Auto";
     }
     SmartDashboard.putString("Driver/Shift", shift);
     SmartDashboard.putBoolean("Driver/End Game", endGame);
@@ -129,13 +153,13 @@ public class Robot extends LoggedRobot {
     double nextShiftIn = 0;
     boolean shiftWarning = false;
     if (DriverStation.isTeleopEnabled() && matchTime >= 0) {
-        for (double boundary : SHIFT_BOUNDARIES) {
-            if (matchTime > boundary) {
-                nextShiftIn = matchTime - boundary;
-                break;
-            }
+      for (double boundary : SHIFT_BOUNDARIES) {
+        if (matchTime > boundary) {
+          nextShiftIn = matchTime - boundary;
+          break;
         }
-        shiftWarning = nextShiftIn > 0 && nextShiftIn <= SHIFT_WARNING_SECONDS;
+      }
+      shiftWarning = nextShiftIn > 0 && nextShiftIn <= SHIFT_WARNING_SECONDS;
     }
     SmartDashboard.putNumber("Driver/Next Shift In", nextShiftIn);
     SmartDashboard.putBoolean("Driver/Shift Warning", shiftWarning);
@@ -152,19 +176,18 @@ public class Robot extends LoggedRobot {
   public void disabledPeriodic() {}
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
-  
   @Override
   public void disabledExit() {}
-  
+
   @Override
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
-        CommandScheduler.getInstance().schedule(m_autonomousCommand);
+      CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
   }
-  
+
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {}
@@ -187,7 +210,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopPeriodic() {
 
-      //CommandScheduler.getInstance().run();
+    // CommandScheduler.getInstance().run();
 
   }
 
@@ -203,7 +226,6 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {}
-
 
   /** This function is called once when the robot is first started up. */
   @Override
