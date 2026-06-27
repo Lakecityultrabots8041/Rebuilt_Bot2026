@@ -71,7 +71,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private final List<SimTag> simTagCache = new ArrayList<>();
 
     /**
-     * @param cameraName  NetworkTables name, e.g. "limelight-april" or "limelight-climber"
+     * @param cameraName  NetworkTables name, e.g. "limelight-shooter" or "limelight-intake"
      * @param rearFacing  true if the camera faces the back of the robot
      */
 
@@ -255,7 +255,7 @@ public class LimelightSubsystem extends SubsystemBase {
             updateVisionFusion();
         }
 
-        // Dashboard -- each camera gets its own prefix (e.g. "limelight-april/" or "limelight-climber/")
+        // Dashboard -- each camera gets its own prefix (e.g. "limelight-shooter/" or "limelight-intake/")
         SmartDashboard.putBoolean(dashboardPrefix + "Has Target", hasValidTarget());
         SmartDashboard.putNumber(dashboardPrefix + "TX (deg)", getHorizontalOffset());
         SmartDashboard.putNumber(dashboardPrefix + "TY (deg)", getVerticalOffset());

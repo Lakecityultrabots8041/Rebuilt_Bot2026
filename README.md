@@ -131,6 +131,8 @@ src/main/deploy/pathplanner/
 
 ## Documentation
 
+- [Git, GitHub & CI/CD Workflow](docs/GIT_WORKFLOW.md) - **read this before pushing code**
+- [Java-isms (patterns used in our code)](docs/JAVA_ISMS.md)
 - [Vision System](docs/VISION.md)
 - [Controller Map](docs/CONTROLLER_MAP.md)
 - [Drive Tuning](docs/DRIVE_TUNING.md)

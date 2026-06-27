@@ -51,7 +51,7 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    // Shooter camera ("limelight-april"), faces the shooter side. Used for alignment and auto-aim.
+    // Shooter camera ("limelight-shooter"), faces the shooter side. Used for alignment and auto-aim.
     private final LimelightSubsystem limelightShooter = new LimelightSubsystem("limelight-shooter", false);
     // Intake camera ("limelight-intake"), faces the intake side. Provides rear vision and pose fusion.
     private final LimelightSubsystem limelightIntake = new LimelightSubsystem("limelight-intake", true);
