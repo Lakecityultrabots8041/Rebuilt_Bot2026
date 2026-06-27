@@ -14,7 +14,7 @@ public final class IntakeCommands {
     public static Command autonIntake(IntakeSubsystems intakeSubsystems) {
         return Commands.sequence(
             intakeSubsystems.intake(),
-            Commands.waitSeconds(10)
+            Commands.waitSeconds(30)
         ).withName("AutonIntakeCommand");
     }
 
@@ -35,8 +35,22 @@ public final class IntakeCommands {
         return Commands.sequence(intakeSubsystems.pivotToIntake());
     }
 
+    public static Command autonPivotToIntake(IntakeSubsystems intakeSubsystems) {
+        return Commands.sequence(
+            intakeSubsystems.pivotToIntake(),
+            intakeSubsystems.waitUntilPivotAtTarget()
+            ).withName("AutonPivotToIntakeCommand");
+    }
+
     public static Command pivotToTravel(IntakeSubsystems intakeSubsystems) {
         return intakeSubsystems.pivotToTravel().withName("PivotToTravelCommand");
+    }
+
+    public static Command autonPivotToTravel(IntakeSubsystems intakeSubsystems) {
+        return Commands.sequence(
+            intakeSubsystems.pivotToTravel(),
+            intakeSubsystems.waitUntilPivotAtTarget()
+        ).withName("AutonPivotToTravelCommand");
     }
 
     // =====Advance Commands=====

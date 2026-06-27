@@ -42,9 +42,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Depot to Shoot At Left Trench"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Depot to Shoot At Left Trench"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Pivot To Travel"
+                }
+              }
+            ]
           }
         },
         {

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.3294063681578825,
-        "y": 6.714182511097625
+        "x": 2.331155492154065,
+        "y": 7.211440798858773
       },
       "isLocked": false,
       "linkedName": null
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": 46.54815769897808
   },
   "reversed": false,
   "folder": "Compition paths",

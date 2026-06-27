@@ -59,7 +59,7 @@ public class RobotContainer {
     private final IntakeSubsystems intakeSubsystem = new IntakeSubsystems();
 
     private final LEDSubsystem ledSubsystem;
-    
+
     // Tracked commanded speeds for asymmetric slew (fast accel, controlled decel)
     private double currentDriveX = 0.0;
     private double currentDriveY = 0.0;
@@ -145,8 +145,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("Eject", IntakeCommands.eject(intakeSubsystem));
         NamedCommands.registerCommand("Idle Intake", IntakeCommands.idle(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Stow", IntakeCommands.pivotToStow(intakeSubsystem));
-        NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.pivotToIntake(intakeSubsystem));
         NamedCommands.registerCommand("Pivot To Travel", IntakeCommands.pivotToTravel(intakeSubsystem));
+        NamedCommands.registerCommand("Pivot To Intake", IntakeCommands.autonPivotToIntake(intakeSubsystem));
+        NamedCommands.registerCommand("Auton Pivot To Travel", IntakeCommands.autonPivotToTravel(intakeSubsystem));
         //NamedCommands.registerCommand("Start Intake", IntakeCommands.startingIntakeSequence(intakeSubsystem));
         //NamedCommands.registerCommand("End Intake", IntakeCommands.endingIntakeSequence(intakeSubsystem));
 

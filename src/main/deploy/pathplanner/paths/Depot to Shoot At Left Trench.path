@@ -3,58 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7267617689015686,
+        "x": 0.24803138373751754,
         "y": 5.930513552068473
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.363500728623598,
-        "y": 4.932087294765827
+        "x": 1.7967380279710934,
+        "y": 4.985385785149154
       },
       "isLocked": false,
       "linkedName": "Intake Depot"
     },
     {
       "anchor": {
-        "x": 2.4734807417974314,
-        "y": 4.6495863052781745
+        "x": 1.9559343794579167,
+        "y": 4.85660485021398
       },
       "prevControl": {
-        "x": 1.394161972967279,
-        "y": 5.349262669093459
+        "x": 0.7408885585583327,
+        "y": 5.60377396373608
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Left Shooting Point"
     }
   ],
-  "rotationTargets": [],
-  "constraintZones": [],
-  "pointTowardsZones": [],
-  "eventMarkers": [
+  "rotationTargets": [
     {
-      "name": "Pivot to Travel",
-      "waypointRelativePos": 0.02811860940695643,
-      "endWaypointRelativePos": 1.0,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Pivot To Travel"
-        }
-      }
-    },
-    {
-      "name": "Rev Flywheel",
-      "waypointRelativePos": 0.12014314928425397,
-      "endWaypointRelativePos": 1.0,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Rev Flywheel"
-        }
-      }
+      "waypointRelativePos": 0.6865896534404715,
+      "rotationDegrees": -135.0
     }
   ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,

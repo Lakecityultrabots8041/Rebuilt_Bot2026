@@ -5,6 +5,18 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Pivot To Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auton Pivot To Travel"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "LT to Shoot"
