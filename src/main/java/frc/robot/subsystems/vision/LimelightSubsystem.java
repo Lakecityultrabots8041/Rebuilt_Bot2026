@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
- * Limelight 4 subsystem — handles real hardware via NetworkTables and
+ * Limelight 4 subsystem - handles real hardware via NetworkTables and
  * simulated vision from field layout. See vision.md for details.
  */
 public class LimelightSubsystem extends SubsystemBase {
@@ -35,7 +35,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private double cachedLateralOffsetMeters = 0;
     private boolean megatag2Available = false;
 
-    // Cached once per loop — prevents calling getBotPoseEstimate twice per periodic()
+    // Cached once per loop - prevents calling getBotPoseEstimate twice per periodic()
     private LimelightHelpers.PoseEstimate cachedMegaTag2Estimate = null;
 
     // Per-loop NT cache (read once in periodic, used everywhere)
@@ -65,7 +65,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private static final double HORIZONTAL_FOV_DEG = 29.8;
     private static final double MAX_DETECTION_RANGE_METERS = 8.0;
 
-    // Pre-computed tag positions for simulation — built once in constructor,
+    // Pre-computed tag positions for simulation - built once in constructor,
     // zero per-loop allocations in updateSimVision().
     private record SimTag(int id, double x, double y) {}
     private final List<SimTag> simTagCache = new ArrayList<>();
@@ -112,7 +112,7 @@ public class LimelightSubsystem extends SubsystemBase {
         }
     }
 
-    /** Required for sim and vision fusion — set from RobotContainer. */
+    /** Required for sim and vision fusion - set from RobotContainer. */
     public void setRobotPoseSupplier(Supplier<Pose2d> poseSupplier) {
         this.robotPoseSupplier = poseSupplier;
     }
@@ -127,7 +127,7 @@ public class LimelightSubsystem extends SubsystemBase {
         this.spinRateSupplier = supplier;
     }
 
-    // Limelight data — all return per-loop cached values (updated at top of periodic)
+    // Limelight data - all return per-loop cached values (updated at top of periodic)
     public boolean hasValidTarget() {
         if (isSimulation) return simHasTarget;
         return cachedHasTarget;
@@ -175,7 +175,7 @@ public class LimelightSubsystem extends SubsystemBase {
         }
     }
 
-    // Distance — all in meters internally
+    // Distance - all in meters internally
     public double getDistanceMeters() {
         if (isSimulation) {
             return simHasTarget ? simDistanceMeters : -1;
@@ -239,14 +239,14 @@ public class LimelightSubsystem extends SubsystemBase {
         if (isSimulation) {
             updateSimVision();
         } else {
-            // Read all NT values once per loop — everything else uses cached fields
+            // Read all NT values once per loop - everything else uses cached fields
             cachedHasTarget = tv.getDouble(0) == 1;
             cachedTx = tx.getDouble(0.0);
             cachedTy = ty.getDouble(0.0);
             cachedTa = ta.getDouble(0.0);
             cachedTid = (int) tid.getInteger(-1);
 
-            // Fetch MegaTag2 once per loop — shared by cache update and vision fusion
+            // Fetch MegaTag2 once per loop - shared by cache update and vision fusion
             LimelightHelpers.SetRobotOrientation_NoFlush(limelightName,
                 robotPoseSupplier != null ? robotPoseSupplier.get().getRotation().getDegrees() : 0,
                 0, 0, 0, 0, 0);
@@ -342,8 +342,8 @@ public class LimelightSubsystem extends SubsystemBase {
         SmartDashboard.putNumber(dashboardPrefix + "Vision/HowFarOff", howFarOff);
     }
 
-    // Sim — finds closest visible tag from robot pose using pre-built cache.
-    // No per-loop object allocations — Optional and Pose objects are built once at startup.
+    // Sim - finds closest visible tag from robot pose using pre-built cache.
+    // No per-loop object allocations - Optional and Pose objects are built once at startup.
     private void updateSimVision() {
         if (robotPoseSupplier == null || simTagCache.isEmpty()) {
             simHasTarget = false;

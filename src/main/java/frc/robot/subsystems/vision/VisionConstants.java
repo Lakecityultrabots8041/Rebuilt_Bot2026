@@ -19,7 +19,7 @@ public final class VisionConstants {
 
     private VisionConstants() {}
 
-    // Target stop distances per tag — tune these on the real field
+    // Target stop distances per tag - tune these on the real field
 
     public static final double[] APRILTAG_DISTANCES = new double[33]; // IDs 1-32, index 0 unused
     static {
@@ -79,7 +79,7 @@ public final class VisionConstants {
 
     public static final double DEFAULT_APRILTAG_DISTANCE = 2.0;
 
-    // Tag groups — pass to Limelight_Move to filter which tags to align to
+    // Tag groups - pass to Limelight_Move to filter which tags to align to
     // Verified against 2026 Game Manual Figure 5-21 (page 33)
     // RED structures are on the left side of the field, BLUE on the right
     public static final Set<Integer> RED_HUB_TAGS = Set.of(2, 3, 4, 5, 8, 9, 10, 11);
@@ -103,7 +103,7 @@ public final class VisionConstants {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32);
 
-    // Alliance-aware getters — resolved at runtime from DriverStation
+    // Alliance-aware getters - resolved at runtime from DriverStation
     public static boolean isRedAlliance() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
         return alliance.isPresent() && alliance.get() == Alliance.Red;
@@ -148,7 +148,7 @@ public final class VisionConstants {
     public static final double FORWARD_GAIN = 0.8;
     public static final double AUTO_STRAFE_GAIN = 0.5;
 
-    // Speed limits (fraction of max, 0.0–1.0)
+    // Speed limits (fraction of max, 0.0-1.0)
     public static final double MAX_ROTATION_SPEED = 0.25;
     public static final double MAX_FORWARD_SPEED = 0.30;
     public static final double MAX_DRIVER_STRAFE_SCALE = 0.5;

@@ -164,7 +164,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        // Default drive — field-centric with auto-aim overlay
+        // Default drive - field-centric with auto-aim overlay
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 currentDriveX = applyDriveSlew(currentDriveX, -controller.getLeftY() * MaxSpeed * 0.9);
@@ -183,7 +183,7 @@ public class RobotContainer {
                     double smoothOutput = autoAimSlew.calculate(clampedOutput);
 
                     // Pre-spin shooter to distance-based velocity only when trigger is not held.
-                    // When trigger is held, shooter is already firing — don't fight it.
+                    // When trigger is held, shooter is already firing - don't fight it.
                     double distance = limelightShooter.getDistanceMeters();
                     if (distance > 0 && !controller.rightTrigger().getAsBoolean()) {
                         shooterSubsystem.setAutoAimSpeed(

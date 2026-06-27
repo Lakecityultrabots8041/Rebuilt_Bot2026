@@ -5,7 +5,7 @@ public final class DriveConstants {
 
     private DriveConstants() {}
     
-    // Tune ACCEL freely. Tune DECEL carefully — too high tips the robot on hard stops.
+    // Tune ACCEL freely. Tune DECEL carefully - too high tips the robot on hard stops.
     public static final double MAX_TELEOP_ACCEL = 8.0;
     public static final double MAX_TELEOP_DECEL = 4.0;
 

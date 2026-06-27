@@ -45,13 +45,13 @@ public class Limelight_Move extends Command {
     private int alignedCount = 0;
     private double targetDistanceMeters;
 
-    /** Autonomous — no driver strafe. */
+    /** Autonomous - no driver strafe. */
     public Limelight_Move(CommandSwerveDrivetrain drivetrain, LimelightSubsystem limelight,
                           Supplier<Set<Integer>> tagGroupSupplier) {
         this(drivetrain, limelight, tagGroupSupplier, () -> 0.0);
     }
 
-    /** Teleop — driver strafe input for arcing approaches. */
+    /** Teleop - driver strafe input for arcing approaches. */
     public Limelight_Move(CommandSwerveDrivetrain drivetrain, LimelightSubsystem limelight,
                           Supplier<Set<Integer>> tagGroupSupplier, DoubleSupplier driverStrafeSupplier) {
         this.drivetrain = drivetrain;
@@ -125,7 +125,7 @@ public class Limelight_Move extends Command {
             -VisionConstants.MAX_FORWARD_SPEED, VisionConstants.MAX_FORWARD_SPEED);
         double forwardVelocityMps = forwardOutput * maxSpeedMps * directionMultiplier;
 
-        // Strafe — driver input in teleop, auto-correction in auto
+        // Strafe - driver input in teleop, auto-correction in auto
         double driverStrafe = driverStrafeSupplier.getAsDouble();
         driverStrafe = Math.abs(driverStrafe) < 0.1 ? 0.0 : driverStrafe;
 
