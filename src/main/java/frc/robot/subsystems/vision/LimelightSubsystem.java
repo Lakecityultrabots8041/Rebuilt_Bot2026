@@ -16,8 +16,13 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
+<<<<<<< HEAD
  * Limelight 4 subsystem — handles real hardware via NetworkTables and simulated vision from field
  * layout. See vision.md for details.
+=======
+ * Limelight 4 subsystem - handles real hardware via NetworkTables and
+ * simulated vision from field layout. See vision.md for details.
+>>>>>>> 4be5d34f5984660cd79a6ed08f6154772452ac4a
  */
 public class LimelightSubsystem extends SubsystemBase {
 

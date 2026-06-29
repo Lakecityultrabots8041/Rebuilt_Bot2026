@@ -121,7 +121,7 @@ public class Robot extends LoggedRobot {
     //   Shift 2    : 105-80s   (1:45 - 1:20)
     //   Shift 3    :  80-55s   (1:20 - 0:55)
     //   Shift 4    :  55-30s   (0:55 - 0:30)
-    //   End Game   :  30-0s    (all hubs active — score everything, prep climb)
+    //   End Game   :  30-0s    (all hubs active - score everything, prep climb)
     //
     // Hub active rule: alliance that wins auto is INACTIVE in Shifts 1 & 3,
     // ACTIVE in Shifts 2 & 4. Flipped for the alliance that loses auto.

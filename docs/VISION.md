@@ -5,6 +5,8 @@ Chris Shaw - Lake City Ultrabots Programming Mentor
 
 This is the full breakdown of how our Limelight vision system works. If you are touching any vision code, read this first.
 
+New to the Java patterns in this code (suppliers, records, the command lifecycle, etc.)? See [JAVA_ISMS.md](JAVA_ISMS.md) - it explains each one and links back to the exact lines here. In VS Code you can Ctrl+Click (Cmd+Click on Mac) any file link in this doc to jump straight to the source.
+
 ---
 
 ## What the system does
@@ -22,11 +24,11 @@ Hardware: two Limelight 4 cameras, CTRE Phoenix 6 swerve, RoboRIO 2.0.
 
 ## Quick Reference - Things You Change at Competition
 
-These are the values you will actually tune. Everything is in `VisionConstants.java` unless noted.
+These are the values you will actually tune. Everything is in [`VisionConstants.java`](../src/main/java/frc/robot/subsystems/vision/VisionConstants.java) unless noted.
 
 ### Shooting Distance (most important)
 
-`APRILTAG_DISTANCES` array, hub entries. This is how far the robot stops from the hub when aligning. Currently 104 inches. If shots are falling short, move closer. If they are overshooting, move farther back.
+`APRILTAG_DISTANCES` array, hub entries. This is how far the robot stops from the hub when aligning. Currently 80 inches (measured from the center of the hub to the front of the Limelight lens at the shooting position). It is still a placeholder marked `TODO: tune for our shooter` in the code. If shots are falling short, move closer. If they are overshooting, move farther back.
 
 ### Camera Mounting (measure on the real robot)
 
@@ -137,17 +139,19 @@ Tag centers at 35in (0.889m) off the floor.
 
 ## File Breakdown
 
-**LimelightSubsystem.java**: Talks to a single Limelight camera via NetworkTables (or fakes it in sim). The constructor takes two arguments: the camera name (e.g. `"limelight-shooter"`) and whether it faces the rear of the robot. Each instance caches its own MegaTag2 distance/lateral data and feeds vision poses into drivetrain odometry independently.
+**[LimelightSubsystem.java](../src/main/java/frc/robot/subsystems/vision/LimelightSubsystem.java)**: Talks to a single Limelight camera via NetworkTables (or fakes it in sim). The constructor takes two arguments: the camera name (e.g. `"limelight-shooter"`) and whether it faces the rear of the robot. Each instance caches its own MegaTag2 distance/lateral data and feeds vision poses into drivetrain odometry independently. Extends `SubsystemBase`, so its `periodic()` runs every loop ([what that means](JAVA_ISMS.md#subsystembase-and-periodic)).
 
-**VisionConstants.java**: All the numbers. Tag groups, target distances, PID gains, speed limits, tolerances, and camera mounting values for both cameras. Alliance-aware getter methods live here too.
+**[VisionConstants.java](../src/main/java/frc/robot/subsystems/vision/VisionConstants.java)**: All the numbers. Tag groups, target distances, PID gains, speed limits, tolerances, and camera mounting values for both cameras. Alliance-aware getter methods live here too.
 
-**Limelight_Move.java**: The alignment command. Controls rotation, forward/back, and strafe simultaneously. Works with tag groups (not single IDs). Has a direction multiplier that flips all outputs when using a rear-facing camera, so the robot drives toward what that camera sees. In teleop, the driver can strafe with the left stick during alignment. In autonomous, strafe is zeroed out (auto-strafe correction is commented out because it caused oscillation).
+**[Limelight_Move.java](../src/main/java/frc/robot/commands/Limelight_Move.java)**: The alignment command. Controls rotation, forward/back, and strafe simultaneously. Works with tag groups (not single IDs). Has a direction multiplier that flips all outputs when using a rear-facing camera, so the robot drives toward what that camera sees. In teleop, the driver can strafe with the left stick during alignment. In autonomous, strafe is zeroed out (auto-strafe correction is commented out because it caused oscillation). It is a WPILib `Command`, so the work is split across `initialize`/`execute`/`end`/`isFinished` ([command lifecycle](JAVA_ISMS.md#override-and-the-command-lifecycle)).
 
-**RobotContainer.java**: Wires everything together. Creates both camera instances, sets up pose fusion for both, builds command factories, configures button bindings, and runs auto-aim in the default drive command.
+**[RobotContainer.java](../src/main/java/frc/robot/RobotContainer.java)**: Wires everything together. Creates both camera instances, sets up pose fusion for both, builds command factories, configures button bindings, and runs auto-aim in the default drive command.
 
 ---
 
 ## How the Subsystem Supports Two Cameras
+
+The third argument to `setVisionPoseConsumer` is one of our own one-method interfaces ([how that works](JAVA_ISMS.md#functionalinterface)), and the pose/spin suppliers are lambdas the camera calls every loop ([suppliers explained](JAVA_ISMS.md#suppliert-and-method-references)).
 
 `LimelightSubsystem` is parameterized, not hardcoded to one camera. The constructor:
 
@@ -241,7 +245,7 @@ private Limelight_Move createHubAlign() {
 }
 ```
 
-`VisionConstants::getHubTags` passes the method itself as a Supplier. Every time `Limelight_Move.initialize()` runs, it calls `.get()` on that supplier and gets fresh alliance data.
+`VisionConstants::getHubTags` passes the method itself as a Supplier. Every time `Limelight_Move.initialize()` runs, it calls `.get()` on that supplier and gets fresh alliance data. This deferred-evaluation trick is the single most important pattern in the vision code - [the full explanation is in JAVA_ISMS.md](JAVA_ISMS.md#suppliert-and-method-references).
 
 **Do not do this:**
 ```java
@@ -253,7 +257,7 @@ new Limelight_Move(drivetrain, limelightShooter, () -> VisionConstants.BLUE_HUB_
 
 ## Three-Axis Alignment (Limelight_Move)
 
-The command controls rotation, forward/back, and strafe all at once. Each axis uses proportional control with clamped output.
+The command controls rotation, forward/back, and strafe all at once. Each axis uses proportional control with clamped output (`MathUtil.clamp` keeps a big error from commanding full speed - [why we clamp](JAVA_ISMS.md#wpilib-helpers-we-lean-on)).
 
 ### Direction Multiplier (Front vs Rear Camera)
 
@@ -299,6 +303,9 @@ FORWARD_GAIN is 0.8, higher than rotation because distance errors tend to be big
 **No driver input** - strafe is zero. The robot only drives forward/back and rotates.
 
 ```java
+// driverStrafe is first deadbanded: values under 0.1 are forced to 0
+driverStrafe = Math.abs(driverStrafe) < 0.1 ? 0.0 : driverStrafe;
+
 if (Math.abs(driverStrafe) > 0.05) {
     strafeVelocityMps = -driverStrafe * maxSpeedMps * MAX_DRIVER_STRAFE_SCALE
         * directionMultiplier;
@@ -306,6 +313,8 @@ if (Math.abs(driverStrafe) > 0.05) {
     strafeVelocityMps = 0;
 }
 ```
+
+The deadband is applied in two steps: the stick value is first zeroed below 0.1, then the `> 0.05` check decides whether to strafe. The effective threshold is 0.1, so small stick wiggle is ignored.
 
 **Note about the negation:** The driver strafe input gets negated twice, once in RobotContainer (`-controller.getLeftX()`) and once here (`-driverStrafe`). This was tuned to work correctly with our Pigeon mounting orientation. Do not change one without the other or the strafe direction will flip.
 
@@ -330,6 +339,8 @@ Auto-aim is different from Limelight_Move. Instead of a separate command that ta
 
 Auto-aim only uses the **shooter camera** (`limelightShooter`). The intake camera is not involved.
 
+**Current status:** the toggle that turns auto-aim on (left bumper) is commented out in `RobotContainer.configureBindings()`, so `autoAimEnabled` never becomes true and auto-aim does not run right now. The logic below is wired and ready - uncomment the left-bumper binding to enable it.
+
 When auto-aim is active and a hub tag is visible:
 
 1. Get the current robot heading and TX offset
@@ -337,7 +348,7 @@ When auto-aim is active and a hub tag is visible:
 3. PID calculates rotation output
 4. Clamp it to AUTO_AIM_MAX_ROTATION_RATE (1.5 rad/s)
 5. Run it through a slew rate limiter (3.0 rad/s^2) to smooth acceleration
-6. Update shooter RPM based on distance
+6. Update shooter RPM based on distance - but only when the right trigger is **not** held. If the driver is already firing, we do not fight the shooter's commanded speed.
 
 ```java
 double currentHeading = drivetrain.getState().Pose.getRotation().getRadians();
@@ -347,7 +358,7 @@ double clampedOutput = MathUtil.clamp(rawOutput, -AUTO_AIM_MAX_ROTATION_RATE, AU
 double smoothOutput = autoAimSlew.calculate(clampedOutput);
 ```
 
-The PID uses continuous input (`enableContinuousInput(-PI, PI)`) because heading wraps around. Without this, the PID would try to rotate 359 degrees instead of 1 degree the other way.
+The PID uses continuous input (`enableContinuousInput(-PI, PI)`) because heading wraps around. Without this, the PID would try to rotate 359 degrees instead of 1 degree the other way. ([More on the PID and slew helpers](JAVA_ISMS.md#wpilib-helpers-we-lean-on).)
 
 When auto-aim deactivates (no hub tag visible, or toggled off), we reset the slew limiter and PID so they do not carry stale state into the next activation.
 
@@ -408,20 +419,23 @@ In `LimelightSubsystem.updateVisionFusion()`, after all the filters pass:
 ```java
 double howFarOff = VISION_ACCURACY / (tagCount * tagCount);
 howFarOff *= (1.0 + (avgTagDist * avgTagDist / 30.0));
+howFarOff = Math.max(0.1, Math.min(5.0, howFarOff)); // clamp to a sane range
 
 var poseUncertainty = VecBuilder.fill(howFarOff, howFarOff, 999.0);
 visionPoseConsumer.accept(pose, timestamp, poseUncertainty);
 ```
 
-`VecBuilder.fill` is just a WPILib way to pack three numbers into one object. The three numbers are [x uncertainty, y uncertainty, rotation uncertainty]. CTRE's `addVisionMeasurement` needs all three.
+The clamp keeps `howFarOff` between 0.1 and 5.0 so an extreme tag count or distance cannot tell the filter to either blindly trust or completely ignore the camera.
 
-We also call `SetRobotOrientation()` before pulling MegaTag2 data each loop, because MegaTag2 needs the robot's heading to compute a good pose.
+`VecBuilder.fill` is just a WPILib way to pack three numbers into one object. The three numbers are [x uncertainty, y uncertainty, rotation uncertainty]. CTRE's `addVisionMeasurement` needs all three. ([More on VecBuilder](JAVA_ISMS.md#wpilib-helpers-we-lean-on).)
+
+We also call `SetRobotOrientation()` (the `_NoFlush` variant, so it does not force an extra NetworkTables flush) before pulling MegaTag2 data each loop, because MegaTag2 needs the robot's heading to compute a good pose.
 
 ---
 
 ## Simulation
 
-When `RobotBase.isSimulation()` is true, LimelightSubsystem skips NetworkTables entirely and fakes the data using the robot's simulated pose and the official 2026 field layout.
+When `RobotBase.isSimulation()` is true, LimelightSubsystem skips NetworkTables entirely and fakes the data using the robot's simulated pose and the official 2026 field layout. The tag positions are precomputed once at startup into a list of small `record` holders so the per-loop sim code allocates nothing ([record and preallocation notes](JAVA_ISMS.md#record)).
 
 It loops through every tag on the field and checks:
 1. Is the tag within 8.0m?
@@ -440,14 +454,15 @@ The sim is not pixel-perfect but it lets you test alignment logic, alliance sele
 
 ## Target Distances
 
-Each tag type has a target stop distance in VisionConstants (the `APRILTAG_DISTANCES` array, indexed by tag ID):
+Each tag type has a target stop distance in VisionConstants (the `APRILTAG_DISTANCES` array, indexed by tag ID). The array is filled in a [static initializer block](JAVA_ISMS.md#static-initializer-block): every entry defaults to 2.0m, then the hub/tower/outpost/trench tags are overwritten with these values:
 
 | Structure | Distance      | Why                                              |
 |-----------|---------------|--------------------------------------------------|
-| Hub       | 104in (~2.64m) | Shooting range, tune for your shooter            |
+| Hub       | 80in (~2.03m) | Shooting range, measured hub-center to lens. Placeholder marked `TODO: tune for our shooter` |
 | Tower     | 18in (~0.46m) | Close approach for climbing, near bumper contact |
 | Outpost   | 14in (~0.36m) | Very close for human player handoff              |
 | Trench    | 48in (~1.22m) | Center under the trench arm                      |
+| Anything else | 2.0m (default) | Fallback for any tag not listed above        |
 
 These are starting points. Tune them on the real field based on shooter performance and mechanism reach. Tower and outpost distances are intentionally close because the robot needs to be right up against those structures.
 
@@ -498,17 +513,19 @@ These values are used by the trig-based backup calculation and by simulation, no
 
 ## Controller Bindings (Vision Related)
 
-| Button       | Action                       | Status           |
-|--------------|------------------------------|------------------|
-| Right Bumper | Reset field-centric heading  | Active           |
-| Left Bumper  | Toggle auto-aim              | Active           |
-| START        | Align to outpost (hold)      | Active           |
-| D-Left       | Align to hub (hold)          | Active           |
-| D-Right      | Align to tower (hold)        | Active           |
+This table reflects what is actually wired in [`RobotContainer.configureBindings()`](../src/main/java/frc/robot/RobotContainer.java#L166) right now. Several bindings exist in the code but are commented out.
 
-Only the START button (outpost align) is currently being used for alignment. The D-pad hub/tower bindings and auto-aim are wired but not tested or needed right now.
+| Button       | Action                       | Status                          |
+|--------------|------------------------------|---------------------------------|
+| Right Bumper | Reset field-centric heading  | Active                          |
+| START        | Align to hub (hold)          | Active                          |
+| Left Bumper  | Toggle auto-aim              | Commented out (disabled)        |
+| D-Right      | Align to tower (hold)        | Commented out (disabled)        |
+| Outpost align (was START) | Align to outpost (hold) | Commented out (disabled) |
 
-See `docs/CONTROLLER_MAP.md` for the full binding table.
+Only the START button (hub align) is currently used for vision alignment. The tower binding, the second outpost binding, and the auto-aim toggle all exist in the code but are commented out - uncomment them to bring them back. Because the auto-aim toggle is off, the auto-aim logic in the default drive command never activates (see the Auto-Aim section).
+
+See [`CONTROLLER_MAP.md`](CONTROLLER_MAP.md) for the full binding table.
 
 ---
 
@@ -546,12 +563,12 @@ See `docs/CONTROLLER_MAP.md` for the full binding table.
 | `Pivot To Stow`   | Arm to stow position          |
 | `Pivot To Intake`  | Arm to intake position         |
 | `Pivot To Travel`  | Arm to travel position         |
-| `Start Intake`    | Deploy arm, then start roller |
-| `End Intake`      | Stop roller, travel position  |
+
+`Start Intake` and `End Intake` (deploy-then-roll and stop-then-travel sequences) exist in the code but their `registerCommand` calls are commented out in [`RobotContainer.java`](../src/main/java/frc/robot/RobotContainer.java#L150). Uncomment them to use those names in a path.
 
 Use these in PathPlanner autos. Typical pattern: drive near a target with a path, run an alignment or intake named command, continue with the next path.
 
-**Pro tip:** Use an event marker to start `Rev Shooter` at 60% through the path before an `AlignAndShoot`. This pre-spins the flywheel while still driving, saving time.
+**Time-saver:** Use an event marker to start `Rev Flywheel` partway through the path before an align-and-shoot command. This pre-spins the flywheel while still driving, saving time.
 
 ---
 
